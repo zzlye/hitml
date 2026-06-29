@@ -84,7 +84,7 @@ const renderIntroModule = () => {
 const createFloatText = (container: HTMLElement) => {
   // 点击橘子时生成一次往上飘的提示文字。
   const text = createElement("span", "doro-pop-text", "orange");
-  text.style.left = `${52 + Math.random() * 18}%`;
+  text.style.left = `${47 + Math.random() * 10}%`;
   container.append(text);
   window.setTimeout(() => text.remove(), 920);
 };
