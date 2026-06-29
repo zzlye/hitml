@@ -41,12 +41,7 @@ const createNavLink = (href: string, label: string, shortLabel: string) => {
   const link = createElement("a", "toc-link") as HTMLAnchorElement;
   link.href = href;
   link.setAttribute("aria-label", label);
-
-  const mark = createElement("span", "toc-mark");
-  const text = createElement("span", "toc-text");
-  text.textContent = shortLabel;
-
-  link.append(mark, text);
+  link.textContent = shortLabel;
   return link;
 };
 
@@ -55,10 +50,10 @@ const renderDirectory = () => {
   aside.setAttribute("aria-label", "页面目录");
   aside.append(
     createElement("p", "toc-label", "目录"),
-    createNavLink("#intro", "跳转到标题区域", "标题"),
-    createNavLink("#support", "跳转到售后区域", "售后"),
-    createNavLink("#tutorial-visual", "跳转到教程一区域", "教程一"),
-    createNavLink("#tutorial-notes", "跳转到教程二区域", "教程二")
+    createNavLink("#intro", "跳转到标题区域", "1. 标题"),
+    createNavLink("#support", "跳转到售后区域", "2. 售后进群"),
+    createNavLink("#tutorial-visual", "跳转到教程一区域", "3. 教程一"),
+    createNavLink("#tutorial-notes", "跳转到教程二区域", "4. 教程二")
   );
   return aside;
 };
@@ -99,10 +94,15 @@ const setupDoro = () => {
   const orange = doro?.querySelector<HTMLButtonElement>(".doro-orange");
   if (!doro || !orange) return;
 
-  // doro 既能拖动定位，也能通过橘子点击触发跳动和累计跳转。
+  // doro 会在视口内自动移动；拖动后会从新位置继续跑。
   let clickCount = 0;
   let isDragging = false;
   let hasMoved = false;
+  let left = window.innerWidth - doro.offsetWidth - 42;
+  let top = 128;
+  let velocityX = 0.62;
+  let velocityY = 0.38;
+  let lastTime = performance.now();
   let startX = 0;
   let startY = 0;
   let startLeft = 0;
@@ -116,13 +116,43 @@ const setupDoro = () => {
     };
   };
 
-  const moveDoro = (left: number, top: number) => {
-    const next = clampPosition(left, top);
+  const moveDoro = (nextLeft: number, nextTop: number) => {
+    const next = clampPosition(nextLeft, nextTop);
+    left = next.left;
+    top = next.top;
     doro.style.left = `${next.left}px`;
     doro.style.top = `${next.top}px`;
     doro.style.right = "auto";
     doro.style.bottom = "auto";
   };
+
+  const tick = (time: number) => {
+    const elapsed = Math.min(32, time - lastTime);
+    lastTime = time;
+
+    if (!isDragging) {
+      const rect = doro.getBoundingClientRect();
+      left += velocityX * elapsed;
+      top += velocityY * elapsed;
+
+      if (left <= 8 || left + rect.width >= window.innerWidth - 8) {
+        velocityX *= -1;
+        left = Math.min(Math.max(8, left), window.innerWidth - rect.width - 8);
+      }
+
+      if (top <= 8 || top + rect.height >= window.innerHeight - 8) {
+        velocityY *= -1;
+        top = Math.min(Math.max(8, top), window.innerHeight - rect.height - 8);
+      }
+
+      moveDoro(left, top);
+    }
+
+    window.requestAnimationFrame(tick);
+  };
+
+  moveDoro(left, top);
+  window.requestAnimationFrame(tick);
 
   doro.addEventListener("pointerdown", (event) => {
     if (event.button !== 0) return;
@@ -133,6 +163,8 @@ const setupDoro = () => {
     startY = event.clientY;
     startLeft = rect.left;
     startTop = rect.top;
+    left = rect.left;
+    top = rect.top;
     doro.classList.add("is-dragging");
     doro.setPointerCapture(event.pointerId);
   });
@@ -188,13 +220,14 @@ const renderContactCard = (item: ContactItem) => {
   media.type = "button";
   media.setAttribute("aria-label", `放大查看${item.title}二维码`);
 
+  const hint = createElement("span", "support-media-hint", "点击放大");
   const image = document.createElement("img");
   image.src = item.image;
   image.alt = item.alt;
   image.loading = "lazy";
   image.width = 240;
   image.height = 240;
-  media.append(image);
+  media.append(image, hint);
   media.addEventListener("click", () => openQrPreview(item));
 
   const body = createElement("div", "support-body");
