@@ -31,7 +31,7 @@ export type TutorialModule = {
 export const introModule = {
   id: "intro",
   title: "gpt-image-2+nano-banana-2+nano-banana-pro",
-  actionLabel: "在线使用：点击跳转",
+  actionLabel: "在线使用：https://zzlye.xyz:90",
   actionUrl: "https://zzlye.xyz:90"
 };
 
@@ -160,6 +160,13 @@ export const tutorialModules: TutorialModule[] = [
         description: "在上方选择模型后即可正常使用。",
         image: "/images/external-access/step-9.png",
         notes: ["如果生成失败，优先检查 key、余额和当前模型选择"]
+      },
+      {
+        tag: "步骤 10",
+        title: "确认效果",
+        description: "确认模型可以正常调用后即可继续使用。",
+        image: "/images/external-access/step-10.png",
+        notes: ["能正常返回内容就说明外部接入完成"]
       }
     ]
   }

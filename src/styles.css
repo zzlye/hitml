@@ -110,7 +110,11 @@ body::after {
 }
 
 .module {
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+}
+
+.module-intro {
+  margin-bottom: clamp(54px, 6vw, 68px);
 }
 
 .module-card {
@@ -359,7 +363,7 @@ h2.module-title {
 .support-doro {
   position: absolute;
   top: -52px;
-  left: -72px;
+  left: -56px;
   z-index: 2;
   width: clamp(142px, 18vw, 178px);
   height: auto;
@@ -763,8 +767,8 @@ h2.module-title {
 }
 
 .reveal {
-  opacity: 0;
-  transform: translateY(14px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 280ms ease, transform 280ms ease;
 }
 
@@ -810,7 +814,7 @@ h2.module-title {
 
   .support-doro {
     top: -48px;
-    left: -68px;
+    left: -54px;
     width: clamp(128px, 21vw, 156px);
     transform: scaleX(-1);
   }
@@ -880,7 +884,7 @@ h2.module-title {
 
   .support-doro {
     top: -36px;
-    left: -42px;
+    left: -32px;
     width: 104px;
     transform: scaleX(-1);
   }
