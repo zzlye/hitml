@@ -1,0 +1,8 @@
+services:
+  hitml:
+    build:
+      context: .
+    image: hitml:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
