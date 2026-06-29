@@ -144,7 +144,7 @@ body::after {
 .module-card--support {
   position: relative;
   overflow: visible;
-  padding-top: 28px;
+  padding-top: 84px;
 }
 
 .module-header {
@@ -335,15 +335,17 @@ h2.module-title {
 
 .support-doro {
   position: absolute;
-  top: -48px;
-  right: 18px;
+  top: -70px;
+  left: 18px;
   z-index: 2;
-  width: clamp(170px, 24vw, 260px);
+  width: clamp(168px, 24vw, 250px);
   height: auto;
   object-fit: contain;
   object-position: left center;
   pointer-events: none;
   filter: drop-shadow(0 10px 12px rgba(61, 52, 82, 0.16));
+  transform: scaleX(-1);
+  transform-origin: center bottom;
 }
 
 .support-services {
@@ -773,6 +775,16 @@ h2.module-title {
     padding: 14px;
   }
 
+  .module-card--support {
+    padding-top: 78px;
+  }
+
+  .support-doro {
+    top: -62px;
+    left: 12px;
+    width: clamp(148px, 28vw, 210px);
+  }
+
   .toc {
     left: 10px;
     width: 142px;
@@ -830,6 +842,16 @@ h2.module-title {
 
   .support-card {
     padding: 0;
+  }
+
+  .module-card--support {
+    padding-top: 68px;
+  }
+
+  .support-doro {
+    top: -48px;
+    left: 10px;
+    width: 136px;
   }
 
   .support-media {

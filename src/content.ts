@@ -95,21 +95,72 @@ export const tutorialModules: TutorialModule[] = [
   },
   {
     id: "tutorial-notes",
-    title: "教程二 · 补充说明",
-    description: "这里整理常见注意事项和补充说明。",
-    tone: "notes",
+    title: "外部接入",
+    description: "只需要将 url 和 key 填入对应位置即可。",
+    tone: "visual",
     cards: [
       {
-        tag: "说明 01",
-        title: "注意事项",
-        description: "放一些不能忽略的规则和提醒。",
-        notes: ["不要跳过关键步骤", "有异常先截图再反馈", "保持信息简洁清楚"]
+        tag: "步骤 01",
+        title: "打开 Cherry Studio 设置",
+        description: "以 Cherry Studio 为例，先进入设置页面。",
+        image: "/images/external-access/step-1.png",
+        notes: ["准备好购买的 API key", "后面会把 url 和 key 填到对应位置"]
       },
       {
-        tag: "说明 02",
-        title: "常见问题",
-        description: "把最容易被问到的内容写在这里。",
-        notes: ["二维码识别失败", "不知道从哪一步开始", "要联系哪一个入口"]
+        tag: "步骤 02",
+        title: "添加供应商",
+        description: "在设置中点击添加供应商，名称可以随意填写。",
+        image: "/images/external-access/step-2.png",
+        notes: ["供应商名称方便自己识别即可", "名称不影响实际使用"]
+      },
+      {
+        tag: "步骤 03",
+        title: "确认供应商信息",
+        description: "添加后进入供应商配置页面，继续填写接入信息。",
+        image: "/images/external-access/step-3.png",
+        notes: ["确认进入的是刚添加的供应商", "下一步填写接口地址和 key"]
+      },
+      {
+        tag: "步骤 04",
+        title: "填写 url 和 API key",
+        description: "将设置里的 url 和购买的 API key 填入对应位置。",
+        image: "/images/external-access/step-4.png",
+        notes: ["重点：url 和 key 需要分别填到对应输入框", "不要把 url 和 key 粘贴反了"]
+      },
+      {
+        tag: "步骤 05",
+        title: "获取模型列表",
+        description: "填写完成后点击获取模型列表，等待模型刷新出来。",
+        image: "/images/external-access/step-5.png",
+        notes: ["如果没有刷新出来，先检查 url 和 key 是否填写正确"]
+      },
+      {
+        tag: "步骤 06",
+        title: "选择模型",
+        description: "在模型列表中选择需要使用的模型。",
+        image: "/images/external-access/step-6.png",
+        notes: ["按需求选择图片模型或 nano-banana 模型"]
+      },
+      {
+        tag: "步骤 07",
+        title: "回到对话页面",
+        description: "配置完成后回到对话页面，确认当前供应商和模型可用。",
+        image: "/images/external-access/step-7.png",
+        notes: ["上方显示对应模型后即可开始使用"]
+      },
+      {
+        tag: "步骤 08",
+        title: "切换可用模型",
+        description: "需要切换时，在模型列表里选择其他已添加模型。",
+        image: "/images/external-access/step-8.png",
+        notes: ["模型列表显示正常就说明接入成功"]
+      },
+      {
+        tag: "步骤 09",
+        title: "开始使用",
+        description: "在上方选择模型后即可正常使用。",
+        image: "/images/external-access/step-9.png",
+        notes: ["如果生成失败，优先检查 key、余额和当前模型选择"]
       }
     ]
   }
