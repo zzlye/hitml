@@ -1,5 +1,7 @@
 node_modules/
 dist/
+qs/
+assets/
 .env
 .env.*
 npm-debug.log*

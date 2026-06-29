@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-labelledby="title desc">
+  <title id="title">确认售后入口示意图</title>
+  <desc id="desc">用于占位的教程步骤示意图，后续可以替换为真实截图。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff0f7"/>
+      <stop offset="1" stop-color="#e9f7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" rx="18" fill="url(#bg)"/>
+  <rect x="64" y="56" width="512" height="288" rx="16" fill="#fff" stroke="#eadfec"/>
+  <rect x="112" y="104" width="160" height="160" rx="12" fill="#f6fbff" stroke="#a8dcff"/>
+  <path d="M143 136h98v98h-98zM160 153h28v28h-28zM198 153h26v26h-26zM160 194h26v26h-26zM203 197h18v18h-18z" fill="#4fb7ff"/>
+  <rect x="308" y="112" width="204" height="20" rx="10" fill="#ff6fa8"/>
+  <rect x="308" y="154" width="168" height="14" rx="7" fill="#c9c3d2"/>
+  <rect x="308" y="184" width="196" height="14" rx="7" fill="#c9c3d2"/>
+  <rect x="308" y="228" width="128" height="44" rx="22" fill="#55d6be"/>
+  <text x="320" y="256" fill="#fff" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="700">扫码保存入口</text>
+</svg>
