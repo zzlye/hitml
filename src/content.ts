@@ -10,8 +10,14 @@ export type TutorialCard = {
   tag: string;
   title: string;
   description: string;
-  notes: string[];
+  notes: TutorialNote[];
   image?: string;
+};
+
+export type TutorialNote = string | {
+  text: string;
+  href: string;
+  label: string;
 };
 
 export type TutorialModule = {
@@ -62,7 +68,14 @@ export const tutorialModules: TutorialModule[] = [
         title: "打开在线使用页面",
         description: "复制 key 后打开在线使用地址，点击右上角的设置。",
         image: "/images/online-use/step-1.png",
-        notes: ["地址：https://zzlye.xyz:90", "先复制好 key 再进入设置"]
+        notes: [
+          {
+            text: "地址：",
+            href: "https://zzlye.xyz:90",
+            label: "https://zzlye.xyz:90"
+          },
+          "先复制好 key 再进入设置"
+        ]
       },
       {
         tag: "步骤 02",

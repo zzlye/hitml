@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { introModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule } from "./content";
+import { introModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 const DORO_TARGET_URL = "https://zzlye.xyz:90";
@@ -89,6 +89,14 @@ const createFloatText = (container: HTMLElement) => {
   window.setTimeout(() => text.remove(), 1120);
 };
 
+const setDoroDirection = (doro: HTMLElement, velocityX: number) => {
+  doro.classList.toggle("is-facing-left", velocityX < 0);
+  doro.classList.toggle("is-facing-right", velocityX >= 0);
+  doro.classList.remove("is-turning");
+  void doro.offsetWidth;
+  doro.classList.add("is-turning");
+};
+
 const setupDoro = () => {
   const doro = document.querySelector<HTMLDivElement>(".doro-widget");
   if (!doro) return;
@@ -136,6 +144,7 @@ const setupDoro = () => {
 
       if (left <= 8 || left + rect.width >= window.innerWidth - 8) {
         velocityX *= -1;
+        setDoroDirection(doro, velocityX);
         left = Math.min(Math.max(8, left), window.innerWidth - rect.width - 8);
       }
 
@@ -151,6 +160,7 @@ const setupDoro = () => {
   };
 
   moveDoro(left, top);
+  setDoroDirection(doro, velocityX);
   window.requestAnimationFrame(tick);
 
   const startDrag = (event: PointerEvent) => {
@@ -209,8 +219,10 @@ const renderDoroWidget = () => {
   const widget = createElement("div", "doro-widget");
   widget.setAttribute("aria-label", "可拖动 doro");
   widget.innerHTML = `
-    <span class="doro-orange" aria-hidden="true"></span>
-    <img class="doro-image" src="/images/doro-2.png" alt="doro" width="2560" height="1440" draggable="false" />
+    <span class="doro-runner">
+      <span class="doro-orange" aria-hidden="true"></span>
+      <img class="doro-image" src="/images/doro-2.png" alt="doro" width="2560" height="1440" draggable="false" />
+    </span>
   `;
   return widget;
 };
@@ -252,6 +264,14 @@ const renderSupportModule = () => {
   section.id = supportModule.id;
 
   const card = createElement("article", "module-card module-card--support");
+  const mascot = document.createElement("img");
+  mascot.className = "support-doro";
+  mascot.src = "/images/doro-3.png";
+  mascot.alt = "";
+  mascot.width = 1110;
+  mascot.height = 794;
+  mascot.setAttribute("aria-hidden", "true");
+
   const grid = createElement("div", "support-grid");
   supportModule.contacts.forEach((item) => grid.append(renderContactCard(item)));
 
@@ -259,6 +279,7 @@ const renderSupportModule = () => {
   supportModule.services.forEach((item) => serviceList.append(createElement("span", "support-service", item)));
 
   card.append(
+    mascot,
     renderModuleHeader(supportModule.title, supportModule.description),
     serviceList,
     grid
@@ -267,29 +288,29 @@ const renderSupportModule = () => {
   return section;
 };
 
-const closeQrPreview = () => {
-  document.querySelector(".qr-preview")?.remove();
+const closeImagePreview = () => {
+  document.querySelector(".image-preview")?.remove();
 };
 
-const openQrPreview = (item: ContactItem) => {
-  closeQrPreview();
+const openImagePreview = (imageSrc: string, imageAlt: string, label: string) => {
+  closeImagePreview();
 
-  const overlay = createElement("div", "qr-preview") as HTMLDivElement;
+  const overlay = createElement("div", "image-preview") as HTMLDivElement;
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", `放大查看${item.title}二维码`);
+  overlay.setAttribute("aria-label", label);
 
-  const panel = createElement("div", "qr-preview-panel");
+  const panel = createElement("div", "image-preview-panel");
   const image = document.createElement("img");
-  image.src = item.image;
-  image.alt = item.alt;
+  image.src = imageSrc;
+  image.alt = imageAlt;
   image.width = 720;
   image.height = 720;
 
   panel.append(image);
   overlay.append(panel);
   overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) closeQrPreview();
+    if (event.target === overlay) closeImagePreview();
   });
 
   document.body.append(overlay);
@@ -297,12 +318,34 @@ const openQrPreview = (item: ContactItem) => {
   panel.focus();
 };
 
+const openQrPreview = (item: ContactItem) => {
+  openImagePreview(item.image, item.alt, `放大查看${item.title}二维码`);
+};
+
+const renderTutorialNote = (note: TutorialNote) => {
+  const item = createElement("li");
+  if (typeof note === "string") {
+    item.textContent = note;
+    return item;
+  }
+
+  item.append(document.createTextNode(note.text));
+  const link = createElement("a", "tutorial-note-link", note.label) as HTMLAnchorElement;
+  link.href = note.href;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  item.append(link);
+  return item;
+};
+
 const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]) => {
   const card = createElement("article", `tutorial-card tutorial-card--${tone} reveal`);
   const badge = createElement("span", "card-tag", cardData.tag);
 
   if (cardData.image) {
-    const media = createElement("div", "tutorial-media");
+    const media = createElement("button", "tutorial-media") as HTMLButtonElement;
+    media.type = "button";
+    media.setAttribute("aria-label", `放大查看${cardData.title}图片`);
     const image = document.createElement("img");
     image.src = cardData.image;
     image.alt = cardData.title;
@@ -310,6 +353,7 @@ const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]
     image.width = 640;
     image.height = 400;
     media.append(image);
+    media.addEventListener("click", () => openImagePreview(cardData.image ?? "", cardData.title, `放大查看${cardData.title}图片`));
     card.append(media);
   } else {
     const visual = createElement("div", "tutorial-visual tutorial-visual--notes");
@@ -325,7 +369,7 @@ const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]
   );
 
   const notes = createElement("ul", "note-list");
-  cardData.notes.forEach((note) => notes.append(createElement("li", "", note)));
+  cardData.notes.forEach((note) => notes.append(renderTutorialNote(note)));
   body.append(notes);
 
   card.append(body);
@@ -379,5 +423,5 @@ setupReveal();
 setupDoro();
 
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeQrPreview();
+  if (event.key === "Escape") closeImagePreview();
 });
