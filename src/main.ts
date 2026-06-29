@@ -53,7 +53,7 @@ const renderDirectory = () => {
     createNavLink("#intro", "跳转到标题区域", "1. 标题"),
     createNavLink("#support", "跳转到售后区域", "2. 售后进群"),
     createNavLink("#tutorial-visual", "跳转到在线使用区域", "3. 在线使用"),
-    createNavLink("#tutorial-notes", "跳转到教程二区域", "4. 教程二")
+    createNavLink("#tutorial-notes", "跳转到外部接入区域", "4. 外部接入")
   );
   return aside;
 };
@@ -314,9 +314,7 @@ const openImagePreview = (imageSrc: string, imageAlt: string, label: string) => 
 
   panel.append(image);
   overlay.append(panel);
-  overlay.addEventListener("click", (event) => {
-    if (event.target === overlay || event.target === panel) closeImagePreview();
-  });
+  overlay.addEventListener("click", () => closeImagePreview());
 
   document.body.append(overlay);
   panel.tabIndex = -1;

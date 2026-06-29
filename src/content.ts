@@ -60,7 +60,7 @@ export const tutorialModules: TutorialModule[] = [
   {
     id: "tutorial-visual",
     title: "在线使用",
-    description: "按下面步骤完成在线使用配置。",
+    description: "按照步骤即可使用",
     tone: "visual",
     cards: [
       {
@@ -73,14 +73,13 @@ export const tutorialModules: TutorialModule[] = [
             text: "地址：",
             href: "https://zzlye.xyz:90",
             label: "https://zzlye.xyz:90"
-          },
-          "先复制好 key 再进入设置"
+          }
         ]
       },
       {
         tag: "步骤 02",
         title: "填写 API key",
-        description: "将得到的 key 填写在文运站的 API key 内，填写完成后关闭即可使用。",
+        description: "将得到的 key 填写在文运站的API key内，填写完成后即可使用",
         image: "/images/online-use/step-2.png",
         notes: ["填写完成后关闭设置窗口", "关闭后即可开始在线使用"]
       },
@@ -96,7 +95,7 @@ export const tutorialModules: TutorialModule[] = [
   {
     id: "tutorial-notes",
     title: "外部接入",
-    description: "只需要将 url 和 key 填入对应位置即可。",
+    description: "填写url 和 key调用模型",
     tone: "visual",
     cards: [
       {

@@ -189,6 +189,11 @@ h2.module-title {
   line-height: 1.6;
 }
 
+.module-card--visual .module-description {
+  color: #2f61d6;
+  font-weight: 800;
+}
+
 .intro-copy {
   min-width: 0;
 }
@@ -620,7 +625,7 @@ h2.module-title {
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: 72px;
+  padding: 16px;
   background: rgba(35, 32, 44, 0.48);
   backdrop-filter: none;
   cursor: zoom-out;
@@ -629,9 +634,11 @@ h2.module-title {
 .image-preview-panel {
   position: relative;
   display: grid;
-  width: min(620px, calc(100vw - 96px));
+  place-items: center;
+  width: min(96vw, 1280px);
+  height: min(96vh, 920px);
   min-width: 220px;
-  padding: 44px;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -641,12 +648,13 @@ h2.module-title {
 
 .image-preview-panel img {
   width: 100%;
-  max-height: calc(100vh - 232px);
+  height: 100%;
+  max-height: calc(100vh - 32px);
   border: 0;
   border-radius: 0;
   background: transparent;
   object-fit: contain;
-  cursor: default;
+  cursor: zoom-out;
 }
 
 .doro-widget {
