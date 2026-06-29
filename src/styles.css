@@ -124,6 +124,9 @@ body::after {
 }
 
 .module-card--intro {
+  display: grid;
+  gap: 14px;
+  align-content: center;
   min-height: 124px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 250, 253, 0.7)),
@@ -192,6 +195,31 @@ h2.module-title {
   line-height: 1.16;
   letter-spacing: 0;
   overflow-wrap: anywhere;
+}
+
+.intro-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid rgba(123, 99, 255, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(123, 99, 255, 0.12), rgba(255, 147, 61, 0.18));
+  color: #563ed0;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(61, 52, 82, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.intro-action:hover,
+.intro-action:focus-visible {
+  border-color: rgba(123, 99, 255, 0.34);
+  box-shadow: 0 14px 30px rgba(61, 52, 82, 0.12);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .icon {
@@ -551,6 +579,91 @@ h2.module-title {
   outline: none;
 }
 
+.doro-widget {
+  position: fixed;
+  top: 128px;
+  right: 42px;
+  z-index: 25;
+  width: clamp(118px, 15vw, 172px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  filter: drop-shadow(0 18px 24px rgba(61, 52, 82, 0.18));
+  animation: doro-run 3.4s ease-in-out infinite;
+}
+
+.doro-widget.is-dragging {
+  cursor: grabbing;
+  animation-play-state: paused;
+}
+
+.doro-widget.is-bouncing .doro-image,
+.doro-widget.is-bouncing .doro-orange {
+  animation: doro-bounce 420ms cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+.doro-image {
+  width: 100%;
+  pointer-events: none;
+}
+
+.doro-orange {
+  position: absolute;
+  top: 5%;
+  right: 24%;
+  z-index: 2;
+  width: 22%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at 38% 30%, #ffe38c 0 18%, #ffad35 42%, #ff782b 72%);
+  box-shadow: 0 5px 10px rgba(224, 102, 21, 0.28);
+  cursor: pointer;
+  transform: rotate(-10deg);
+}
+
+.doro-orange::before {
+  display: block;
+  padding-top: 82%;
+  content: "";
+}
+
+.doro-orange::after {
+  position: absolute;
+  top: -16%;
+  left: 46%;
+  width: 22%;
+  height: 22%;
+  border-radius: 999px 0;
+  background: #55b963;
+  content: "";
+  transform: rotate(28deg);
+}
+
+.doro-orange:hover,
+.doro-orange:focus-visible {
+  outline: none;
+  filter: saturate(1.16) brightness(1.04);
+}
+
+.doro-pop-text {
+  position: absolute;
+  top: -14px;
+  z-index: 3;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffe18b 0%, #ff9a23 45%, #ff5c00 100%);
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 8px 18px rgba(255, 117, 24, 0.22);
+  animation: orange-float 900ms ease-out forwards;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(14px);
@@ -595,6 +708,12 @@ h2.module-title {
 
   .toc-link {
     min-height: 50px;
+  }
+
+  .doro-widget {
+    top: 96px;
+    right: 16px;
+    width: 118px;
   }
 }
 
@@ -670,6 +789,50 @@ h2.module-title {
     bottom: 10px;
     width: 50px;
     height: 50px;
+  }
+
+  .doro-widget {
+    top: 86px;
+    right: 8px;
+    width: 96px;
+  }
+}
+
+@keyframes doro-run {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-1deg);
+  }
+
+  50% {
+    transform: translate3d(0, -8px, 0) rotate(1deg);
+  }
+}
+
+@keyframes doro-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  45% {
+    transform: translateY(-12px) scale(1.05);
+  }
+}
+
+@keyframes orange-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.82);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -58px) scale(1.18);
   }
 }
 

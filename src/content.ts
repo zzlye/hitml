@@ -24,7 +24,9 @@ export type TutorialModule = {
 
 export const introModule = {
   id: "intro",
-  title: "gpt-image-2+nano-banana-2+nano-banana-pro"
+  title: "gpt-image-2+nano-banana-2+nano-banana-pro",
+  actionLabel: "在线使用",
+  actionUrl: "https://zzlye.xyz:90"
 };
 
 export const supportModule = {

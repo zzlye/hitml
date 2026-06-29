@@ -3,6 +3,8 @@ import "./styles.css";
 import { introModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
+const DORO_TARGET_URL = "https://zzlye.xyz:90";
+const DORO_CLICK_LIMIT = 10;
 
 if (!app) {
   throw new Error("未找到页面挂载节点");
@@ -74,9 +76,110 @@ const renderIntroModule = () => {
   section.id = introModule.id;
 
   const card = createElement("article", "module-card module-card--intro");
-  card.append(createElement("h1", "intro-title", introModule.title));
+  const action = createElement("a", "intro-action", introModule.actionLabel) as HTMLAnchorElement;
+  action.href = introModule.actionUrl;
+  action.target = "_blank";
+  action.rel = "noreferrer";
+
+  card.append(createElement("h1", "intro-title", introModule.title), action);
   section.append(card);
   return section;
+};
+
+const createFloatText = (container: HTMLElement) => {
+  // 点击橘子时生成一次往上飘的提示文字。
+  const text = createElement("span", "doro-pop-text", "orange");
+  text.style.left = `${52 + Math.random() * 18}%`;
+  container.append(text);
+  window.setTimeout(() => text.remove(), 920);
+};
+
+const setupDoro = () => {
+  const doro = document.querySelector<HTMLDivElement>(".doro-widget");
+  const orange = doro?.querySelector<HTMLButtonElement>(".doro-orange");
+  if (!doro || !orange) return;
+
+  // doro 既能拖动定位，也能通过橘子点击触发跳动和累计跳转。
+  let clickCount = 0;
+  let isDragging = false;
+  let hasMoved = false;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+  let startTop = 0;
+
+  const clampPosition = (left: number, top: number) => {
+    const rect = doro.getBoundingClientRect();
+    return {
+      left: Math.min(Math.max(8, left), window.innerWidth - rect.width - 8),
+      top: Math.min(Math.max(8, top), window.innerHeight - rect.height - 8)
+    };
+  };
+
+  const moveDoro = (left: number, top: number) => {
+    const next = clampPosition(left, top);
+    doro.style.left = `${next.left}px`;
+    doro.style.top = `${next.top}px`;
+    doro.style.right = "auto";
+    doro.style.bottom = "auto";
+  };
+
+  doro.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    const rect = doro.getBoundingClientRect();
+    isDragging = true;
+    hasMoved = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
+    doro.classList.add("is-dragging");
+    doro.setPointerCapture(event.pointerId);
+  });
+
+  doro.addEventListener("pointermove", (event) => {
+    if (!isDragging) return;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 5) hasMoved = true;
+    moveDoro(startLeft + deltaX, startTop + deltaY);
+  });
+
+  const stopDragging = (event: PointerEvent) => {
+    if (!isDragging) return;
+    isDragging = false;
+    doro.classList.remove("is-dragging");
+    if (doro.hasPointerCapture(event.pointerId)) {
+      doro.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  doro.addEventListener("pointerup", stopDragging);
+  doro.addEventListener("pointercancel", stopDragging);
+
+  orange.addEventListener("click", (event) => {
+    if (hasMoved) return;
+    event.stopPropagation();
+    clickCount += 1;
+    doro.classList.remove("is-bouncing");
+    void doro.offsetWidth;
+    doro.classList.add("is-bouncing");
+    createFloatText(doro);
+
+    if (clickCount >= DORO_CLICK_LIMIT) {
+      window.location.href = DORO_TARGET_URL;
+    }
+  });
+};
+
+const renderDoroWidget = () => {
+  const widget = createElement("div", "doro-widget");
+  widget.setAttribute("aria-label", "可拖动 doro");
+  widget.innerHTML = `
+    <button class="doro-orange" type="button" aria-label="点击橘子"></button>
+    <img class="doro-image" src="/images/doro-1.png" alt="doro" width="240" height="135" draggable="false" />
+  `;
+  return widget;
 };
 
 const renderContactCard = (item: ContactItem) => {
@@ -215,7 +318,7 @@ const renderTutorialModule = (moduleData: TutorialModule) => {
 const renderApp = () => {
   const shell = createElement("main", "page-shell");
   shell.append(renderIntroModule(), renderSupportModule(), ...tutorialModules.map(renderTutorialModule));
-  app.replaceChildren(renderDirectory(), shell, renderTopButton());
+  app.replaceChildren(renderDirectory(), shell, renderTopButton(), renderDoroWidget());
 };
 
 const setupReveal = () => {
@@ -243,6 +346,7 @@ const setupReveal = () => {
 
 renderApp();
 setupReveal();
+setupDoro();
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeQrPreview();
