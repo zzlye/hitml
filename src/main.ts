@@ -97,11 +97,10 @@ const setupDoro = () => {
   // doro 会在视口内自动移动；拖动后会从新位置继续跑。
   let clickCount = 0;
   let isDragging = false;
-  let hasMoved = false;
-  let left = window.innerWidth - doro.offsetWidth - 42;
-  let top = 128;
-  let velocityX = 0.62;
-  let velocityY = 0.38;
+  let left = window.innerWidth - doro.offsetWidth - 18;
+  let top = 18;
+  let velocityX = -0.025;
+  let velocityY = 0.018;
   let lastTime = performance.now();
   let startX = 0;
   let startY = 0;
@@ -154,11 +153,10 @@ const setupDoro = () => {
   moveDoro(left, top);
   window.requestAnimationFrame(tick);
 
-  doro.addEventListener("pointerdown", (event) => {
+  const startDrag = (event: PointerEvent) => {
     if (event.button !== 0) return;
     const rect = doro.getBoundingClientRect();
     isDragging = true;
-    hasMoved = false;
     startX = event.clientX;
     startY = event.clientY;
     startLeft = rect.left;
@@ -167,13 +165,17 @@ const setupDoro = () => {
     top = rect.top;
     doro.classList.add("is-dragging");
     doro.setPointerCapture(event.pointerId);
+  };
+
+  doro.addEventListener("pointerdown", (event) => {
+    if ((event.target as HTMLElement).closest(".doro-orange")) return;
+    startDrag(event);
   });
 
   doro.addEventListener("pointermove", (event) => {
     if (!isDragging) return;
     const deltaX = event.clientX - startX;
     const deltaY = event.clientY - startY;
-    if (Math.abs(deltaX) + Math.abs(deltaY) > 5) hasMoved = true;
     moveDoro(startLeft + deltaX, startTop + deltaY);
   });
 
@@ -189,8 +191,11 @@ const setupDoro = () => {
   doro.addEventListener("pointerup", stopDragging);
   doro.addEventListener("pointercancel", stopDragging);
 
+  orange.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
+  });
+
   orange.addEventListener("click", (event) => {
-    if (hasMoved) return;
     event.stopPropagation();
     clickCount += 1;
     doro.classList.remove("is-bouncing");
@@ -279,25 +284,21 @@ const openQrPreview = (item: ContactItem) => {
   overlay.setAttribute("aria-label", `放大查看${item.title}二维码`);
 
   const panel = createElement("div", "qr-preview-panel");
-  const closeButton = createElement("button", "qr-preview-close", "关闭") as HTMLButtonElement;
-  closeButton.type = "button";
-  closeButton.addEventListener("click", closeQrPreview);
-
-  const title = createElement("h3", "qr-preview-title", item.title);
   const image = document.createElement("img");
   image.src = item.image;
   image.alt = item.alt;
   image.width = 720;
   image.height = 720;
 
-  panel.append(closeButton, title, image);
+  panel.append(image);
   overlay.append(panel);
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) closeQrPreview();
   });
 
   document.body.append(overlay);
-  closeButton.focus();
+  panel.tabIndex = -1;
+  panel.focus();
 };
 
 const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]) => {
