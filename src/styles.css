@@ -69,11 +69,16 @@ main,
 section,
 article,
 div,
+button,
 p,
 h1,
 h2,
 h3 {
   margin-top: 0;
+}
+
+button {
+  font: inherit;
 }
 
 #app {
@@ -119,11 +124,7 @@ body::after {
 }
 
 .module-card--intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, 0.75fr);
-  gap: 18px;
-  align-items: center;
-  min-height: 210px;
+  min-height: 124px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 250, 253, 0.7)),
     linear-gradient(180deg, rgba(123, 99, 255, 0.08), rgba(95, 184, 255, 0.08));
@@ -206,49 +207,6 @@ h2.module-title {
   fill: currentColor;
 }
 
-.intro-visual {
-  position: relative;
-  min-height: 220px;
-  justify-self: end;
-  width: min(100%, 300px);
-}
-
-.intro-layer {
-  position: absolute;
-  inset: 18px 10px 10px 18px;
-  border: 1px solid rgba(123, 99, 255, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 16px 34px rgba(61, 52, 82, 0.1);
-}
-
-.intro-layer-back {
-  background: linear-gradient(180deg, rgba(95, 184, 255, 0.18), rgba(255, 255, 255, 0.68));
-  transform: translate(14px, 12px) rotate(4deg);
-}
-
-.intro-layer-front {
-  background: linear-gradient(180deg, rgba(255, 119, 176, 0.14), rgba(255, 255, 255, 0.72));
-  transform: translate(6px, 4px) rotate(-3deg);
-}
-
-.intro-art {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.84);
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(235, 243, 255, 0.86));
-  box-shadow: 0 24px 46px rgba(61, 52, 82, 0.12);
-}
-
-.intro-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 8px 6px 2px;
-  filter: drop-shadow(0 18px 24px rgba(61, 52, 82, 0.12));
-}
-
 .support-grid,
 .tutorial-grid {
   display: grid;
@@ -256,15 +214,18 @@ h2.module-title {
 }
 
 .support-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 14px;
+  grid-template-columns: repeat(2, minmax(150px, 210px));
+  justify-content: center;
+  align-items: start;
+  margin-top: 18px;
 }
 
 .support-card {
   display: grid;
-  gap: 12px;
+  justify-items: center;
+  gap: 10px;
   min-width: 0;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid rgba(55, 42, 72, 0.1);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
@@ -272,44 +233,91 @@ h2.module-title {
 }
 
 .support-media {
+  display: grid;
+  place-items: center;
   overflow: hidden;
+  width: 164px;
+  max-width: 100%;
   border: 1px solid rgba(55, 42, 72, 0.08);
   border-radius: 8px;
   background: #fff;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(61, 52, 82, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.support-media:hover,
+.support-media:focus-visible {
+  border-color: rgba(123, 99, 255, 0.32);
+  box-shadow: 0 16px 34px rgba(61, 52, 82, 0.14);
+  outline: none;
+  transform: translateY(-2px);
 }
 
 .support-media img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 10px;
+  padding: 8px;
 }
 
 .support-body {
   min-width: 0;
+  text-align: center;
 }
 
 .support-card-title {
-  margin-bottom: 8px;
-  font-size: 20px;
+  margin-bottom: 0;
+  font-size: 16px;
   line-height: 1.16;
 }
 
-.support-card-description {
-  margin-bottom: 10px;
+.module-card--support .module-header {
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.support-hint {
+.module-card--support .module-title {
+  font-size: clamp(26px, 3.3vw, 38px);
+}
+
+.support-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.support-service,
+.support-link {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 5px 9px;
+  min-height: 34px;
+  padding: 7px 11px;
   border-radius: 999px;
   background: rgba(123, 99, 255, 0.08);
   color: #5b48cc;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
+}
+
+.support-link {
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 4px;
+  border: 1px solid rgba(123, 99, 255, 0.16);
+  background: linear-gradient(135deg, rgba(123, 99, 255, 0.12), rgba(95, 184, 255, 0.14));
+  box-shadow: 0 10px 22px rgba(61, 52, 82, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.support-link:hover,
+.support-link:focus-visible {
+  border-color: rgba(123, 99, 255, 0.3);
+  box-shadow: 0 14px 28px rgba(61, 52, 82, 0.12);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .tutorial-grid--visual {
@@ -485,6 +493,64 @@ h2.module-title {
   height: 20px;
 }
 
+.qr-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(35, 32, 44, 0.48);
+  backdrop-filter: blur(10px);
+}
+
+.qr-preview-panel {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  width: min(480px, 100%);
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 80px rgba(35, 32, 44, 0.28);
+}
+
+.qr-preview-title {
+  margin: 0;
+  padding-right: 72px;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.qr-preview-panel img {
+  width: 100%;
+  border: 1px solid rgba(55, 42, 72, 0.08);
+  border-radius: 8px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.qr-preview-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid rgba(55, 42, 72, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.qr-preview-close:hover,
+.qr-preview-close:focus-visible {
+  border-color: rgba(123, 99, 255, 0.28);
+  outline: none;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(14px);
@@ -503,21 +569,14 @@ h2.module-title {
     padding: 10px;
   }
 
-  .module-card--intro,
-  .support-grid,
   .tutorial-grid--visual,
   .tutorial-grid--notes,
   .tutorial-card--notes {
     grid-template-columns: 1fr;
   }
 
-  .intro-visual {
-    width: min(100%, 280px);
-    justify-self: start;
-  }
-
   .support-card-title {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .module-card {
@@ -572,7 +631,17 @@ h2.module-title {
   }
 
   .support-media {
-    aspect-ratio: 1 / 1.15;
+    width: 120px;
+    aspect-ratio: 1;
+  }
+
+  .support-services {
+    display: grid;
+  }
+
+  .support-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .toc {

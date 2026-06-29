@@ -1,8 +1,9 @@
 export type ContactItem = {
   title: string;
-  description: string;
   image: string;
-  hint: string;
+  alt: string;
+  actionLabel?: string;
+  actionUrl?: string;
 };
 
 export type TutorialCard = {
@@ -28,20 +29,21 @@ export const introModule = {
 
 export const supportModule = {
   id: "support",
-  title: "售后",
-  description: "扫码加入售后群聊，或添加售后客服处理问题。",
+  title: "售后 & 进群",
+  description: "扫码添加微信或加群",
+  services: ["售后咨询", "续费服务", "加入用户群"],
   contacts: [
     {
-      title: "售后群聊",
-      description: "扫码加入群聊，查看公告、统一答疑和后续通知。",
-      image: "/images/contact-group.jpg",
-      hint: "群聊优先"
+      title: "微信客服",
+      image: "/images/contact-wechat.jpg",
+      alt: "微信客服二维码"
     },
     {
-      title: "售后客服",
-      description: "扫码添加客服微信，适合一对一沟通和补充问题。",
-      image: "/images/contact-wechat.jpg",
-      hint: "单独联系"
+      title: "用户群",
+      image: "/images/contact-group.jpg",
+      alt: "用户群二维码",
+      actionLabel: "点击链接加入群聊【文运工坊】",
+      actionUrl: "https://qm.qq.com/q/ugpXlSuJXO"
     }
   ] satisfies ContactItem[]
 };

@@ -74,40 +74,38 @@ const renderIntroModule = () => {
   section.id = introModule.id;
 
   const card = createElement("article", "module-card module-card--intro");
-  const copy = createElement("div", "intro-copy");
-  copy.append(createElement("h1", "intro-title", introModule.title));
-
-  const visual = createElement("div", "intro-visual");
-  visual.setAttribute("aria-hidden", "true");
-  visual.innerHTML = `
-    <span class="intro-layer intro-layer-back"></span>
-    <span class="intro-layer intro-layer-front"></span>
-    <div class="intro-art">
-      <img src="/images/mascot.webp" alt="" width="720" height="405" />
-    </div>
-  `;
-
-  card.append(copy, visual);
+  card.append(createElement("h1", "intro-title", introModule.title));
   section.append(card);
   return section;
 };
 
 const renderContactCard = (item: ContactItem) => {
   const card = createElement("article", "support-card reveal");
-  const media = createElement("div", "support-media");
+  const media = createElement("button", "support-media") as HTMLButtonElement;
+  media.type = "button";
+  media.setAttribute("aria-label", `放大查看${item.title}二维码`);
+
   const image = document.createElement("img");
   image.src = item.image;
-  image.alt = `${item.title}二维码`;
+  image.alt = item.alt;
   image.loading = "lazy";
-  image.width = 360;
-  image.height = 480;
+  image.width = 240;
+  image.height = 240;
   media.append(image);
+  media.addEventListener("click", () => openQrPreview(item));
 
   const body = createElement("div", "support-body");
   const title = createElement("h3", "support-card-title", item.title);
-  const description = createElement("p", "support-card-description", item.description);
-  const hint = createElement("p", "support-hint", item.hint);
-  body.append(title, description, hint);
+  body.append(title);
+
+  if (item.actionLabel && item.actionUrl) {
+    const link = createElement("a", "support-link", item.actionLabel) as HTMLAnchorElement;
+    link.href = item.actionUrl;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    body.append(link);
+  }
+
   card.append(media, body);
   return card;
 };
@@ -120,12 +118,50 @@ const renderSupportModule = () => {
   const grid = createElement("div", "support-grid");
   supportModule.contacts.forEach((item) => grid.append(renderContactCard(item)));
 
+  const serviceList = createElement("div", "support-services");
+  supportModule.services.forEach((item) => serviceList.append(createElement("span", "support-service", item)));
+
   card.append(
     renderModuleHeader(supportModule.title, supportModule.description),
+    serviceList,
     grid
   );
   section.append(card);
   return section;
+};
+
+const closeQrPreview = () => {
+  document.querySelector(".qr-preview")?.remove();
+};
+
+const openQrPreview = (item: ContactItem) => {
+  closeQrPreview();
+
+  const overlay = createElement("div", "qr-preview") as HTMLDivElement;
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", `放大查看${item.title}二维码`);
+
+  const panel = createElement("div", "qr-preview-panel");
+  const closeButton = createElement("button", "qr-preview-close", "关闭") as HTMLButtonElement;
+  closeButton.type = "button";
+  closeButton.addEventListener("click", closeQrPreview);
+
+  const title = createElement("h3", "qr-preview-title", item.title);
+  const image = document.createElement("img");
+  image.src = item.image;
+  image.alt = item.alt;
+  image.width = 720;
+  image.height = 720;
+
+  panel.append(closeButton, title, image);
+  overlay.append(panel);
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) closeQrPreview();
+  });
+
+  document.body.append(overlay);
+  closeButton.focus();
 };
 
 const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]) => {
@@ -207,3 +243,7 @@ const setupReveal = () => {
 
 renderApp();
 setupReveal();
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeQrPreview();
+});
