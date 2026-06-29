@@ -53,23 +53,30 @@ export const supportModule = {
 export const tutorialModules: TutorialModule[] = [
   {
     id: "tutorial-visual",
-    title: "教程一 · 图文流程",
-    description: "按下面步骤完成基础操作。",
+    title: "在线使用",
+    description: "按下面步骤完成在线使用配置。",
     tone: "visual",
     cards: [
       {
         tag: "步骤 01",
-        title: "先确认入口",
-        description: "先找到售后入口，再继续往下查看教程。",
+        title: "打开在线使用页面",
+        description: "复制 key 后打开在线使用地址，点击右上角的设置。",
         image: "/images/tutorial-step-1.svg",
-        notes: ["先保存二维码", "需要时优先联系群聊"]
+        notes: ["地址：https://zzlye.xyz:90", "先复制好 key 再进入设置"]
       },
       {
         tag: "步骤 02",
-        title: "准备需要的信息",
-        description: "把账号、订单或截图先整理好，排查会更快。",
+        title: "填写 API key",
+        description: "将得到的 key 填写在文运站的 API key 内，填写完成后关闭即可使用。",
         image: "/images/tutorial-step-2.svg",
-        notes: ["截图尽量完整", "不要漏掉关键提示"]
+        notes: ["填写完成后关闭设置窗口", "关闭后即可开始在线使用"]
+      },
+      {
+        tag: "步骤 03",
+        title: "切换画布工坊",
+        description: "如需使用画布，点击左上角画布工坊切换即可。",
+        image: "/images/tutorial-step-3.svg",
+        notes: ["需要画布时再切换", "不使用画布可保持当前页面"]
       }
     ]
   },

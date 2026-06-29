@@ -52,7 +52,7 @@ const renderDirectory = () => {
     createElement("p", "toc-label", "目录"),
     createNavLink("#intro", "跳转到标题区域", "1. 标题"),
     createNavLink("#support", "跳转到售后区域", "2. 售后进群"),
-    createNavLink("#tutorial-visual", "跳转到教程一区域", "3. 教程一"),
+    createNavLink("#tutorial-visual", "跳转到在线使用区域", "3. 在线使用"),
     createNavLink("#tutorial-notes", "跳转到教程二区域", "4. 教程二")
   );
   return aside;
@@ -214,7 +214,7 @@ const renderDoroWidget = () => {
   widget.setAttribute("aria-label", "可拖动 doro");
   widget.innerHTML = `
     <button class="doro-orange" type="button" aria-label="点击橘子"></button>
-    <img class="doro-image" src="/images/doro-1.png" alt="doro" width="240" height="135" draggable="false" />
+    <img class="doro-image" src="/images/doro-1.png" alt="doro" width="720" height="405" draggable="false" />
   `;
   return widget;
 };
