@@ -82,21 +82,21 @@ const renderIntroModule = () => {
 };
 
 const createFloatText = (container: HTMLElement) => {
-  // 点击橘子时生成一次往上飘的提示文字。
+  // 点击 doro 时生成一次往上飘的提示文字。
   const text = createElement("span", "doro-pop-text", "orange");
   text.style.left = `${47 + Math.random() * 10}%`;
   container.append(text);
-  window.setTimeout(() => text.remove(), 920);
+  window.setTimeout(() => text.remove(), 1120);
 };
 
 const setupDoro = () => {
   const doro = document.querySelector<HTMLDivElement>(".doro-widget");
-  const orange = doro?.querySelector<HTMLButtonElement>(".doro-orange");
-  if (!doro || !orange) return;
+  if (!doro) return;
 
   // doro 会在视口内自动移动；拖动后会从新位置继续跑。
   let clickCount = 0;
   let isDragging = false;
+  let hasDragged = false;
   let left = window.innerWidth - doro.offsetWidth - 18;
   let top = 18;
   let velocityX = -0.025;
@@ -157,6 +157,7 @@ const setupDoro = () => {
     if (event.button !== 0) return;
     const rect = doro.getBoundingClientRect();
     isDragging = true;
+    hasDragged = false;
     startX = event.clientX;
     startY = event.clientY;
     startLeft = rect.left;
@@ -168,7 +169,6 @@ const setupDoro = () => {
   };
 
   doro.addEventListener("pointerdown", (event) => {
-    if ((event.target as HTMLElement).closest(".doro-orange")) return;
     startDrag(event);
   });
 
@@ -176,6 +176,7 @@ const setupDoro = () => {
     if (!isDragging) return;
     const deltaX = event.clientX - startX;
     const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 6) hasDragged = true;
     moveDoro(startLeft + deltaX, startTop + deltaY);
   });
 
@@ -186,35 +187,30 @@ const setupDoro = () => {
     if (doro.hasPointerCapture(event.pointerId)) {
       doro.releasePointerCapture(event.pointerId);
     }
+
+    if (!hasDragged) {
+      clickCount += 1;
+      doro.classList.remove("is-bouncing");
+      void doro.offsetWidth;
+      doro.classList.add("is-bouncing");
+      createFloatText(doro);
+
+      if (clickCount >= DORO_CLICK_LIMIT) {
+        window.location.href = DORO_TARGET_URL;
+      }
+    }
   };
 
   doro.addEventListener("pointerup", stopDragging);
   doro.addEventListener("pointercancel", stopDragging);
-
-  orange.addEventListener("pointerdown", (event) => {
-    event.stopPropagation();
-  });
-
-  orange.addEventListener("click", (event) => {
-    event.stopPropagation();
-    clickCount += 1;
-    doro.classList.remove("is-bouncing");
-    void doro.offsetWidth;
-    doro.classList.add("is-bouncing");
-    createFloatText(doro);
-
-    if (clickCount >= DORO_CLICK_LIMIT) {
-      window.location.href = DORO_TARGET_URL;
-    }
-  });
 };
 
 const renderDoroWidget = () => {
   const widget = createElement("div", "doro-widget");
   widget.setAttribute("aria-label", "可拖动 doro");
   widget.innerHTML = `
-    <button class="doro-orange" type="button" aria-label="点击橘子"></button>
-    <img class="doro-image" src="/images/doro-1.png" alt="doro" width="720" height="405" draggable="false" />
+    <span class="doro-orange" aria-hidden="true"></span>
+    <img class="doro-image" src="/images/doro-2.png" alt="doro" width="2560" height="1440" draggable="false" />
   `;
   return widget;
 };
