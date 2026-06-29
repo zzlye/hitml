@@ -310,7 +310,7 @@ const openImagePreview = (imageSrc: string, imageAlt: string, label: string) => 
   panel.append(image);
   overlay.append(panel);
   overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) closeImagePreview();
+    if (event.target !== image) closeImagePreview();
   });
 
   document.body.append(overlay);

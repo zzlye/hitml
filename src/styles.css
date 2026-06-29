@@ -336,7 +336,7 @@ h2.module-title {
 .support-doro {
   position: absolute;
   top: -70px;
-  left: 18px;
+  left: -84px;
   z-index: 2;
   width: clamp(168px, 24vw, 250px);
   height: auto;
@@ -344,7 +344,7 @@ h2.module-title {
   object-position: left center;
   pointer-events: none;
   filter: drop-shadow(0 10px 12px rgba(61, 52, 82, 0.16));
-  transform: scaleX(-1);
+  transform: translateX(-48px) scaleX(-1);
   transform-origin: center bottom;
 }
 
@@ -781,8 +781,9 @@ h2.module-title {
 
   .support-doro {
     top: -62px;
-    left: 12px;
+    left: -76px;
     width: clamp(148px, 28vw, 210px);
+    transform: translateX(-54px) scaleX(-1);
   }
 
   .toc {
@@ -850,8 +851,9 @@ h2.module-title {
 
   .support-doro {
     top: -48px;
-    left: 10px;
+    left: -46px;
     width: 136px;
+    transform: translateX(-26px) scaleX(-1);
   }
 
   .support-media {
