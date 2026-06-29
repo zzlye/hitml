@@ -45,6 +45,40 @@ const renderModuleHeader = (kicker: string, title: string, description: string) 
   return header;
 };
 
+const createNavLink = (href: string, label: string, shortLabel: string) => {
+  const link = createElement("a", "toc-link") as HTMLAnchorElement;
+  link.href = href;
+  link.setAttribute("aria-label", label);
+
+  const mark = createElement("span", "toc-mark");
+  const text = createElement("span", "toc-text");
+  text.textContent = shortLabel;
+
+  link.append(mark, text);
+  return link;
+};
+
+const renderDirectory = () => {
+  const aside = createElement("aside", "toc reveal");
+  aside.setAttribute("aria-label", "页面目录");
+  aside.append(
+    createElement("p", "toc-label", "目录"),
+    createNavLink("#intro", "跳转到标题模块", "标题"),
+    createNavLink("#support", "跳转到售后模块", "售后"),
+    createNavLink("#tutorial-visual", "跳转到教程一模块", "教程一"),
+    createNavLink("#tutorial-notes", "跳转到教程二模块", "教程二")
+  );
+  return aside;
+};
+
+const renderTopButton = () => {
+  const anchor = createElement("a", "to-top") as HTMLAnchorElement;
+  anchor.href = "#intro";
+  anchor.setAttribute("aria-label", "返回顶部");
+  anchor.append(createIcon("spark"));
+  return anchor;
+};
+
 const renderIntroModule = () => {
   const section = createElement("section", "module module-intro reveal is-visible");
   section.id = introModule.id;
@@ -174,7 +208,7 @@ const renderTutorialModule = (moduleData: TutorialModule) => {
 const renderApp = () => {
   const shell = createElement("main", "page-shell");
   shell.append(renderIntroModule(), renderSupportModule(), ...tutorialModules.map(renderTutorialModule));
-  app.replaceChildren(shell);
+  app.replaceChildren(renderDirectory(), shell, renderTopButton());
 };
 
 renderApp();
