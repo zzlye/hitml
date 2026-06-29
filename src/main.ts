@@ -206,7 +206,8 @@ const setupDoro = () => {
       createFloatText(doro);
 
       if (clickCount >= DORO_CLICK_LIMIT) {
-        window.location.href = DORO_TARGET_URL;
+        window.open(DORO_TARGET_URL, "_blank", "noopener,noreferrer");
+        clickCount = 0;
       }
     }
   };
@@ -242,6 +243,10 @@ const renderContactCard = (item: ContactItem) => {
   image.height = 240;
   media.append(image, hint);
   media.addEventListener("click", () => openQrPreview(item));
+  media.addEventListener("pointerenter", () => media.classList.add("is-previewing"));
+  media.addEventListener("pointerleave", () => media.classList.remove("is-previewing"));
+  media.addEventListener("focus", () => media.classList.add("is-previewing"));
+  media.addEventListener("blur", () => media.classList.remove("is-previewing"));
 
   const body = createElement("div", "support-body");
   const title = createElement("h3", "support-card-title", item.title);
@@ -310,7 +315,7 @@ const openImagePreview = (imageSrc: string, imageAlt: string, label: string) => 
   panel.append(image);
   overlay.append(panel);
   overlay.addEventListener("click", (event) => {
-    if (event.target !== image) closeImagePreview();
+    if (event.target === overlay || event.target === panel) closeImagePreview();
   });
 
   document.body.append(overlay);
