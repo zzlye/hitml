@@ -47,9 +47,9 @@ export const supportModule = {
       alt: "微信客服二维码"
     },
     {
-      title: "用户群",
+      title: "售后交流群",
       image: "/images/contact-group.jpg",
-      alt: "用户群二维码",
+      alt: "售后交流群二维码",
       actionLabel: "点击链接加入群聊【文运工坊】",
       actionUrl: "https://qm.qq.com/q/ugpXlSuJXO"
     }
