@@ -15,27 +15,21 @@ export type TutorialCard = {
 
 export type TutorialModule = {
   id: string;
-  kicker: string;
   title: string;
   description: string;
   tone: "visual" | "notes";
   cards: TutorialCard[];
-  footer: string;
 };
 
 export const introModule = {
   id: "intro",
-  kicker: "模块 01",
-  title: "gpt-image-2+nano-banana-2+nano-banana-pro",
-  description: "标题、售后和两类教程拆成四个模块，后续替换图片和文字会更顺手。",
-  caption: "首屏标题会比之前更小一点，页面风格保持模块化和轻量叠层感。"
+  title: "gpt-image-2+nano-banana-2+nano-banana-pro"
 };
 
 export const supportModule = {
   id: "support",
-  kicker: "模块 02",
   title: "售后",
-  description: "群聊和客服放在同一个模块里，扫码入口和补充说明集中展示。",
+  description: "扫码加入售后群聊，或添加售后客服处理问题。",
   contacts: [
     {
       title: "售后群聊",
@@ -49,16 +43,14 @@ export const supportModule = {
       image: "/images/contact-wechat.jpg",
       hint: "单独联系"
     }
-  ] satisfies ContactItem[],
-  footer: "后续可以把这里替换成售后规则、答疑提醒或优惠说明。"
+  ] satisfies ContactItem[]
 };
 
 export const tutorialModules: TutorialModule[] = [
   {
     id: "tutorial-visual",
-    kicker: "模块 03",
     title: "教程一 · 图文流程",
-    description: "适合写步骤、截图和顺序操作。",
+    description: "按下面步骤完成基础操作。",
     tone: "visual",
     cards: [
       {
@@ -75,14 +67,12 @@ export const tutorialModules: TutorialModule[] = [
         image: "/images/tutorial-step-2.svg",
         notes: ["截图尽量完整", "不要漏掉关键提示"]
       }
-    ],
-    footer: "这一块适合放需要照着点的内容，尽量保持顺序清楚。"
+    ]
   },
   {
     id: "tutorial-notes",
-    kicker: "模块 04",
     title: "教程二 · 补充说明",
-    description: "适合写注意事项、FAQ 和纯文字提示。",
+    description: "这里整理常见注意事项和补充说明。",
     tone: "notes",
     cards: [
       {
@@ -97,7 +87,6 @@ export const tutorialModules: TutorialModule[] = [
         description: "把最容易被问到的内容写在这里。",
         notes: ["二维码识别失败", "不知道从哪一步开始", "要联系哪一个入口"]
       }
-    ],
-    footer: "这一块可以换成 FAQ、补充规则、文字说明或其他类型的内容。"
+    ]
   }
 ];

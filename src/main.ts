@@ -19,29 +19,19 @@ const createElement = <K extends keyof HTMLElementTagNameMap>(
   return element;
 };
 
-const createIcon = (name: "spark" | "chat" | "book" | "note") => {
+const createIcon = (name: "note" | "arrowUp") => {
   const icons = {
-    spark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z"/><path d="M19 15l.8 2.7L22 18.5l-2.2.8L19 22l-.8-2.7-2.2-.8 2.2-.8L19 15z"/></svg>',
-    chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.8A4.8 4.8 0 0 1 9.8 2h4.4A4.8 4.8 0 0 1 19 6.8v2.4a4.8 4.8 0 0 1-4.8 4.8H12l-4.4 3.3A1 1 0 0 1 6 16.5V14h-.2A4.8 4.8 0 0 1 1 9.2V6.8z"/><path d="M18 8.5A4 4 0 0 1 22 12.5v1.7a4 4 0 0 1-4 4h-.1v1.5a.9.9 0 0 1-1.4.7l-3-2.2h-1.7a4 4 0 0 1-3.9-3.2"/></svg>',
-    book: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H21v16H7.5A2.5 2.5 0 0 0 5 20.5v-16z"/><path d="M5 20.5A2.5 2.5 0 0 0 7.5 23H21v-5H7.5A2.5 2.5 0 0 0 5 20.5z"/><path d="M9 6h8M9 10h6"/></svg>',
-    note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M15 3.5V8h4"/><path d="M8.5 11.5h7M8.5 15h5"/></svg>'
+    note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M15 3.5V8h4"/><path d="M8.5 11.5h7M8.5 15h5"/></svg>',
+    arrowUp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 5 11h4v9h6v-9h4L12 4z"/></svg>'
   };
   const span = createElement("span", "icon");
   span.innerHTML = icons[name];
   return span;
 };
 
-const renderChip = (icon: "spark" | "chat" | "book" | "note", text: string) => {
-  const chip = createElement("span", "chip");
-  chip.append(createIcon(icon), document.createTextNode(text));
-  return chip;
-};
-
-const renderModuleHeader = (kicker: string, title: string, description: string) => {
+const renderModuleHeader = (title: string, description: string) => {
   const header = createElement("div", "module-header reveal");
-  const kickerNode = createElement("p", "module-kicker");
-  kickerNode.append(createIcon("spark"), document.createTextNode(kicker));
-  header.append(kickerNode, createElement("h2", "module-title", title), createElement("p", "module-description", description));
+  header.append(createElement("h2", "module-title", title), createElement("p", "module-description", description));
   return header;
 };
 
@@ -59,14 +49,14 @@ const createNavLink = (href: string, label: string, shortLabel: string) => {
 };
 
 const renderDirectory = () => {
-  const aside = createElement("aside", "toc reveal");
+  const aside = createElement("aside", "toc");
   aside.setAttribute("aria-label", "页面目录");
   aside.append(
     createElement("p", "toc-label", "目录"),
-    createNavLink("#intro", "跳转到标题模块", "标题"),
-    createNavLink("#support", "跳转到售后模块", "售后"),
-    createNavLink("#tutorial-visual", "跳转到教程一模块", "教程一"),
-    createNavLink("#tutorial-notes", "跳转到教程二模块", "教程二")
+    createNavLink("#intro", "跳转到标题区域", "标题"),
+    createNavLink("#support", "跳转到售后区域", "售后"),
+    createNavLink("#tutorial-visual", "跳转到教程一区域", "教程一"),
+    createNavLink("#tutorial-notes", "跳转到教程二区域", "教程二")
   );
   return aside;
 };
@@ -75,7 +65,7 @@ const renderTopButton = () => {
   const anchor = createElement("a", "to-top") as HTMLAnchorElement;
   anchor.href = "#intro";
   anchor.setAttribute("aria-label", "返回顶部");
-  anchor.append(createIcon("spark"));
+  anchor.append(createIcon("arrowUp"));
   return anchor;
 };
 
@@ -85,19 +75,7 @@ const renderIntroModule = () => {
 
   const card = createElement("article", "module-card module-card--intro");
   const copy = createElement("div", "intro-copy");
-  const kicker = createElement("p", "module-kicker");
-  kicker.append(createIcon("spark"), document.createTextNode(introModule.kicker));
-  copy.append(
-    kicker,
-    createElement("h1", "intro-title", introModule.title),
-    createElement("p", "intro-description", introModule.description),
-    createElement("p", "intro-caption", introModule.caption),
-    (() => {
-      const chips = createElement("div", "intro-chips");
-      chips.append(renderChip("chat", "售后"), renderChip("book", "教程"), renderChip("note", "模块化"));
-      return chips;
-    })()
-  );
+  copy.append(createElement("h1", "intro-title", introModule.title));
 
   const visual = createElement("div", "intro-visual");
   visual.setAttribute("aria-hidden", "true");
@@ -142,13 +120,9 @@ const renderSupportModule = () => {
   const grid = createElement("div", "support-grid");
   supportModule.contacts.forEach((item) => grid.append(renderContactCard(item)));
 
-  const footer = createElement("div", "module-footer module-footer--green");
-  footer.textContent = supportModule.footer;
-
   card.append(
-    renderModuleHeader(supportModule.kicker, supportModule.title, supportModule.description),
-    grid,
-    footer
+    renderModuleHeader(supportModule.title, supportModule.description),
+    grid
   );
   section.append(card);
   return section;
@@ -197,10 +171,7 @@ const renderTutorialModule = (moduleData: TutorialModule) => {
   const grid = createElement("div", `tutorial-grid tutorial-grid--${moduleData.tone}`);
   moduleData.cards.forEach((item) => grid.append(renderTutorialCard(item, moduleData.tone)));
 
-  const footer = createElement("div", "module-footer");
-  footer.textContent = moduleData.footer;
-
-  card.append(renderModuleHeader(moduleData.kicker, moduleData.title, moduleData.description), grid, footer);
+  card.append(renderModuleHeader(moduleData.title, moduleData.description), grid);
   section.append(card);
   return section;
 };
@@ -211,4 +182,28 @@ const renderApp = () => {
   app.replaceChildren(renderDirectory(), shell, renderTopButton());
 };
 
+const setupReveal = () => {
+  // 滚动进入视口后再显示模块，静态环境下没有观察器时直接展示全部内容。
+  const revealItems = document.querySelectorAll<HTMLElement>(".reveal");
+  if (!("IntersectionObserver" in window)) {
+    revealItems.forEach((item) => item.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.16 }
+  );
+
+  revealItems.forEach((item) => observer.observe(item));
+};
+
 renderApp();
+setupReveal();
