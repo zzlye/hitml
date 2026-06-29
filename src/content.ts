@@ -61,21 +61,21 @@ export const tutorialModules: TutorialModule[] = [
         tag: "步骤 01",
         title: "打开在线使用页面",
         description: "复制 key 后打开在线使用地址，点击右上角的设置。",
-        image: "/images/tutorial-step-1.svg",
+        image: "/images/online-use/step-1.png",
         notes: ["地址：https://zzlye.xyz:90", "先复制好 key 再进入设置"]
       },
       {
         tag: "步骤 02",
         title: "填写 API key",
         description: "将得到的 key 填写在文运站的 API key 内，填写完成后关闭即可使用。",
-        image: "/images/tutorial-step-2.svg",
+        image: "/images/online-use/step-2.png",
         notes: ["填写完成后关闭设置窗口", "关闭后即可开始在线使用"]
       },
       {
         tag: "步骤 03",
         title: "切换画布工坊",
         description: "如需使用画布，点击左上角画布工坊切换即可。",
-        image: "/images/tutorial-step-3.svg",
+        image: "/images/online-use/step-3.png",
         notes: ["需要画布时再切换", "不使用画布可保持当前页面"]
       }
     ]

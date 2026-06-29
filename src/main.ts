@@ -4,7 +4,7 @@ import { introModule, supportModule, tutorialModules, type ContactItem, type Tut
 
 const app = document.querySelector<HTMLDivElement>("#app");
 const DORO_TARGET_URL = "https://zzlye.xyz:90";
-const DORO_CLICK_LIMIT = 10;
+const DORO_CLICK_LIMIT = 20;
 
 if (!app) {
   throw new Error("未找到页面挂载节点");
