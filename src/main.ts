@@ -5,6 +5,8 @@ import { introModule, supportModule, tutorialModules, type ContactItem, type Tut
 const app = document.querySelector<HTMLDivElement>("#app");
 const DORO_TARGET_URL = "https://zzlye.xyz:90";
 const DORO_CLICK_LIMIT = 20;
+const THEME_STORAGE_KEY = "hitml-theme";
+type ThemeMode = "light" | "dark";
 
 if (!app) {
   throw new Error("未找到页面挂载节点");
@@ -21,14 +23,32 @@ const createElement = <K extends keyof HTMLElementTagNameMap>(
   return element;
 };
 
-const createIcon = (name: "note" | "arrowUp") => {
+const createIcon = (name: "note" | "arrowUp" | "moon" | "sun") => {
   const icons = {
     note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h8l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M15 3.5V8h4"/><path d="M8.5 11.5h7M8.5 15h5"/></svg>',
-    arrowUp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 5 11h4v9h6v-9h4L12 4z"/></svg>'
+    arrowUp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 5 11h4v9h6v-9h4L12 4z"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 15.6A8.3 8.3 0 0 1 8.4 3.6 8.8 8.8 0 1 0 20.4 15.6z"/></svg>',
+    sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/><path d="M12 2v2.3M12 19.7V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.3M19.7 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>'
   };
   const span = createElement("span", "icon");
   span.innerHTML = icons[name];
   return span;
+};
+
+const getStoredTheme = (): ThemeMode => {
+  const theme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return theme === "dark" ? "dark" : "light";
+};
+
+const applyTheme = (theme: ThemeMode, toggle?: HTMLButtonElement) => {
+  // 用根节点属性切换主题，样式统一由 CSS 变量接管。
+  document.documentElement.dataset.theme = theme;
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+  if (!toggle) return;
+  toggle.replaceChildren(createIcon(theme === "dark" ? "sun" : "moon"));
+  toggle.setAttribute("aria-label", theme === "dark" ? "切换到日间模式" : "切换到夜间模式");
+  toggle.title = theme === "dark" ? "日间模式" : "夜间模式";
 };
 
 const renderModuleHeader = (title: string, description: string) => {
@@ -64,6 +84,17 @@ const renderTopButton = () => {
   anchor.setAttribute("aria-label", "返回顶部");
   anchor.append(createIcon("arrowUp"));
   return anchor;
+};
+
+const renderThemeToggle = () => {
+  const button = createElement("button", "theme-toggle") as HTMLButtonElement;
+  button.type = "button";
+  applyTheme(getStoredTheme(), button);
+  button.addEventListener("click", () => {
+    const nextTheme: ThemeMode = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    applyTheme(nextTheme, button);
+  });
+  return button;
 };
 
 const renderIntroModule = () => {
@@ -395,7 +426,7 @@ const renderTutorialModule = (moduleData: TutorialModule) => {
 const renderApp = () => {
   const shell = createElement("main", "page-shell");
   shell.append(renderIntroModule(), renderSupportModule(), ...tutorialModules.map(renderTutorialModule));
-  app.replaceChildren(renderDirectory(), shell, renderTopButton(), renderDoroWidget());
+  app.replaceChildren(renderThemeToggle(), renderDirectory(), shell, renderTopButton(), renderDoroWidget());
 };
 
 const setupReveal = () => {
