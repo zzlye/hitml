@@ -253,7 +253,7 @@ const renderDoroWidget = () => {
   widget.innerHTML = `
     <span class="doro-runner">
       <span class="doro-orange" aria-hidden="true"></span>
-      <img class="doro-image" src="/images/doro-2.png" alt="doro" width="2560" height="1440" draggable="false" />
+      <img class="doro-image" src="/images/doro-2.webp" alt="doro" width="512" height="288" decoding="async" draggable="false" />
     </span>
   `;
   return widget;
@@ -270,6 +270,7 @@ const renderContactCard = (item: ContactItem) => {
   image.src = item.image;
   image.alt = item.alt;
   image.loading = "lazy";
+  image.decoding = "async";
   image.width = 240;
   image.height = 240;
   media.append(image, hint);
@@ -302,10 +303,11 @@ const renderSupportModule = () => {
   const card = createElement("article", "module-card module-card--support");
   const mascot = document.createElement("img");
   mascot.className = "support-doro";
-  mascot.src = "/images/doro-3.png";
+  mascot.src = "/images/doro-3.webp";
   mascot.alt = "";
-  mascot.width = 1110;
-  mascot.height = 794;
+  mascot.width = 420;
+  mascot.height = 300;
+  mascot.decoding = "async";
   mascot.setAttribute("aria-hidden", "true");
 
   const grid = createElement("div", "support-grid");
@@ -340,6 +342,7 @@ const openImagePreview = (imageSrc: string, imageAlt: string, label: string) => 
   const image = document.createElement("img");
   image.src = imageSrc;
   image.alt = imageAlt;
+  image.decoding = "async";
   image.width = 720;
   image.height = 720;
 
@@ -384,6 +387,7 @@ const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]
     image.src = cardData.image;
     image.alt = cardData.title;
     image.loading = "lazy";
+    image.decoding = "async";
     image.width = 640;
     image.height = 400;
     media.append(image);
