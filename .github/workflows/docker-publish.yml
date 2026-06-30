@@ -36,6 +36,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=sha-e040882,enable={{is_default_branch}}
 
       - name: 构建并发布镜像
         uses: docker/build-push-action@v6
