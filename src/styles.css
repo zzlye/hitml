@@ -181,6 +181,7 @@ body::after {
 }
 
 .module-card--support,
+.module-card--model-list,
 .module-card--visual,
 .module-card--notes {
   background:
@@ -189,6 +190,7 @@ body::after {
 }
 
 :root[data-theme="dark"] .module-card--support,
+:root[data-theme="dark"] .module-card--model-list,
 :root[data-theme="dark"] .module-card--visual,
 :root[data-theme="dark"] .module-card--notes {
   background:
@@ -558,6 +560,33 @@ h2.module-title {
 }
 
 .tutorial-media img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.model-list-media {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(55, 42, 72, 0.1);
+  border-radius: 8px;
+  background: #17181d;
+  box-shadow: none;
+  color: inherit;
+  cursor: zoom-in;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.model-list-media:hover,
+.model-list-media:focus-visible {
+  border-color: rgba(123, 99, 255, 0.32);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.model-list-media img {
   width: 100%;
   height: auto;
   object-fit: contain;

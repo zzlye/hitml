@@ -28,6 +28,13 @@ export type TutorialModule = {
   cards: TutorialCard[];
 };
 
+export type ImageModule = {
+  id: string;
+  title: string;
+  image: string;
+  alt: string;
+};
+
 export const introModule = {
   id: "intro",
   title: "gpt-image-2+nano-banana-2+nano-banana-pro",
@@ -55,6 +62,13 @@ export const supportModule = {
     }
   ] satisfies ContactItem[]
 };
+
+export const modelListModule = {
+  id: "model-list",
+  title: "模型列表",
+  image: "/images/model-list.webp",
+  alt: "文运站模型列表"
+} satisfies ImageModule;
 
 export const tutorialModules: TutorialModule[] = [
   {

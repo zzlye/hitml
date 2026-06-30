@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { introModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
+import { introModule, modelListModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 const DORO_TARGET_URL = "https://zzlye.xyz:90";
@@ -72,8 +72,9 @@ const renderDirectory = () => {
     createElement("p", "toc-label", "目录"),
     createNavLink("#intro", "跳转到标题区域", "1. 标题"),
     createNavLink("#support", "跳转到售后区域", "2. 售后进群"),
-    createNavLink("#tutorial-visual", "跳转到在线使用区域", "3. 在线使用"),
-    createNavLink("#tutorial-notes", "跳转到外部接入区域", "4. 外部接入")
+    createNavLink("#model-list", "跳转到模型列表区域", "3. 模型列表"),
+    createNavLink("#tutorial-visual", "跳转到在线使用区域", "4. 在线使用"),
+    createNavLink("#tutorial-notes", "跳转到外部接入区域", "5. 外部接入")
   );
   return aside;
 };
@@ -326,6 +327,33 @@ const renderSupportModule = () => {
   return section;
 };
 
+const renderModelListModule = () => {
+  const section = createElement("section", "module reveal");
+  section.id = modelListModule.id;
+
+  const card = createElement("article", "module-card module-card--model-list");
+  const header = createElement("div", "module-header reveal");
+  header.append(createElement("h2", "module-title", modelListModule.title));
+
+  const media = createElement("button", "model-list-media") as HTMLButtonElement;
+  media.type = "button";
+  media.setAttribute("aria-label", "放大查看模型列表");
+
+  const image = document.createElement("img");
+  image.src = modelListModule.image;
+  image.alt = modelListModule.alt;
+  image.loading = "lazy";
+  image.decoding = "async";
+  image.width = 728;
+  image.height = 372;
+  media.append(image);
+  media.addEventListener("click", () => openImagePreview(modelListModule.image, modelListModule.alt, "放大查看模型列表"));
+
+  card.append(header, media);
+  section.append(card);
+  return section;
+};
+
 const closeImagePreview = () => {
   document.querySelector(".image-preview")?.remove();
 };
@@ -429,7 +457,7 @@ const renderTutorialModule = (moduleData: TutorialModule) => {
 
 const renderApp = () => {
   const shell = createElement("main", "page-shell");
-  shell.append(renderIntroModule(), renderSupportModule(), ...tutorialModules.map(renderTutorialModule));
+  shell.append(renderIntroModule(), renderSupportModule(), renderModelListModule(), ...tutorialModules.map(renderTutorialModule));
   app.replaceChildren(renderThemeToggle(), renderDirectory(), shell, renderTopButton(), renderDoroWidget());
 };
 
