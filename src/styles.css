@@ -565,31 +565,97 @@ h2.module-title {
   object-fit: contain;
 }
 
-.model-list-media {
-  display: block;
-  overflow: hidden;
+.model-list-table-wrap {
+  overflow-x: auto;
   width: 100%;
-  padding: 0;
   border: 1px solid rgba(55, 42, 72, 0.1);
   border-radius: 8px;
-  background: #17181d;
-  box-shadow: none;
-  color: inherit;
-  cursor: zoom-in;
-  transition: border-color 180ms ease, transform 180ms ease;
+  background: rgba(255, 255, 255, 0.86);
 }
 
-.model-list-media:hover,
-.model-list-media:focus-visible {
-  border-color: rgba(123, 99, 255, 0.32);
-  outline: none;
-  transform: translateY(-1px);
+:root[data-theme="dark"] .model-list-table-wrap {
+  border-color: rgba(231, 225, 255, 0.12);
+  background: rgba(23, 24, 33, 0.72);
 }
 
-.model-list-media img {
+.model-list-table {
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  min-width: 540px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.model-list-table th,
+.model-list-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(55, 42, 72, 0.08);
+  text-align: left;
+  vertical-align: middle;
+}
+
+:root[data-theme="dark"] .model-list-table th,
+:root[data-theme="dark"] .model-list-table td {
+  border-bottom-color: rgba(231, 225, 255, 0.1);
+}
+
+.model-list-table th {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.model-list-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.model-name,
+.model-price {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.model-price {
+  white-space: nowrap;
+}
+
+.model-resolution-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.model-resolution {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(95, 184, 255, 0.13);
+  color: #3166d8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+:root[data-theme="dark"] .model-resolution {
+  background: rgba(128, 202, 255, 0.14);
+  color: #9fc4ff;
+}
+
+.model-sync-status {
+  width: fit-content;
+  min-height: 28px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(88, 214, 183, 0.14);
+  color: #267b69;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+:root[data-theme="dark"] .model-sync-status {
+  background: rgba(118, 224, 201, 0.16);
+  color: #9df1df;
 }
 
 .tutorial-visual {

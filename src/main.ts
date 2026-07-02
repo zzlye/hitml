@@ -1,12 +1,20 @@
 import "./styles.css";
 
-import { introModule, modelListModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
+import { introModule, modelListModule, supportModule, tutorialModules, type ContactItem, type ModelListItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 const DORO_TARGET_URL = "https://zzlye.xyz/";
 const DORO_CLICK_LIMIT = 20;
 const THEME_STORAGE_KEY = "hitml-theme";
+const PRICE_UNIT = "HUHN";
 type ThemeMode = "light" | "dark";
+type NewApiPricingItem = {
+  model_name?: string;
+  model_price?: number;
+};
+type NewApiPricingResponse = {
+  data?: NewApiPricingItem[];
+};
 
 if (!app) {
   throw new Error("未找到页面挂载节点");
@@ -248,6 +256,67 @@ const setupDoro = () => {
   doro.addEventListener("pointercancel", stopDragging);
 };
 
+const formatModelPrice = (price: number) => `${PRICE_UNIT} ${price.toFixed(2)}`;
+
+const normalizeModelName = (modelName: string) => modelName.trim().toLowerCase();
+
+const getDirectPricingUrl = () => {
+  const pricingUrl = new URL("/api/pricing", modelListModule.pricingBaseUrl);
+  return pricingUrl.toString();
+};
+
+const fetchPricing = async (url: string) => {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`价格接口返回 ${response.status}`);
+  }
+
+  return response.json() as Promise<NewApiPricingResponse>;
+};
+
+const readPriceMap = (payload: NewApiPricingResponse) => {
+  const priceMap = new Map<string, number>();
+  payload.data?.forEach((item) => {
+    if (!item.model_name || typeof item.model_price !== "number") return;
+    priceMap.set(normalizeModelName(item.model_name), item.model_price);
+  });
+  return priceMap;
+};
+
+const syncModelPrices = async () => {
+  const priceCells = document.querySelectorAll<HTMLTableCellElement>("[data-model-price]");
+  const status = document.querySelector<HTMLSpanElement>("[data-model-price-status]");
+  if (!priceCells.length) return;
+
+  // New API 没有跨域响应头，优先走同源代理；如果部署环境已放开跨域，再尝试直连地址。
+  const endpoints = [modelListModule.pricingProxyPath, getDirectPricingUrl()];
+  if (status) status.textContent = "价格同步中";
+
+  for (const endpoint of endpoints) {
+    try {
+      const priceMap = readPriceMap(await fetchPricing(endpoint));
+      priceCells.forEach((cell) => {
+        const price = priceMap.get(normalizeModelName(cell.dataset.modelPrice ?? ""));
+        if (typeof price === "number") {
+          cell.textContent = formatModelPrice(price);
+        }
+      });
+      if (status) status.textContent = "价格已同步";
+      return;
+    } catch {
+      // 继续尝试下一个地址，全部失败时保留本地兜底价格。
+    }
+  }
+
+  if (status) status.textContent = "显示默认价格";
+};
+
+const renderResolutionList = (item: ModelListItem) => {
+  const wrap = createElement("div", "model-resolution-list");
+  item.resolutions.forEach((resolution) => wrap.append(createElement("span", "model-resolution", resolution)));
+  return wrap;
+};
+
 const renderDoroWidget = () => {
   const widget = createElement("div", "doro-widget");
   widget.setAttribute("aria-label", "可拖动 doro");
@@ -333,23 +402,32 @@ const renderModelListModule = () => {
 
   const card = createElement("article", "module-card module-card--model-list");
   const header = createElement("div", "module-header reveal");
-  header.append(createElement("h2", "module-title", modelListModule.title));
+  const syncStatus = createElement("span", "model-sync-status", "价格同步中");
+  syncStatus.dataset.modelPriceStatus = "";
+  header.append(createElement("h2", "module-title", modelListModule.title), syncStatus);
 
-  const media = createElement("button", "model-list-media") as HTMLButtonElement;
-  media.type = "button";
-  media.setAttribute("aria-label", "放大查看模型列表");
+  const tableWrap = createElement("div", "model-list-table-wrap");
+  const table = createElement("table", "model-list-table") as HTMLTableElement;
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  ["模型名称", "支持分辨率", "价格"].forEach((label) => headRow.append(createElement("th", "", label)));
+  thead.append(headRow);
 
-  const image = document.createElement("img");
-  image.src = modelListModule.image;
-  image.alt = modelListModule.alt;
-  image.loading = "lazy";
-  image.decoding = "async";
-  image.width = 728;
-  image.height = 372;
-  media.append(image);
-  media.addEventListener("click", () => openImagePreview(modelListModule.image, modelListModule.alt, "放大查看模型列表"));
+  const tbody = document.createElement("tbody");
+  modelListModule.items.forEach((item) => {
+    const row = document.createElement("tr");
+    const nameCell = createElement("td", "model-name", item.name);
+    const resolutionCell = createElement("td");
+    const priceCell = createElement("td", "model-price", formatModelPrice(item.fallbackPrice));
+    priceCell.dataset.modelPrice = item.pricingName;
+    resolutionCell.append(renderResolutionList(item));
+    row.append(nameCell, resolutionCell, priceCell);
+    tbody.append(row);
+  });
 
-  card.append(header, media);
+  table.append(thead, tbody);
+  tableWrap.append(table);
+  card.append(header, tableWrap);
   section.append(card);
   return section;
 };
@@ -487,6 +565,7 @@ const setupReveal = () => {
 renderApp();
 setupReveal();
 setupDoro();
+void syncModelPrices();
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeImagePreview();

@@ -28,11 +28,19 @@ export type TutorialModule = {
   cards: TutorialCard[];
 };
 
-export type ImageModule = {
+export type ModelListItem = {
+  name: string;
+  pricingName: string;
+  resolutions: string[];
+  fallbackPrice: number;
+};
+
+export type ModelListModule = {
   id: string;
   title: string;
-  image: string;
-  alt: string;
+  pricingBaseUrl: string;
+  pricingProxyPath: string;
+  items: ModelListItem[];
 };
 
 export const introModule = {
@@ -66,9 +74,35 @@ export const supportModule = {
 export const modelListModule = {
   id: "model-list",
   title: "模型列表",
-  image: "/images/model-list.webp",
-  alt: "文运站模型列表"
-} satisfies ImageModule;
+  pricingBaseUrl: "https://zzlye.xyz:60/v1",
+  pricingProxyPath: "/newapi/pricing",
+  items: [
+    {
+      name: "gpt-image-2",
+      pricingName: "gpt-image-2",
+      resolutions: ["1K"],
+      fallbackPrice: 0.06
+    },
+    {
+      name: "gpt-image-2-4k",
+      pricingName: "gpt-image-2-4k",
+      resolutions: ["1K", "2K", "4K"],
+      fallbackPrice: 0.09
+    },
+    {
+      name: "Nano-Banana-2",
+      pricingName: "nano-banana-2",
+      resolutions: ["1K", "2K", "4K"],
+      fallbackPrice: 0.06
+    },
+    {
+      name: "Nano-Banana-Pro",
+      pricingName: "nano-banana-pro",
+      resolutions: ["1K", "2K", "4K"],
+      fallbackPrice: 0.09
+    }
+  ]
+} satisfies ModelListModule;
 
 export const tutorialModules: TutorialModule[] = [
   {
