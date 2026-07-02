@@ -38,8 +38,8 @@ export type ImageModule = {
 export const introModule = {
   id: "intro",
   title: "gpt-image-2+nano-banana-2+nano-banana-pro",
-  actionLabel: "在线使用：https://zzlye.xyz:90",
-  actionUrl: "https://zzlye.xyz:90"
+  actionLabel: "在线使用：https://zzlye.xyz/",
+  actionUrl: "https://zzlye.xyz/"
 };
 
 export const supportModule = {
@@ -85,8 +85,8 @@ export const tutorialModules: TutorialModule[] = [
         notes: [
           {
             text: "地址：",
-            href: "https://zzlye.xyz:90",
-            label: "https://zzlye.xyz:90"
+            href: "https://zzlye.xyz/",
+            label: "https://zzlye.xyz/"
           }
         ]
       },

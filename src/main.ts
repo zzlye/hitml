@@ -3,7 +3,7 @@ import "./styles.css";
 import { introModule, modelListModule, supportModule, tutorialModules, type ContactItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
-const DORO_TARGET_URL = "https://zzlye.xyz:90";
+const DORO_TARGET_URL = "https://zzlye.xyz/";
 const DORO_CLICK_LIMIT = 20;
 const THEME_STORAGE_KEY = "hitml-theme";
 type ThemeMode = "light" | "dark";
