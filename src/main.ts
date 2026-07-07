@@ -82,7 +82,8 @@ const renderDirectory = () => {
     createNavLink("#support", "跳转到售后区域", "2. 售后进群"),
     createNavLink("#model-list", "跳转到模型列表区域", "3. 模型列表"),
     createNavLink("#tutorial-visual", "跳转到在线使用区域", "4. 在线使用"),
-    createNavLink("#tutorial-notes", "跳转到外部接入区域", "5. 外部接入")
+    createNavLink("#tutorial-notes", "跳转到外部接入区域", "5. 外部接入"),
+    createNavLink("#api-docs", "跳转到接口文档区域", "6. 接口文档")
   );
   return aside;
 };

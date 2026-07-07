@@ -217,5 +217,37 @@ export const tutorialModules: TutorialModule[] = [
         notes: ["能正常返回内容就说明外部接入完成"]
       }
     ]
+  },
+  {
+    id: "api-docs",
+    title: "接口文档",
+    description: "点击链接查看接口文档",
+    tone: "notes",
+    cards: [
+      {
+        tag: "文档 01",
+        title: "GPT Image 2 接口文档",
+        description: "图片生成与图片编辑接口说明。",
+        notes: [
+          {
+            text: "打开文档：",
+            href: "/docs/index.html#/",
+            label: "GPT Image 2 接口文档"
+          }
+        ]
+      },
+      {
+        tag: "文档 02",
+        title: "Nano Banana 接口文档",
+        description: "Nano Banana 系列模型接口说明。",
+        notes: [
+          {
+            text: "打开文档：",
+            href: "/docs/index.html#/banana",
+            label: "Nano Banana 接口文档"
+          }
+        ]
+      }
+    ]
   }
 ];
