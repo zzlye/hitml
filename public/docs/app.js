@@ -255,7 +255,7 @@ print(resp.json()["data"][0]["url"])`, "python")}
 
     <h2>兼容性说明</h2>
     <p>相对 OpenAI Images API，主要差异集中在基础地址、部分忽略参数和当前只建议单张生成，其余常见字段保持兼容。</p>
-    <footer>© 八方 AI · zzlye.xyz</footer>
+    <footer>© 文运工坊 · zzlye.xyz</footer>
   </article>
 `;
 
@@ -427,7 +427,7 @@ POST ${GEMINI_BASE_URL}/models/{model}:streamGenerateContent    # 流式`)}
 
     <h2>香蕉pro 还是 香蕉2？</h2>
     <p>两者接口一致，区别主要在输出取向：${inlineCode("nano-banana-pro")} 更偏画质和成品图，${inlineCode("nano-banana-2")} 更偏速度和预览。需要超宽幅或长条比例时，优先使用香蕉2。</p>
-    <footer>© 八方 AI · zzlye.xyz</footer>
+    <footer>© 文运工坊 · zzlye.xyz</footer>
   </article>
 `;
 
