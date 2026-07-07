@@ -7,15 +7,17 @@
     <link rel="stylesheet" href="/docs/styles.css" />
   </head>
   <body>
-    <div class="docs-shell">
-      <aside class="docs-sidebar" aria-label="接口文档目录">
+    <header class="docs-topbar">
+      <div class="docs-topbar-inner">
         <a class="docs-brand" href="/docs/index.html#/">文运工坊接口文档</a>
         <nav class="docs-nav">
           <a href="/docs/index.html#/" data-route="image2">GPT Image 2</a>
           <a href="/docs/index.html#/banana" data-route="banana">Nano Banana</a>
+          <a class="docs-home" href="/">返回展示页</a>
         </nav>
-        <a class="docs-home" href="/">返回展示页</a>
-      </aside>
+      </div>
+    </header>
+    <div class="docs-shell">
       <main class="docs-content" id="docs-content"></main>
     </div>
     <script type="module" src="/docs/app.js"></script>
