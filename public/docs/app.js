@@ -1,5 +1,4 @@
 const BASE_URL = "https://zzlye.xyz:60/v1";
-const GEMINI_BASE_URL = "https://zzlye.xyz:60/v1beta";
 
 const content = document.querySelector("#docs-content");
 const routeLinks = [...document.querySelectorAll("[data-route]")];
@@ -53,7 +52,7 @@ const renderImage2 = () => `
       [inlineCode("model"), "string", "是", "-", `模型名称，例如 ${inlineCode("gpt-image-2")} / ${inlineCode("gpt-image-2-4k")}`],
       [inlineCode("prompt"), "string", "是", "-", "图片提示词，中文或英文都可以"],
       [inlineCode("size"), "string", "否", inlineCode("auto"), `输出尺寸，例如 ${inlineCode("1024x1024")} / ${inlineCode("1024x1536")} / ${inlineCode("1536x1024")} / ${inlineCode("auto")}`],
-      [inlineCode("response_format"), "string", "否", inlineCode("url"), `${inlineCode("url")} 或 ${inlineCode("b64_json")}`],
+      [inlineCode("response_format"), "string", "否", inlineCode("b64_json"), `${inlineCode("b64_json")} 或 ${inlineCode("url")}`],
       [inlineCode("n"), "number", "否", inlineCode("1"), "生成张数，当前建议保持 1"],
       [inlineCode("user"), "string", "否", "-", "可选用户标识，会透传到请求链路"]
     ])}
@@ -93,23 +92,22 @@ const renderImage2 = () => `
     ])}
 
     <h2>响应格式</h2>
-    <h3>${inlineCode("response_format=url")}（默认）</h3>
-    ${codeBlock(`{
-  "created": 1710000000,
-  "data": [
-    {
-      "url": "https://example.com/generated-image.png"
-    }
-  ]
-}`, "json")}
-    ${infoBox(`返回 URL 时请及时下载或转存，临时链接可能会失效。`)}
-
-    <h3>${inlineCode("response_format=b64_json")}</h3>
+    <h3>${inlineCode("response_format=b64_json")}（默认）</h3>
     ${codeBlock(`{
   "created": 1710000000,
   "data": [
     {
       "b64_json": "iVBORw0KGgo..."
+    }
+  ]
+}`, "json")}
+
+    <h3>${inlineCode("response_format=url")}</h3>
+    ${codeBlock(`{
+  "created": 1710000000,
+  "data": [
+    {
+      "url": "data:image/png;base64,iVBORw0KGgo..."
     }
   ]
 }`, "json")}
@@ -133,7 +131,8 @@ client = OpenAI(
 result = client.images.generate(
     model="gpt-image-2",
     prompt="湖蓝色调的山谷，清晨薄雾，极简插画风",
-    size="1024x1024"
+    size="1024x1024",
+    response_format="url"
 )
 
 print(result.data[0].url)`, "python")}
@@ -150,7 +149,8 @@ resp = requests.post(
     json={
         "model": "gpt-image-2",
         "prompt": "一张柔和灯光下的未来感工作台",
-        "size": "1024x1024"
+        "size": "1024x1024",
+        "response_format": "url"
     },
     timeout=300
 )
@@ -164,7 +164,8 @@ print(resp.json()["data"][0]["url"])`, "python")}
   -d '{
     "model": "gpt-image-2",
     "prompt": "湖蓝色调的山谷，清晨薄雾，极简插画风",
-    "size": "1024x1536"
+    "size": "1024x1536",
+    "response_format": "url"
   }'`, "bash")}
 
     <h3>Node.js · OpenAI SDK</h3>
@@ -178,7 +179,8 @@ const client = new OpenAI({
 const result = await client.images.generate({
   model: "gpt-image-2",
   prompt: "一张商业摄影风格的银色跑车海报",
-  size: "1536x1024"
+  size: "1536x1024",
+  response_format: "url"
 });
 
 console.log(result.data[0].url);`, "javascript")}
@@ -193,7 +195,8 @@ console.log(result.data[0].url);`, "javascript")}
   body: JSON.stringify({
     model: "gpt-image-2",
     prompt: "一张现代感很强的城市夜景海报",
-    size: "1024x1024"
+    size: "1024x1024",
+    response_format: "url"
   })
 });
 
@@ -261,172 +264,110 @@ print(resp.json()["data"][0]["url"])`, "python")}
 
 const renderBanana = () => `
   <article class="doc-page">
-    <h1>香蕉系列(Gemini 图像)接口</h1>
-    ${infoBox(`<strong>说明</strong><br>Gemini 原生结构化接口使用 ${inlineCode("inline_data")} / ${inlineCode("file_data")} / ${inlineCode("candidates[].content.parts")}。`)}
+    <h1>Nano Banana 接口</h1>
+    <p class="lead">Nano Banana 在文运工坊里走 OpenAI Images 兼容接口，接入 NewAPI 时不需要让客户端再走 Gemini 原生格式。</p>
+    ${infoBox(`<strong>重要</strong>：请使用 ${inlineCode("/v1/images/generations")} 和 ${inlineCode("/v1/images/edits")}。不要选择 Gemini 原生通道，否则 NewAPI 会进入额外转换链路，日志和 token 统计可能异常放大。`)}
 
     <h2>模型</h2>
     ${table(["外号", "模型名", "说明"], [
-      ["香蕉pro", inlineCode("nano-banana-pro"), "画质档，适合成品图"],
-      ["香蕉2", inlineCode("nano-banana-2"), "速度档，适合预览和批量尝试"]
+      ["香蕉2", inlineCode("nano-banana-2"), "速度档，适合日常出图、预览和批量尝试"],
+      ["香蕉pro", inlineCode("nano-banana-pro"), "画质档，适合成品图、复杂画面和高质量输出"]
     ])}
-    <p>两者调用方式一致，只需要替换模型名；比例和分辨率通过请求体里的 ${inlineCode("imageConfig")} 指定。</p>
+    <p>两个模型调用方式一致，只需要替换 ${inlineCode("model")} 字段。</p>
 
     <h2>鉴权</h2>
     <p>在请求头里填写文运工坊获取的 API Key：</p>
-    ${codeBlock(`x-goog-api-key: <API_KEY>
+    ${codeBlock(`Authorization: Bearer <API_KEY>
 Content-Type: application/json`)}
-    <p>也兼容下面这种写法：</p>
-    ${codeBlock(`Authorization: Bearer <API_KEY>`)}
 
     <h2>接口地址</h2>
-    ${codeBlock(`POST ${GEMINI_BASE_URL}/models/{model}:generateContent
-POST ${GEMINI_BASE_URL}/models/{model}:streamGenerateContent    # 流式`)}
-    <p>${inlineCode("{model}")} 填模型名，例如 ${inlineCode("nano-banana-pro")}。</p>
+    ${table(["场景", "接口"], [
+      ["文生图", inlineCode(`POST ${BASE_URL}/images/generations`)],
+      ["图生图 / 改图", inlineCode(`POST ${BASE_URL}/images/edits`)]
+    ])}
+    ${infoBox(`Base URL 填 ${inlineCode(BASE_URL)}，客户端端点按 OpenAI Images 自动拼接即可。`, "green")}
 
-    <h2>请求体</h2>
+    <h2>文生图</h2>
+    <p>根据提示词直接生成图片，使用 JSON 请求体。</p>
+    ${codeBlock(`POST ${BASE_URL}/images/generations`)}
+    ${table(["参数", "类型", "必填", "默认", "说明"], [
+      [inlineCode("model"), "string", "是", "-", `填写 ${inlineCode("nano-banana-2")} 或 ${inlineCode("nano-banana-pro")}`],
+      [inlineCode("prompt"), "string", "是", "-", "图片提示词"],
+      [inlineCode("size"), "string", "否", inlineCode("1024x1024"), `常用 ${inlineCode("1024x1024")} / ${inlineCode("1536x1024")} / ${inlineCode("1024x1536")} / ${inlineCode("1792x1024")} / ${inlineCode("1024x1792")}`],
+      [inlineCode("response_format"), "string", "否", inlineCode("b64_json"), `${inlineCode("b64_json")} 或 ${inlineCode("url")}`],
+      [inlineCode("n"), "number", "否", inlineCode("1"), "生成张数，建议保持 1"]
+    ])}
+
+    <h3>文生图示例</h3>
     ${codeBlock(`{
-  "contents": [
-    {
-      "role": "user",
-      "parts": [
-        { "text": "提示词写这里" }
-      ]
-    }
-  ],
-  "generationConfig": {
-    "responseModalities": ["IMAGE"],
-    "imageConfig": {
-      "aspectRatio": "16:9",
-      "imageSize": "2K"
-    }
-  }
+  "model": "nano-banana-2",
+  "prompt": "一张银色跑车的城市夜景海报，高反差，高质感",
+  "size": "1024x1024",
+  "response_format": "b64_json"
 }`, "json")}
-    <ul>
-      <li>${inlineCode("contents[].parts[].text")}：文本提示词，支持多轮内容。</li>
-      <li>${inlineCode("generationConfig.imageConfig.aspectRatio")}：图片比例，例如 ${inlineCode("1:1")} / ${inlineCode("16:9")} / ${inlineCode("9:16")}。</li>
-      <li>${inlineCode("generationConfig.imageConfig.imageSize")}：分辨率档位，例如 ${inlineCode("1K")} / ${inlineCode("2K")} / ${inlineCode("4K")}。</li>
-      <li>${inlineCode("generationConfig.responseModalities")}：返回类型，例如 ${inlineCode("IMAGE")} 或 ${inlineCode("IMAGE, TEXT")}。</li>
-    </ul>
 
-    <h2>比例与分辨率</h2>
-    <p>下面这些比例两个模型都支持，${inlineCode("1K")} / ${inlineCode("2K")} / ${inlineCode("4K")} 三档可选。</p>
-    ${table(["比例", "1K", "2K", "4K"], [
-      [inlineCode("1:1"), "1024×1024", "2048×2048", "4096×4096"],
-      [inlineCode("16:9"), "1376×768", "2752×1536", "5504×3072"],
-      [inlineCode("9:16"), "768×1376", "1536×2752", "3072×5504"],
-      [inlineCode("4:3"), "1200×896", "2400×1792", "4800×3584"],
-      [inlineCode("3:4"), "896×1200", "1792×2400", "3584×4800"],
-      [inlineCode("3:2"), "1264×848", "2528×1696", "5056×3392"],
-      [inlineCode("2:3"), "848×1264", "1696×2528", "3392×5056"],
-      [inlineCode("5:4"), "1152×928", "2304×1856", "4608×3712"],
-      [inlineCode("4:5"), "928×1152", "1856×2304", "3712×4608"],
-      [inlineCode("21:9"), "1584×672", "3168×1344", "6336×2688"]
-    ])}
-
-    <h3>极端宽幅 / 长条（仅香蕉2）</h3>
-    <p>${inlineCode("nano-banana-2")} 额外支持超宽和长条比例；${inlineCode("nano-banana-pro")} 不建议使用这几类比例。</p>
-    ${table(["比例（仅香蕉2）", "1K", "2K", "4K"], [
-      [inlineCode("8:1"), "2928×352", "5856×704", "11712×1408"],
-      [inlineCode("4:1"), "2064×512", "4128×1024", "8256×2048"],
-      [inlineCode("1:4"), "512×2064", "1024×4128", "2048×8256"],
-      [inlineCode("1:8"), "352×2928", "704×5856", "1408×11712"]
-    ])}
-    ${infoBox(`${inlineCode("imageSize")} 的 K 一律大写，比例和分辨率组合不匹配时会自动对齐到下一档。`, "green")}
-
-    <h2>auto / 缺省</h2>
-    <p>${inlineCode("aspectRatio")} 和 ${inlineCode("imageSize")} 都可以省略，或直接填写 ${inlineCode("auto")}。最实用的写法是只填比例，系统按默认分辨率输出。</p>
-    <p>纯文生图想要确定尺寸时，建议显式传 ${inlineCode("aspectRatio")} + ${inlineCode("imageSize")}。</p>
-
-    <h2>返回模式</h2>
-    ${table(["responseModalities", "返回内容", "读取位置"], [
-      [inlineCode('["IMAGE"]'), "base64 图片", inlineCode("candidates[0].content.parts[0].inline_data.data")],
-      [inlineCode('["TEXT"]'), "图片 URL", inlineCode("candidates[0].content.parts[0].text")],
-      [inlineCode('["IMAGE", "TEXT"]'), "base64 + URL", "上面两个位置都会返回"],
-      ["不传", `同 ${inlineCode('["IMAGE"]')}`, "-"]
-    ])}
-    ${infoBox(`如果同时需要 base64 和 URL，可以使用 ${inlineCode('["IMAGE", "TEXT"]')}；读取时通常按 parts 顺序处理。`, "green")}
+    ${codeBlock(`curl "${BASE_URL}/images/generations" \\
+  -H "Authorization: Bearer $WENYUN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "nano-banana-2",
+    "prompt": "一张银色跑车的城市夜景海报，高反差，高质感",
+    "size": "1024x1024",
+    "response_format": "b64_json"
+  }'`, "bash")}
 
     <h2>图生图</h2>
-    <h3>输入图片 base64</h3>
-    ${codeBlock(`curl -X POST "${GEMINI_BASE_URL}/models/nano-banana-pro:generateContent" \\
-  -H "x-goog-api-key: $WENYUN_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "contents": [
-      {
-        "role": "user",
-        "parts": [
-          { "text": "把这张图改成日系水彩风，保留主体和构图" },
-          {
-            "inline_data": {
-              "mime_type": "image/png",
-              "data": "<BASE64_INPUT_IMAGE>"
-            }
-          }
-        ]
-      }
-    ],
-    "generationConfig": {
-      "responseModalities": ["IMAGE"],
-      "imageConfig": {
-        "aspectRatio": "3:4",
-        "imageSize": "1K"
-      }
-    }
-  }'`, "bash")}
+    <p>上传参考图后让模型改图，使用 multipart 表单请求。</p>
+    ${codeBlock(`POST ${BASE_URL}/images/edits`)}
+    ${table(["参数", "类型", "必填", "默认", "说明"], [
+      [inlineCode("image"), "file", "是", "-", "输入图片，支持 PNG / JPEG / WebP"],
+      [inlineCode("model"), "string", "是", "-", `填写 ${inlineCode("nano-banana-2")} 或 ${inlineCode("nano-banana-pro")}`],
+      [inlineCode("prompt"), "string", "是", "-", "改图提示词"],
+      [inlineCode("size"), "string", "否", inlineCode("auto"), "不填时尽量沿用参考图比例，也可以传 1024x1024 等 OpenAI Images 尺寸"],
+      [inlineCode("response_format"), "string", "否", inlineCode("b64_json"), `${inlineCode("b64_json")} 或 ${inlineCode("url")}`],
+      [inlineCode("n"), "number", "否", inlineCode("1"), "生成张数，建议保持 1"]
+    ])}
 
-    <h3>输入图片 URL</h3>
-    ${codeBlock(`curl -X POST "${GEMINI_BASE_URL}/models/nano-banana-2:generateContent" \\
-  -H "x-goog-api-key: $WENYUN_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "contents": [
-      {
-        "role": "user",
-        "parts": [
-          { "text": "把这张图做成杂志封面风格" },
-          {
-            "file_data": {
-              "mime_type": "image/png",
-              "file_uri": "https://example.com/input.png"
-            }
-          }
-        ]
-      }
-    ],
-    "generationConfig": {
-      "responseModalities": ["IMAGE"],
-      "imageConfig": {
-        "aspectRatio": "4:3",
-        "imageSize": "2K"
-      }
-    }
-  }'`, "bash")}
+    <h3>图生图示例</h3>
+    ${codeBlock(`curl "${BASE_URL}/images/edits" \\
+  -H "Authorization: Bearer $WENYUN_API_KEY" \\
+  -F "model=nano-banana-pro" \\
+  -F "image=@input.png" \\
+  -F "prompt=把这张图改成日系水彩风，保留主体和构图" \\
+  -F "size=1024x1024" \\
+  -F "response_format=b64_json"`, "bash")}
 
-    <h3>同时返回 base64 和 URL（推荐兼容写法）</h3>
-    ${codeBlock(`curl -X POST "${GEMINI_BASE_URL}/models/nano-banana-pro:generateContent" \\
-  -H "x-goog-api-key: $WENYUN_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "contents": [
-      {
-        "role": "user",
-        "parts": [
-          { "text": "一张银色跑车的城市夜景海报，高反差，高质感" }
-        ]
-      }
-    ],
-    "generationConfig": {
-      "responseModalities": ["IMAGE", "TEXT"],
-      "imageConfig": {
-        "aspectRatio": "1:1",
-        "imageSize": "1K"
-      }
+    <h2>返回格式</h2>
+    <p>默认返回 OpenAI Images 兼容结构：</p>
+    ${codeBlock(`{
+  "created": 1710000000,
+  "data": [
+    {
+      "b64_json": "iVBORw0KGgo..."
     }
-  }'`, "bash")}
+  ]
+}`, "json")}
+    <p>如果 ${inlineCode("response_format")} 填 ${inlineCode("url")}，则返回：</p>
+    ${codeBlock(`{
+  "created": 1710000000,
+  "data": [
+    {
+      "url": "data:image/png;base64,iVBORw0KGgo..."
+    }
+  ]
+}`, "json")}
+
+    <h2>接入 NewAPI 的建议</h2>
+    <ul>
+      <li>渠道类型走 OpenAI 兼容，不要走 Gemini 原生。</li>
+      <li>Base URL 填 ${inlineCode(BASE_URL)}。</li>
+      <li>模型名填 ${inlineCode("nano-banana-2")} 或 ${inlineCode("nano-banana-pro")}。</li>
+      <li>文生图只用 ${inlineCode("/v1/images/generations")}。</li>
+      <li>图生图和改图只用 ${inlineCode("/v1/images/edits")}。</li>
+    </ul>
 
     <h2>香蕉pro 还是 香蕉2？</h2>
-    <p>两者接口一致，区别主要在输出取向：${inlineCode("nano-banana-pro")} 更偏画质和成品图，${inlineCode("nano-banana-2")} 更偏速度和预览。需要超宽幅或长条比例时，优先使用香蕉2。</p>
+    <p>两者接口一致，区别主要在输出取向：${inlineCode("nano-banana-pro")} 更偏画质和成品图，${inlineCode("nano-banana-2")} 更偏速度和预览。大多数用户先用香蕉2，需要更高质量时再换香蕉pro。</p>
     <footer>© 文运工坊 · zzlye.xyz</footer>
   </article>
 `;
