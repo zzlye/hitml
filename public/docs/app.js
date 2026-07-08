@@ -1,4 +1,4 @@
-const BASE_URL = "https://zzlye.xyz:60/v1";
+const BASE_URL = "https://api.zzlye.xyz/v1";
 
 const content = document.querySelector("#docs-content");
 const routeLinks = [...document.querySelectorAll("[data-route]")];
