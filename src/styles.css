@@ -505,6 +505,10 @@ h2.module-title {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+#api-docs .tutorial-card {
+  grid-column: 1 / -1;
+}
+
 .tutorial-card {
   display: grid;
   gap: 12px;

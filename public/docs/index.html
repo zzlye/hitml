@@ -7,19 +7,42 @@
     <link rel="stylesheet" href="/docs/styles.css" />
   </head>
   <body>
-    <header class="docs-topbar">
-      <div class="docs-topbar-inner">
+    <div class="docs-layout">
+      <aside class="docs-sidebar" aria-label="接口文档目录">
         <a class="docs-brand" href="/docs/index.html#/">文运工坊接口文档</a>
+        <p class="docs-nav-label">文档目录</p>
         <nav class="docs-nav">
-          <a href="/docs/index.html#/" data-route="image2">GPT Image 2</a>
-          <a href="/docs/index.html#/banana" data-route="banana">Nano Banana</a>
-          <a class="docs-home" href="/">返回展示页</a>
+          <a href="/docs/index.html#/" data-route="image2">
+            <span class="docs-nav-index">01</span>
+            <span>GPT Image 2</span>
+          </a>
+          <a href="/docs/index.html#/banana" data-route="banana">
+            <span class="docs-nav-index">02</span>
+            <span>Nano Banana</span>
+          </a>
         </nav>
+        <a class="docs-home" href="/">返回展示页</a>
+      </aside>
+
+      <div class="docs-main">
+        <header class="docs-toolbar">
+          <div class="docs-toolbar-inner">
+            <div class="docs-current">
+              <span>当前文档</span>
+              <strong id="docs-current-title">GPT Image 2</strong>
+            </div>
+            <button class="docs-export" id="docs-export" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+              </svg>
+              <span>导出 Markdown</span>
+            </button>
+          </div>
+        </header>
+        <main class="docs-content" id="docs-content" tabindex="-1"></main>
       </div>
-    </header>
-    <div class="docs-shell">
-      <main class="docs-content" id="docs-content"></main>
     </div>
+    <div class="docs-toast" id="docs-toast" role="status" aria-live="polite"></div>
     <script type="module" src="/docs/app.js"></script>
   </body>
 </html>

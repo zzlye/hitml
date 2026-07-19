@@ -2,6 +2,22 @@ const BASE_URL = "https://api.zzlye.xyz/v1";
 
 const content = document.querySelector("#docs-content");
 const routeLinks = [...document.querySelectorAll("[data-route]")];
+const currentTitle = document.querySelector("#docs-current-title");
+const exportButton = document.querySelector("#docs-export");
+const toast = document.querySelector("#docs-toast");
+const documentMeta = {
+  image2: {
+    label: "GPT Image 2",
+    pageTitle: "image2 接口",
+    fileName: "文运工坊-GPT-Image-2-接口文档.md"
+  },
+  banana: {
+    label: "Nano Banana",
+    pageTitle: "香蕉系列接口",
+    fileName: "文运工坊-Nano-Banana-接口文档.md"
+  }
+};
+let toastTimer = 0;
 
 const escapeHtml = (value) => value
   .replaceAll("&", "&amp;")
@@ -372,6 +388,104 @@ Content-Type: application/json`)}
   </article>
 `;
 
+const normalizeInlineText = (value) => value.replace(/\s+/g, " ").trim();
+
+const inlineMarkdown = (node) => {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+  if (!(node instanceof HTMLElement)) return "";
+
+  const children = [...node.childNodes].map(inlineMarkdown).join("");
+  if (node.tagName === "CODE") return `\`${normalizeInlineText(children).replaceAll("`", "\\`")}\``;
+  if (node.tagName === "STRONG" || node.tagName === "B") return `**${normalizeInlineText(children)}**`;
+  if (node.tagName === "EM" || node.tagName === "I") return `*${normalizeInlineText(children)}*`;
+  if (node.tagName === "A") return `[${normalizeInlineText(children)}](${node.href})`;
+  if (node.tagName === "BR") return "\n";
+  return children;
+};
+
+const tableMarkdown = (tableElement) => {
+  const rows = [...tableElement.rows].map((row) => [...row.cells].map((cell) => (
+    normalizeInlineText(inlineMarkdown(cell)).replaceAll("|", "\\|")
+  )));
+  if (!rows.length) return "";
+
+  const [header, ...body] = rows;
+  const headerLine = `| ${header.join(" | ")} |`;
+  const dividerLine = `| ${header.map(() => "---").join(" | ")} |`;
+  const bodyLines = body.map((row) => `| ${row.join(" | ")} |`);
+  return [headerLine, dividerLine, ...bodyLines].join("\n");
+};
+
+const blockMarkdown = (element) => {
+  const headingLevel = Number(element.tagName.slice(1));
+  if (/^H[1-4]$/.test(element.tagName)) {
+    return `${"#".repeat(headingLevel)} ${normalizeInlineText(inlineMarkdown(element))}`;
+  }
+
+  if (element.tagName === "P") return normalizeInlineText(inlineMarkdown(element));
+  if (element.tagName === "PRE") {
+    const language = element.dataset.lang || "text";
+    const code = element.querySelector("code")?.textContent?.trim() ?? "";
+    return `\`\`\`${language}\n${code}\n\`\`\``;
+  }
+
+  if (element.matches(".callout")) {
+    const calloutText = normalizeInlineText(inlineMarkdown(element));
+    return calloutText.split("\n").map((line) => `> ${line}`).join("\n");
+  }
+
+  if (element.matches(".table-wrap")) {
+    const tableElement = element.querySelector("table");
+    return tableElement ? tableMarkdown(tableElement) : "";
+  }
+
+  if (element.tagName === "UL" || element.tagName === "OL") {
+    const ordered = element.tagName === "OL";
+    return [...element.children].map((item, index) => (
+      `${ordered ? `${index + 1}.` : "-"} ${normalizeInlineText(inlineMarkdown(item))}`
+    )).join("\n");
+  }
+
+  if (element.tagName === "FOOTER") return `---\n\n${normalizeInlineText(inlineMarkdown(element))}`;
+  return [...element.children].map(blockMarkdown).filter(Boolean).join("\n\n");
+};
+
+const createMarkdown = (article) => (
+  [...article.children]
+    .map(blockMarkdown)
+    .filter(Boolean)
+    .join("\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim() + "\n"
+);
+
+const showToast = (message) => {
+  if (!toast) return;
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+  toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2400);
+};
+
+const exportCurrentDocument = () => {
+  const article = content.querySelector(".doc-page");
+  if (!article) return;
+
+  // 将当前渲染的文档转换为 Markdown，再交给浏览器下载。
+  const route = getRoute();
+  const markdown = createMarkdown(article);
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const objectUrl = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+  downloadLink.href = objectUrl;
+  downloadLink.download = documentMeta[route].fileName;
+  document.body.append(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+  showToast(`${documentMeta[route].label} 文档已导出`);
+};
+
 const getRoute = () => {
   const route = window.location.hash.replace(/^#\/?/, "");
   return route === "banana" ? "banana" : "image2";
@@ -381,10 +495,17 @@ const render = () => {
   // 根据 hash 切换两份静态文档，方便直接复制链接给用户。
   const route = getRoute();
   content.innerHTML = route === "banana" ? renderBanana() : renderImage2();
-  routeLinks.forEach((link) => link.classList.toggle("is-active", link.dataset.route === route));
-  document.title = route === "banana" ? "香蕉系列接口" : "image2 接口";
+  routeLinks.forEach((link) => {
+    const isActive = link.dataset.route === route;
+    link.classList.toggle("is-active", isActive);
+    if (isActive) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+  currentTitle.textContent = documentMeta[route].label;
+  document.title = documentMeta[route].pageTitle;
   window.scrollTo({ top: 0 });
 };
 
 window.addEventListener("hashchange", render);
+exportButton.addEventListener("click", exportCurrentDocument);
 render();

@@ -225,26 +225,14 @@ export const tutorialModules: TutorialModule[] = [
     tone: "notes",
     cards: [
       {
-        tag: "文档 01",
-        title: "GPT Image 2 接口文档",
-        description: "图片生成与图片编辑接口说明。",
+        tag: "统一文档",
+        title: "文运工坊接口文档",
+        description: "GPT Image 2 与 Nano Banana 接口说明。",
         notes: [
           {
             text: "打开文档：",
             href: "/docs/index.html#/",
-            label: "GPT Image 2 接口文档"
-          }
-        ]
-      },
-      {
-        tag: "文档 02",
-        title: "Nano Banana 接口文档",
-        description: "Nano Banana 系列模型接口说明。",
-        notes: [
-          {
-            text: "打开文档：",
-            href: "/docs/index.html#/banana",
-            label: "Nano Banana 接口文档"
+            label: "查看接口文档"
           }
         ]
       }
