@@ -4,7 +4,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/newapi/pricing": {
-        target: "https://zzlye.xyz:60",
+        target: "https://api.zzlye.xyz",
         changeOrigin: true,
         secure: true,
         rewrite: () => "/api/pricing"

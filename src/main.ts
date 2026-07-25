@@ -10,7 +10,7 @@ const PRICE_UNIT = "HUHN";
 type ThemeMode = "light" | "dark";
 type NewApiPricingItem = {
   model_name?: string;
-  model_price?: number;
+  model_price?: number | string;
 };
 type NewApiPricingResponse = {
   data?: NewApiPricingItem[];
@@ -262,7 +262,8 @@ const formatModelPrice = (price: number) => `${PRICE_UNIT} ${price.toFixed(2)}`;
 const normalizeModelName = (modelName: string) => modelName.trim().toLowerCase();
 
 const getDirectPricingUrl = () => {
-  const pricingUrl = new URL("/api/pricing", modelListModule.pricingBaseUrl);
+  // 模型调用地址带有 /v1，价格接口位于同域名根路径下，单独维护路径避免拼接错误。
+  const pricingUrl = new URL(modelListModule.pricingPath, modelListModule.pricingBaseUrl);
   return pricingUrl.toString();
 };
 
@@ -278,8 +279,10 @@ const fetchPricing = async (url: string) => {
 const readPriceMap = (payload: NewApiPricingResponse) => {
   const priceMap = new Map<string, number>();
   payload.data?.forEach((item) => {
-    if (!item.model_name || typeof item.model_price !== "number") return;
-    priceMap.set(normalizeModelName(item.model_name), item.model_price);
+    if (!item.model_name) return;
+    const price = typeof item.model_price === "number" ? item.model_price : Number(item.model_price);
+    if (!Number.isFinite(price)) return;
+    priceMap.set(normalizeModelName(item.model_name), price);
   });
   return priceMap;
 };
@@ -296,12 +299,17 @@ const syncModelPrices = async () => {
   for (const endpoint of endpoints) {
     try {
       const priceMap = readPriceMap(await fetchPricing(endpoint));
+      let matchedCount = 0;
       priceCells.forEach((cell) => {
         const price = priceMap.get(normalizeModelName(cell.dataset.modelPrice ?? ""));
         if (typeof price === "number") {
           cell.textContent = formatModelPrice(price);
+          matchedCount += 1;
         }
       });
+      if (!matchedCount) {
+        throw new Error("价格接口未返回页面中的模型");
+      }
       if (status) status.textContent = "价格已同步";
       return;
     } catch {

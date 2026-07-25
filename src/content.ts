@@ -39,6 +39,7 @@ export type ModelListModule = {
   id: string;
   title: string;
   pricingBaseUrl: string;
+  pricingPath: string;
   pricingProxyPath: string;
   items: ModelListItem[];
 };
@@ -74,14 +75,15 @@ export const supportModule = {
 export const modelListModule = {
   id: "model-list",
   title: "模型列表",
-  pricingBaseUrl: "https://zzlye.xyz:60/v1",
+  pricingBaseUrl: "https://api.zzlye.xyz/v1",
+  pricingPath: "/api/pricing",
   pricingProxyPath: "/newapi/pricing",
   items: [
     {
       name: "gpt-image-2",
       pricingName: "gpt-image-2",
       resolutions: ["1K"],
-      fallbackPrice: 0.06
+      fallbackPrice: 0.04
     },
     {
       name: "gpt-image-2-4k",
