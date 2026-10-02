@@ -275,7 +275,7 @@ pre {
 }
 
 .doc-page h2 {
-  scroll-margin-top: 100px;
+  scroll-margin-top: 128px;
   margin: 42px 0 14px;
   color: var(--heading);
   font-size: 24px;
@@ -305,6 +305,30 @@ pre {
 
 .lead {
   margin: 0 0 16px;
+}
+
+/* 长文档按章节定位，移动端收为单列且不挤压正文。 */
+.page-toc {
+  margin: 24px 0 32px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--table-head);
+}
+.page-toc strong { color: var(--heading); font-size: 14px; }
+.page-toc ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 24px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.page-toc li { margin: 0; }
+.page-toc a { display: block; padding: 5px 0; }
+@media (max-width: 760px) {
+  .page-toc ol { grid-template-columns: 1fr; }
+  .page-toc { padding: 16px; }
 }
 
 .doc-page p {

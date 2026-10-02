@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261002";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261002";
+import { pages } from "./content.js?v=20261002-pro2";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261002-pro2";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
@@ -29,7 +29,14 @@ const render = (focusContent = false) => {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  if (focusContent) {
+  const section = new URLSearchParams(location.hash.split("?")[1] || "").get("section");
+  const heading = section && /^\d+$/.test(section) ? document.getElementById("section-" + section) : null;
+  if (heading) {
+    // 深链接和浏览器前进后退直接定位章节，避免长文档每次回到顶部。
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ behavior: "instant", block: "start" });
+  } else if (focusContent) {
     // 手机切换后直接显示正文，顶部目录按钮仍可返回章节列表。
     content.focus({ preventScroll: true });
     const top = document.querySelector(".docs-main").getBoundingClientRect().top + window.scrollY;

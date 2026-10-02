@@ -94,3 +94,56 @@ test("页面转义占位符和HTML，任务对象字段保持真实契约", () =
   const submitted = taskPage.blocks.find((block) => block.type === "code" && block.lang === "json");
   assert.equal(JSON.parse(submitted.value).object, "image_generation");
 });
+test('四类模型文档各自包含异步闭环与可执行示例', () => {
+  for (const id of ['image2','banana','seedream','video']) {
+    const page=pages.find(p=>p.id===id), text=pageMarkdown(page);
+    for(const term of ['Authorization','task_id','poll_url','Retry-After','result_expired','succeeded','failed','下载','完整示例']) assert.ok(text.includes(term),id+':'+term);
+    const code=page.blocks.find(b=>b.lang==='javascript').value;
+    assert.ok(code.includes('await pipeline'));
+    assert.ok(code.includes('process.argv[2]'));
+    assert.ok(code.includes('redirect: \'error\''));
+    assert.ok(code.includes('.part'));
+  }
+});
+
+test('Wan参数、整数进度与两种异步状态不能混用', () => {
+  const page=pages.find(p=>p.id==='video'),text=pageMarkdown(page);
+  for(const value of ['image_urls','video_urls','audio_urls','30秒','720p','wan-3.0-1080p','completed','succeeded','/v1/videos/','/v1/tasks/']) assert.ok(text.includes(value),value);
+  for(const b of page.blocks.filter(b=>b.lang==='json')) {
+    const obj=JSON.parse(b.value);
+    if(obj.progress!==undefined) assert.ok(Number.isInteger(obj.progress)&&obj.progress>=0&&obj.progress<=100);
+    if(obj.object==='video') assert.ok(['queued','in_progress','completed','failed'].includes(obj.status));
+  }
+  const source=page.blocks.find(b=>b.lang==='javascript').value;
+  assert.ok(!source.includes('Prefer:'));
+  assert.ok(source.includes("id.startsWith('async_')"));
+});
+
+test('所有cURL请求体是合法JSON且使用本站端点', () => {
+  let count=0;
+  for(const page of pages) for(const block of page.blocks.filter(b=>b.type==='code'&&b.lang==='bash')) {
+    for(const [,body] of block.value.matchAll(/--data\s+'([\s\S]*?)'/g)) { assert.doesNotThrow(()=>JSON.parse(body),page.id);count++; }
+    if(block.value.includes('curl ')) assert.ok(block.value.includes('https://api.zzlye.xyz/'),page.id);
+  }
+  assert.ok(count>=7);
+});
+
+test('本页目录与正文锚点对应并支持旧路由', () => {
+  for(const page of pages) {
+    const html=renderPage(page);
+    for(const [index,block] of page.blocks.entries()) if(block.type==='heading') {
+      assert.ok(html.includes('id="section-'+index+'"'));
+      assert.ok(html.includes('#/'+page.id+'?section='+index));
+      assert.equal(resolveRoute('#/'+page.id+'?section='+index),page.id);
+    }
+  }
+});
+
+test('网页代码和可独立运行的示例文件逐字一致', () => {
+  for(const [id,file,lang] of [['image2','image2.mjs','javascript'],['banana','banana.mjs','javascript'],['seedream','seedream.mjs','javascript'],['tasks','images.mjs','javascript'],['video','video.mjs','javascript'],['video','video.py','python']]) {
+    const block=pages.find(p=>p.id===id).blocks.find(b=>b.lang===lang);
+    assert.equal(block.value,readFileSync(new URL('../public/docs/examples/'+file,import.meta.url),'utf8'));
+  }
+  const banana=pages.find(p=>p.id==='banana').blocks.filter(b=>b.lang==='json').map(b=>JSON.parse(b.value));
+  assert.equal(banana.find(b=>b.status==='pending').object,'gemini_image_generation');
+});

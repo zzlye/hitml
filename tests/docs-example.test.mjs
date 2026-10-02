@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -47,7 +47,9 @@ globalThis.fetch = async (input, options = {}) => {
 `;
 
 function execute(pageId, scenario, resume = false) {
-  const dir = mkdtempSync(join(tmpdir(), 'hitml-doc-example-'));
+  const base = process.platform === 'win32' ? 'D:/tmp' : tmpdir();
+  mkdirSync(base, {recursive:true});
+  const dir = mkdtempSync(join(base, 'hitml-doc-example-'));
   try {
     const source = pages.find((p) => p.id === pageId).blocks.find((b) => b.type === 'code' && b.lang === 'javascript').value;
     writeFileSync(join(dir, 'generate.mjs'), source);
@@ -82,7 +84,7 @@ test('查询限流和网络故障不会造成重复生成', () => {
   assert.equal(result.status,0,result.output);
   assert.equal(result.calls.filter(c=>c.method==='POST').length,1);
   assert.equal(result.calls.filter(c=>c.url.endsWith('/async_test')).length,5);
-  assert.ok(result.delays.includes(8000));
+  assert.ok(result.delays[1] >= 8000);
 });
 
 test('恢复任务只查询下载，不发送新的创建请求', () => {
@@ -105,7 +107,8 @@ for (const scenario of ['failed','cancelled','expired','unknown','unauthorized',
 test('香蕉示例使用原生端点和正确的参考图编码', () => {
   const result=execute('banana','success');
   assert.equal(result.status,0,result.output);
-  assert.equal(result.calls.length,1);
+  assert.equal(result.calls.filter(call => call.method === 'POST').length,1);
+  assert.equal(result.file,'mock-media');
   const request=result.calls[0];
   assert.ok(request.url.endsWith('/v1beta/models/nano-banana-2:generateContent'));
   const body=JSON.parse(request.body);
@@ -113,3 +116,14 @@ test('香蕉示例使用原生端点和正确的参考图编码', () => {
   assert.equal(data.mimeType,'image/png');
   assert.equal(Buffer.from(data.data,'base64').toString(),'reference-bytes');
 });
+
+for (const [pageId, model] of [['image2','gpt-image-2.5-flare'],['seedream','seedream-5-pro']]) {
+  test(pageId + '示例按页面模型完成生成与保存', () => {
+    const result=execute(pageId,'success');
+    assert.equal(result.status,0,result.output);
+    assert.equal(result.file,'mock-media');
+    const posts=result.calls.filter(call=>call.method==='POST');
+    assert.equal(posts.length,1);
+    assert.equal(JSON.parse(posts[0].body).model,model);
+  });
+}

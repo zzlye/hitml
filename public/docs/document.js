@@ -1,4 +1,4 @@
-import { pages } from "./content.js?v=20261002";
+import { pages } from "./content.js?v=20261002-pro2";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -10,6 +10,9 @@ export const resolveRoute = (hash) => {
 };
 
 export const renderPage = (page) => {
+  // 目录锚点从正文生成，新增或重排章节后无需重复维护。
+  const headings = page.blocks.flatMap((block, index) => block.type === "heading" ? [{ title: block.value, index }] : []);
+  const toc = headings.length > 1 ? `<nav class="page-toc" aria-label="本页目录"><strong>本页目录</strong><ol>${headings.map((item) => `<li><a href="#/${escapeHtml(page.id)}?section=${item.index}">${inline(item.title)}</a></li>`).join("")}</ol></nav>` : "";
   const blocks = page.blocks.map((block, index) => {
     if (block.type === "heading") return `<h2 id="section-${index}">${inline(block.value)}</h2>`;
     if (block.type === "paragraph") return `<p>${inline(block.value)}</p>`;
@@ -20,7 +23,7 @@ export const renderPage = (page) => {
     if (block.type === "code") return `<div class="code-example"><div class="code-caption"><span>${escapeHtml(block.lang)}</span><button type="button" class="code-copy" data-copy-index="${index}" aria-label="复制${escapeHtml(block.lang)}示例">复制</button></div><pre class="code-block" data-lang="${escapeHtml(block.lang)}"><code>${escapeHtml(block.value.trim())}</code></pre></div>`;
     return "";
   }).join("\n");
-  return `<article class="doc-page"><p class="doc-eyebrow">文运工坊 · 图片与视频</p><h1>${escapeHtml(page.title)}</h1><p class="lead">${inline(page.lead)}</p>${blocks}<footer>© 文运工坊</footer></article>`;
+  return `<article class="doc-page"><p class="doc-eyebrow">文运工坊 · 图片与视频</p><h1>${escapeHtml(page.title)}</h1><p class="lead">${inline(page.lead)}</p>${toc}${blocks}<footer>© 文运工坊</footer></article>`;
 };
 
 const markdownCell = (value) => String(value).replaceAll("|", "\\|").replaceAll("\n", "<br>");
