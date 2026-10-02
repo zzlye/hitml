@@ -57,6 +57,7 @@ pre {
 }
 
 .docs-sidebar {
+  overflow-y: auto;
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 20;
@@ -69,6 +70,7 @@ pre {
 }
 
 .docs-brand {
+  flex-shrink: 0;
   display: block;
   margin-bottom: 34px;
   color: var(--heading);
@@ -164,6 +166,8 @@ pre {
 }
 
 .docs-toolbar-inner {
+  flex-wrap: wrap;
+  padding: 12px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -174,6 +178,7 @@ pre {
 }
 
 .docs-current {
+  flex: 1;
   display: grid;
   gap: 1px;
   min-width: 0;
@@ -194,6 +199,7 @@ pre {
 }
 
 .docs-export {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -229,6 +235,7 @@ pre {
 }
 
 .docs-content {
+  overflow-wrap: anywhere;
   width: min(820px, calc(100% - 40px));
   margin: 0 auto;
   padding: 42px 0 72px;
@@ -268,6 +275,7 @@ pre {
 }
 
 .doc-page h2 {
+  scroll-margin-top: 100px;
   margin: 42px 0 14px;
   color: var(--heading);
   font-size: 24px;
@@ -378,6 +386,7 @@ td:last-child {
 }
 
 .code-block {
+  max-width: 100%;
   position: relative;
   overflow-x: auto;
   margin: 12px 0 18px;
@@ -390,14 +399,74 @@ td:last-child {
   line-height: 1.72;
 }
 
-.code-block::after {
-  position: absolute;
-  top: 7px;
-  right: 10px;
-  color: #c0c7d2;
-  content: attr(data-lang);
-  font-size: 11px;
-  font-weight: 800;
+/* 示例标签与复制按钮放在代码外，避免横向滚动时遮住正文。 */
+.docs-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.docs-menu {
+  display: none;
+}
+.doc-page .doc-eyebrow {
+  margin-bottom: 12px;
+  color: #1677ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.doc-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+.doc-links a {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+}
+.code-example {
+  min-width: 0;
+  margin: 16px 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.code-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 4px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--table-head);
+  color: var(--muted);
+  font-size: 12px;
+}
+.code-copy {
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #1677ff;
+  cursor: pointer;
+}
+.code-copy:hover {
+  background: var(--blue-soft);
+}
+.code-example .code-block {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+a:focus-visible, button:focus-visible, .table-wrap:focus-visible {
+  outline: 2px solid #1677ff;
+  outline-offset: 3px;
 }
 
 .code-block code {
@@ -426,6 +495,24 @@ footer {
 }
 
 @media (max-width: 760px) {
+  .docs-menu {
+    display: inline-flex;
+  }
+  .docs-toolbar-inner {
+    gap: 8px;
+  }
+  .docs-current {
+    flex-basis: 100%;
+  }
+  .docs-actions {
+    width: 100%;
+  }
+  .docs-actions .docs-export:not(.docs-menu) {
+    flex: 1;
+  }
+  .doc-links {
+    grid-template-columns: 1fr;
+  }
   .docs-sidebar {
     position: relative;
     width: 100%;

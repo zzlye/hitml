@@ -229,7 +229,7 @@ export const tutorialModules: TutorialModule[] = [
       {
         tag: "统一文档",
         title: "文运工坊接口文档",
-        description: "GPT Image 2 与 Nano Banana 接口说明。",
+        description: "图片与视频模型的接口说明、调用示例与结果下载。",
         notes: [
           {
             text: "打开文档：",

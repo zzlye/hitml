@@ -3,24 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>接口文档</title>
-    <link rel="stylesheet" href="/docs/styles.css" />
+    <meta name="description" content="文运工坊图片与视频接口文档：模型、调用示例、异步任务和结果下载。" />
+    <title>图片与视频接口文档 · 文运工坊</title>
+    <link rel="icon" type="image/webp" href="/images/doro-2.webp" />
+    <link rel="stylesheet" href="/docs/styles.css?v=20261002" />
   </head>
   <body>
     <div class="docs-layout">
       <aside class="docs-sidebar" aria-label="接口文档目录">
         <a class="docs-brand" href="/docs/index.html#/">文运工坊接口文档</a>
         <p class="docs-nav-label">文档目录</p>
-        <nav class="docs-nav">
-          <a href="/docs/index.html#/" data-route="image2">
-            <span class="docs-nav-index">01</span>
-            <span>GPT Image 2</span>
-          </a>
-          <a href="/docs/index.html#/banana" data-route="banana">
-            <span class="docs-nav-index">02</span>
-            <span>Nano Banana</span>
-          </a>
-        </nav>
+        <nav class="docs-nav" id="docs-nav" aria-label="章节列表"></nav>
         <a class="docs-home" href="/">返回展示页</a>
       </aside>
 
@@ -29,20 +22,24 @@
           <div class="docs-toolbar-inner">
             <div class="docs-current">
               <span>当前文档</span>
-              <strong id="docs-current-title">GPT Image 2</strong>
+              <strong id="docs-current-title">接入指南</strong>
             </div>
-            <button class="docs-export" id="docs-export" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
-              </svg>
-              <span>导出 Markdown</span>
-            </button>
+            <div class="docs-actions">
+              <button class="docs-export docs-menu" id="docs-menu" type="button">目录</button>
+              <button class="docs-export" id="docs-export" type="button" aria-label="导出当前章节为Markdown">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+                </svg>
+                <span>导出本页</span>
+              </button>
+              <button class="docs-export" id="docs-export-all" type="button" aria-label="导出全部章节为Markdown">导出全部</button>
+            </div>
           </div>
         </header>
-        <main class="docs-content" id="docs-content" tabindex="-1"></main>
+        <main class="docs-content" id="docs-content" tabindex="-1"><noscript>请启用JavaScript以查看接口文档和导出Markdown。</noscript></main>
       </div>
     </div>
     <div class="docs-toast" id="docs-toast" role="status" aria-live="polite"></div>
-    <script type="module" src="/docs/app.js"></script>
+    <script type="module" src="/docs/app.js?v=20261002"></script>
   </body>
 </html>
