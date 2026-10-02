@@ -31,7 +31,7 @@ export const pageMarkdown = (page) => {
     if (block.type === "note") return `> ${block.value}`;
     if (block.type === "list") return block.items.map((item) => `- ${item}`).join("\n");
     // 使用完整网址，导出的文档离开本站后仍能返回对应章节。
-    if (block.type === "links") return block.items.map((item) => `- [${item.label}](https://zzlye.xyz/docs/index.html#/${item.id})`).join("\n");
+    if (block.type === "links") return block.items.map((item) => `- [${item.label}](https://zzlye.site/docs/index.html#/${item.id})`).join("\n");
     if (block.type === "table") return [block.headers, block.headers.map(() => "---"), ...block.rows].map((row) => `| ${row.map(markdownCell).join(" | ")} |`).join("\n");
     if (block.type === "code") {
       const fence = "`".repeat(Math.max(3, ...(block.value.match(/`+/g) || []).map((match) => match.length + 1)));

@@ -79,6 +79,12 @@ test("导出表格正确转义竖线，代码围栏不会被示例截断", () =>
   assert.ok(markdown.includes("````text"));
 });
 
+test("导出文档链接指向实际文档站，不指向在线生成服务", () => {
+  const markdown = pageMarkdown(pages.find((page) => page.id === "start"));
+  assert.ok(markdown.includes("https://zzlye.site/docs/index.html#/image2"));
+  assert.ok(!markdown.includes("https://zzlye.xyz/docs/"));
+});
+
 test("页面转义占位符和HTML，任务对象字段保持真实契约", () => {
   const page = { title: "<script>", lead: "<API_KEY>", blocks: [] };
   const html = renderPage(page);
