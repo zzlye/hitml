@@ -7,7 +7,7 @@ const { pages, mediaModels, API_ORIGIN } = await import("../public/docs/content.
 const { pageMarkdown, renderPage, resolveRoute } = await import("../public/docs/document.js");
 
 test("图片与视频文档页面完整且编号唯一", () => {
-  assert.deepEqual(pages.map((page) => page.id), ["start", "models", "image2", "banana", "seedream", "video", "tasks", "errors"]);
+  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "video"]);
   assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
@@ -20,11 +20,11 @@ test("公开模型包含服务器配置的十四个图片和视频名称", () =>
   assert.ok(mediaModels.every((model) => ["image2", "banana", "seedream", "video"].includes(model.page)));
 });
 
-test("旧链接仍可使用，未知路径回到接入指南", () => {
+test("旧链接仍可使用，旧公共章节与未知路径回到默认模型", () => {
   assert.equal(resolveRoute("#/banana"), "banana");
   assert.equal(resolveRoute("#/image2"), "image2");
-  assert.equal(resolveRoute("#/"), "start");
-  assert.equal(resolveRoute("#/missing"), "start");
+  assert.equal(resolveRoute("#/"), "image2");
+  assert.equal(resolveRoute("#/missing"), "image2");
 });
 
 test("网页与Markdown共用正文，所有示例JSON均可解析", () => {
@@ -45,7 +45,7 @@ test("香蕉走原生协议，异步状态和任务路径使用本服务器契�
   const banana = pageMarkdown(pages.find((page) => page.id === "banana"));
   assert.ok(banana.includes("/v1beta/models/nano-banana-2:generateContent"));
   assert.ok(banana.includes("inlineData"));
-  const tasks = pageMarkdown(pages.find((page) => page.id === "tasks"));
+  const tasks = pageMarkdown(pages.find((page) => page.id === "image2"));
   for (const state of ["pending", "processing", "waiting", "succeeded", "failed", "cancelled"]) assert.ok(tasks.includes(state));
   assert.ok(tasks.includes("Prefer: respond-async"));
   assert.ok(tasks.includes("result_expired"));
@@ -80,7 +80,7 @@ test("导出表格正确转义竖线，代码围栏不会被示例截断", () =>
 });
 
 test("导出文档链接指向实际文档站，不指向在线生成服务", () => {
-  const markdown = pageMarkdown(pages.find((page) => page.id === "start"));
+  const markdown = pageMarkdown(pages.find((page) => page.id === "banana"));
   assert.ok(markdown.includes("https://zzlye.site/docs/index.html#/image2"));
   assert.ok(!markdown.includes("https://zzlye.xyz/docs/"));
 });
@@ -90,8 +90,8 @@ test("页面转义占位符和HTML，任务对象字段保持真实契约", () =
   const html = renderPage(page);
   assert.ok(!html.includes("<script>"));
   assert.ok(html.includes("&lt;API_KEY&gt;"));
-  const taskPage = pages.find((entry) => entry.id === "tasks");
-  const submitted = taskPage.blocks.find((block) => block.type === "code" && block.lang === "json");
+  const taskPage = pages.find((entry) => entry.id === "image2");
+  const submitted = taskPage.blocks.find((block) => block.type === "code" && block.lang === "json" && JSON.parse(block.value).status === "pending");
   assert.equal(JSON.parse(submitted.value).object, "image_generation");
 });
 test('四类模型文档各自包含异步闭环与可执行示例', () => {
@@ -140,10 +140,40 @@ test('本页目录与正文锚点对应并支持旧路由', () => {
 });
 
 test('网页代码和可独立运行的示例文件逐字一致', () => {
-  for(const [id,file,lang] of [['image2','image2.mjs','javascript'],['banana','banana.mjs','javascript'],['seedream','seedream.mjs','javascript'],['tasks','images.mjs','javascript'],['video','video.mjs','javascript'],['video','video.py','python']]) {
+  for(const [id,file,lang] of [['image2','image2.mjs','javascript'],['banana','banana.mjs','javascript'],['seedream','seedream.mjs','javascript'],['image2','images.mjs','javascript'],['video','video.mjs','javascript'],['video','video.py','python']]) {
     const block=pages.find(p=>p.id===id).blocks.find(b=>b.lang===lang);
-    assert.equal(block.value,readFileSync(new URL('../public/docs/examples/'+file,import.meta.url),'utf8'));
+    // 忽略不同系统的换行编码，其余正文必须一致。
+    assert.equal(block.value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/'+file,import.meta.url),'utf8').replaceAll('\r\n','\n'));
   }
   const banana=pages.find(p=>p.id==='banana').blocks.filter(b=>b.lang==='json').map(b=>JSON.parse(b.value));
   assert.equal(banana.find(b=>b.status==='pending').object,'gemini_image_generation');
+});
+
+
+test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
+  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','Wan 视频']);
+  for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
+  const all=pages.map(pageMarkdown).join('\n\n');
+  // 代码围栏内的中文注释不是Markdown页面标题。
+  let inCode=false;
+  const headings=all.split('\n').filter(line=>{
+    if(line.startsWith('```')) inCode=!inCode;
+    return !inCode&&line.startsWith('# ');
+  });
+  assert.equal(headings.length,4);
+  for(const page of pages)for(const block of page.blocks.filter(b=>b.type==='links')){
+    assert.ok(block.items.every(item=>pages.some(p=>p.id===item.id)));
+  }
+  assert.ok(!/#\/(?:start|models|tasks|errors)(?:\s|\))/u.test(all));
+});
+
+test('Wan页同时包含Videos与网关可恢复示例',()=>{
+  const page=pages.find(p=>p.id==='video');
+  const examples=page.blocks.filter(b=>b.lang==='javascript');
+  assert.equal(examples.length,2);
+  assert.ok(examples[0].value.includes("'/v1/videos/'"));
+  assert.ok(examples[1].value.includes("Prefer: 'respond-async'"));
+  assert.ok(examples[1].value.includes("model: 'wan-3.0'"));
+  assert.equal(examples[1].value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/video-gateway.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n'));
+  assert.ok(!pageMarkdown(page).includes('“任务与下载”章节'));
 });

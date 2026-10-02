@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261002-pro2";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261002-pro2";
+import { pages } from "./content.js?v=20261002-models";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261002-models";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
@@ -9,7 +9,7 @@ let currentPage;
 let toastTimer;
 
 // 目录与正文使用同一份配置，避免新增章节时遗漏菜单。
-nav.innerHTML = pages.map((page, index) => '<a href="#/' + (page.id === "start" ? "" : page.id) + '" data-route="' + page.id + '"><span class="docs-nav-index">' + String(index + 1).padStart(2, "0") + '</span><span>' + escapeHtml(page.label) + '</span></a>').join("");
+nav.innerHTML = pages.map((page, index) => '<a href="#/' + page.id + '" data-route="' + page.id + '"><span class="docs-nav-index">' + String(index + 1).padStart(2, "0") + '</span><span>' + escapeHtml(page.label) + '</span></a>').join("");
 
 const showToast = (message) => {
   clearTimeout(toastTimer);
@@ -29,7 +29,9 @@ const render = (focusContent = false) => {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  const section = new URLSearchParams(location.hash.split("?")[1] || "").get("section");
+  // 公共章节的旧链接回到默认模型，不沿用旧页面的章节索引。
+  const requestedRoute = location.hash.replace(/^#\/?/, "").split("?")[0];
+  const section = requestedRoute === currentPage.id ? new URLSearchParams(location.hash.split("?")[1] || "").get("section") : null;
   const heading = section && /^\d+$/.test(section) ? document.getElementById("section-" + section) : null;
   if (heading) {
     // 深链接和浏览器前进后退直接定位章节，避免长文档每次回到顶部。

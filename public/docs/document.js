@@ -1,4 +1,4 @@
-import { pages } from "./content.js?v=20261002-pro2";
+import { pages } from "./content.js?v=20261002-models";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -6,7 +6,7 @@ const inline = (value) => escapeHtml(value).replace(/`([^`]+)`/g, "<code>$1</cod
 
 export const resolveRoute = (hash) => {
   const id = hash.replace(/^#\/?/, "").split("?")[0];
-  return pages.some((page) => page.id === id) ? id : "start";
+  return pages.some((page) => page.id === id) ? id : "image2";
 };
 
 export const renderPage = (page) => {

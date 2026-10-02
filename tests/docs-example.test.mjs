@@ -46,12 +46,12 @@ globalThis.fetch = async (input, options = {}) => {
 };
 `;
 
-function execute(pageId, scenario, resume = false) {
+function execute(pageId, scenario, resume = false, exampleIndex = 0) {
   const base = process.platform === 'win32' ? 'D:/tmp' : tmpdir();
   mkdirSync(base, {recursive:true});
   const dir = mkdtempSync(join(base, 'hitml-doc-example-'));
   try {
-    const source = pages.find((p) => p.id === pageId).blocks.find((b) => b.type === 'code' && b.lang === 'javascript').value;
+    const source = pages.find((p) => p.id === pageId).blocks.filter((b) => b.type === 'code' && b.lang === 'javascript')[exampleIndex].value;
     writeFileSync(join(dir, 'generate.mjs'), source);
     writeFileSync(join(dir, 'mock.mjs'), bootstrap);
     writeFileSync(join(dir, 'reference.png'), 'reference-bytes');
@@ -72,7 +72,7 @@ function execute(pageId, scenario, resume = false) {
 }
 
 test('异步示例只提交一次并流式保存结果文件', () => {
-  const result = execute('tasks','success');
+  const result = execute('image2','success');
   assert.equal(result.status,0,result.output);
   assert.equal(result.file,'mock-media');
   assert.equal(result.calls.filter(c=>c.method==='POST').length,1);
@@ -80,7 +80,7 @@ test('异步示例只提交一次并流式保存结果文件', () => {
 });
 
 test('查询限流和网络故障不会造成重复生成', () => {
-  const result = execute('tasks','retry');
+  const result = execute('image2','retry');
   assert.equal(result.status,0,result.output);
   assert.equal(result.calls.filter(c=>c.method==='POST').length,1);
   assert.equal(result.calls.filter(c=>c.url.endsWith('/async_test')).length,5);
@@ -88,7 +88,7 @@ test('查询限流和网络故障不会造成重复生成', () => {
 });
 
 test('恢复任务只查询下载，不发送新的创建请求', () => {
-  const result = execute('tasks','success',true);
+  const result = execute('image2','success',true);
   assert.equal(result.status,0,result.output);
   assert.equal(result.calls.filter(c=>c.method==='POST').length,0);
   assert.equal(result.file,'mock-media');
@@ -96,7 +96,7 @@ test('恢复任务只查询下载，不发送新的创建请求', () => {
 
 for (const scenario of ['failed','cancelled','expired','unknown','unauthorized','create-error','foreign']) {
   test('示例正确停止并保留错误：'+scenario, () => {
-    const result=execute('tasks',scenario);
+    const result=execute('image2',scenario);
     assert.equal(result.status,1,result.output);
     assert.equal(result.file,null);
     assert.equal(result.calls.filter(c=>c.method==='POST').length,1);
@@ -127,3 +127,18 @@ for (const [pageId, model] of [['image2','gpt-image-2.5-flare'],['seedream','see
     assert.equal(JSON.parse(posts[0].body).model,model);
   });
 }
+
+
+test('Wan网关示例使用视频创建入口且仅提交一次',()=>{
+  const result=execute('video','success',false,1);
+  assert.equal(result.status,0,result.output);
+  const posts=result.calls.filter(call=>call.method==='POST');
+  assert.equal(posts.length,1);
+  assert.ok(posts[0].url.endsWith('/v1/videos'));
+  assert.equal(JSON.parse(posts[0].body).model,'wan-3.0');
+  assert.equal(JSON.parse(posts[0].body).duration,10);
+  assert.equal(result.file,'mock-media');
+  const resumed=execute('video','success',true,1);
+  assert.equal(resumed.status,0,resumed.output);
+  assert.equal(resumed.calls.filter(call=>call.method==='POST').length,0);
+});
