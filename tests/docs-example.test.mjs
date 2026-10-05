@@ -142,3 +142,20 @@ test('Wan网关示例使用视频创建入口且仅提交一次',()=>{
   assert.equal(resumed.status,0,resumed.output);
   assert.equal(resumed.calls.filter(call=>call.method==='POST').length,0);
 });
+
+test('SD网关示例按本页模型创建并支持恢复与过期停止',()=>{
+  for(const scenario of ['success','retry','expired','failed','foreign']){
+    const result=execute('sd-video',scenario,false,1);
+    assert.equal(result.status,['success','retry'].includes(scenario)?0:1,result.output);
+    const posts=result.calls.filter(c=>c.method==='POST');
+    assert.equal(posts.length,1);
+    assert.ok(posts[0].url.endsWith('/v1/videos'));
+    const body=JSON.parse(posts[0].body);
+    assert.equal(body.model,'sd-2.0');assert.equal(body.duration,6);
+    assert.equal(body.resolution,'720p');
+    assert.ok(result.calls.every(c=>new URL(c.url).origin==='https://api.zzlye.xyz'));
+  }
+  const resumed=execute('sd-video','success',true,1);
+  assert.equal(resumed.status,0,resumed.output);
+  assert.equal(resumed.calls.filter(c=>c.method==='POST').length,0);
+});

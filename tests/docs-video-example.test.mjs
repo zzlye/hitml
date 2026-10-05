@@ -6,7 +6,6 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { pages } from '../public/docs/content.js';
-const video = pages.find(p => p.id === 'video');
 // 测试直接执行公开文档里的示例，网络全部替换为模拟响应，避免生成费用。
 const nodeMock = String.raw`import { createRequire, syncBuiltinESMExports } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -102,11 +101,11 @@ try:
 finally:
     Path('calls.json').write_text(json.dumps({'calls':calls,'delays':delays}),encoding='utf8')
 `;
-function execute(lang,scenario,{resume=false,existing=false}={}){
+function execute(pageId,lang,scenario,{resume=false,existing=false}={}){
  const base=process.platform==='win32'?'D:/tmp':tmpdir();mkdirSync(base,{recursive:true});
  const dir=mkdtempSync(join(base,'hitml-video-example-'));
  try{
-  const source=video.blocks.find(b=>b.type==='code'&&b.lang===lang).value;
+  const source=pages.find(p=>p.id===pageId).blocks.find(b=>b.type==='code'&&b.lang===lang).value;
   const file=lang==='python'?'video.py':'video.mjs';
   writeFileSync(join(dir,file),source);
   writeFileSync(join(dir,lang==='python'?'mock.py':'mock.mjs'),lang==='python'?pythonMock:nodeMock);
@@ -120,20 +119,20 @@ function execute(lang,scenario,{resume=false,existing=false}={}){
   return {...report,status:child.status,output:child.stdout+child.stderr,file:existsSync(join(dir,'result.mp4'))?readFileSync(join(dir,'result.mp4'),'utf8'):null,partial:existsSync(join(dir,'result.mp4.part')),saved:existsSync(join(dir,'video-task.json'))};
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
-for(const lang of ['javascript','python']){
- for(const scenario of ['success','retry'])test(lang+'视频示例完成创建、轮询及下载：'+scenario,()=>{
-  const r=execute(lang,scenario);assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.equal(r.partial,false);assert.ok(r.saved);
+for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd-2.0',6]]) for(const lang of ['javascript','python']){
+ for(const scenario of ['success','retry'])test(pageId+' '+lang+'视频示例完成创建、轮询及下载：'+scenario,()=>{
+  const r=execute(pageId,lang,scenario);assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.equal(r.partial,false);assert.ok(r.saved);
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
-  const body=JSON.parse(posts[0].body);assert.equal(body.model,'wan-3.0');assert.equal(body.duration,10);assert.equal(body.resolution,'720p');
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.duration,duration);assert.equal(body.resolution,'720p');
   assert.ok(!JSON.stringify(posts[0].headers).includes('respond-async'));
   assert.equal(r.delays[0],lang==='python'?7:7000);
   if(scenario==='retry')assert.ok(r.delays[1]>=(lang==='python'?8:8000));
  });
- test(lang+'视频示例恢复不重复提交',()=>{const r=execute(lang,'success',{resume:true});assert.equal(r.status,0,r.output);assert.equal(r.calls.filter(c=>c.method==='POST').length,0);assert.equal(r.file,'mock-video');});
- test(lang+'视频示例拒绝覆盖已有任务',()=>{const r=execute(lang,'success',{existing:true});assert.equal(r.status,1);assert.equal(r.calls.length,0);});
- for(const scenario of ['failed','unknown','unauthorized','timeout','download-error','wrong-mime','create-error','invalid-create'])test(lang+'视频异常终止且不重复生成：'+scenario,()=>{
-  const r=execute(lang,scenario);assert.equal(r.status,1,r.output);assert.equal(r.file,null);assert.equal(r.partial,false);assert.equal(r.calls.filter(c=>c.method==='POST').length,1);
+ test(pageId+' '+lang+'视频示例恢复不重复提交',()=>{const r=execute(pageId,lang,'success',{resume:true});assert.equal(r.status,0,r.output);assert.equal(r.calls.filter(c=>c.method==='POST').length,0);assert.equal(r.file,'mock-video');});
+ test(pageId+' '+lang+'视频示例拒绝覆盖已有任务',()=>{const r=execute(pageId,lang,'success',{existing:true});assert.equal(r.status,1);assert.equal(r.calls.length,0);});
+ for(const scenario of ['failed','unknown','unauthorized','timeout','download-error','wrong-mime','create-error','invalid-create'])test(pageId+' '+lang+'视频异常终止且不重复生成：'+scenario,()=>{
+  const r=execute(pageId,lang,scenario);assert.equal(r.status,1,r.output);assert.equal(r.file,null);assert.equal(r.partial,false);assert.equal(r.calls.filter(c=>c.method==='POST').length,1);
   if(!['create-error','invalid-create'].includes(scenario))assert.ok(r.saved);
  });
 }
-test('下载中断清理部分文件并保留任务编号',()=>{const r=execute('javascript','broken-download');assert.equal(r.status,1);assert.equal(r.file,null);assert.equal(r.partial,false);assert.ok(r.saved);});
+test('下载中断清理部分文件并保留任务编号',()=>{const r=execute('video','javascript','broken-download');assert.equal(r.status,1);assert.equal(r.file,null);assert.equal(r.partial,false);assert.ok(r.saved);});

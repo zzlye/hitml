@@ -7,17 +7,17 @@ const { pages, mediaModels, API_ORIGIN } = await import("../public/docs/content.
 const { pageMarkdown, renderPage, resolveRoute } = await import("../public/docs/document.js");
 
 test("图片与视频文档页面完整且编号唯一", () => {
-  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "video"]);
+  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "video", "sd-video"]);
   assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
 
-test("公开模型包含服务器配置的十四个图片和视频名称", () => {
-  assert.equal(mediaModels.length, 14);
+test("公开模型包含服务器配置的十七个图片和视频名称", () => {
+  assert.equal(mediaModels.length, 17);
   for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-sunburst-4k", "nano-banana-pro", "sd5p", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
-  assert.ok(mediaModels.every((model) => ["image2", "banana", "seedream", "video"].includes(model.page)));
+  assert.ok(mediaModels.every((model) => ["image2", "banana", "seedream", "video", "sd-video"].includes(model.page)));
 });
 
 test("旧链接仍可使用，旧公共章节与未知路径回到默认模型", () => {
@@ -94,8 +94,8 @@ test("页面转义占位符和HTML，任务对象字段保持真实契约", () =
   const submitted = taskPage.blocks.find((block) => block.type === "code" && block.lang === "json" && JSON.parse(block.value).status === "pending");
   assert.equal(JSON.parse(submitted.value).object, "image_generation");
 });
-test('四类模型文档各自包含异步闭环与可执行示例', () => {
-  for (const id of ['image2','banana','seedream','video']) {
+test('五类模型文档各自包含异步闭环与可执行示例', () => {
+  for (const id of ['image2','banana','seedream','video','sd-video']) {
     const page=pages.find(p=>p.id===id), text=pageMarkdown(page);
     for(const term of ['Authorization','task_id','poll_url','Retry-After','result_expired','succeeded','failed','下载','完整示例']) assert.ok(text.includes(term),id+':'+term);
     const code=page.blocks.find(b=>b.lang==='javascript').value;
@@ -140,7 +140,7 @@ test('本页目录与正文锚点对应并支持旧路由', () => {
 });
 
 test('网页代码和可独立运行的示例文件逐字一致', () => {
-  for(const [id,file,lang] of [['image2','image2.mjs','javascript'],['banana','banana.mjs','javascript'],['seedream','seedream.mjs','javascript'],['image2','images.mjs','javascript'],['video','video.mjs','javascript'],['video','video.py','python']]) {
+  for(const [id,file,lang] of [['image2','image2.mjs','javascript'],['banana','banana.mjs','javascript'],['seedream','seedream.mjs','javascript'],['image2','images.mjs','javascript'],['video','video.mjs','javascript'],['video','video.py','python'],['sd-video','sd-video.mjs','javascript'],['sd-video','sd-video.py','python']]) {
     const block=pages.find(p=>p.id===id).blocks.find(b=>b.lang===lang);
     // 忽略不同系统的换行编码，其余正文必须一致。
     assert.equal(block.value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/'+file,import.meta.url),'utf8').replaceAll('\r\n','\n'));
@@ -151,7 +151,7 @@ test('网页代码和可独立运行的示例文件逐字一致', () => {
 
 
 test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
-  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','Wan 视频']);
+  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','Wan 视频','SD 视频']);
   for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
   const all=pages.map(pageMarkdown).join('\n\n');
   // 代码围栏内的中文注释不是Markdown页面标题。
@@ -160,7 +160,7 @@ test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
     if(line.startsWith('```')) inCode=!inCode;
     return !inCode&&line.startsWith('# ');
   });
-  assert.equal(headings.length,4);
+  assert.equal(headings.length,5);
   for(const page of pages)for(const block of page.blocks.filter(b=>b.type==='links')){
     assert.ok(block.items.every(item=>pages.some(p=>p.id===item.id)));
   }
@@ -176,4 +176,38 @@ test('Wan页同时包含Videos与网关可恢复示例',()=>{
   assert.ok(examples[1].value.includes("model: 'wan-3.0'"));
   assert.equal(examples[1].value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/video-gateway.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n'));
   assert.ok(!pageMarkdown(page).includes('“任务与下载”章节'));
+});
+
+test('SD型号、素材数量、时长与示例契约保持一致',()=>{
+  const page=pages.find(p=>p.id==='sd-video'),text=pageMarkdown(page);
+  const limits={'sd-2.0':[15,9,3,3],'sd-2.5-30-10-10':[15,30,10,10],'sd-2.5-10-10-10':[30,10,10,10]};
+  assert.equal(resolveRoute('#/sd-video'),'sd-video');
+  for(const name of Object.keys(limits))assert.ok(mediaModels.some(m=>m.name===name&&m.page==='sd-video'));
+  for(const term of ['image_refs','video_refs','audio_refs','first_image','last_image','@Image1','@Video1','@Audio1','completed','succeeded','result_expired','15秒','HTTPS'])assert.ok(text.includes(term),term);
+  assert.ok(!/rolldek|sd-2\.[05]-ch[12]/.test(text));
+  // 检查实际可复制的请求，不只检查文字是否出现关键字。
+  const requests=[];
+  for(const block of page.blocks.filter(b=>b.type==='code')){
+    assert.ok(!/^\+\s+-/m.test(block.value),'示例不能残留补丁标记');
+    if(block.lang==='json')requests.push(JSON.parse(block.value));
+    if(block.lang==='bash')for(const [,body] of block.value.matchAll(/--data\s+'([\s\S]*?)'/g))requests.push(JSON.parse(body));
+  }
+  for(const body of requests.filter(b=>b.prompt)){
+    const [duration,images,videos,audios]=limits[body.model];
+    assert.ok(Number.isInteger(body.duration)&&body.duration>=4&&body.duration<=duration);
+    assert.equal(body.resolution,'720p');
+    assert.ok(!('image_urls' in body)&&!('input_reference' in body)&&!('seconds' in body));
+    for(const [field,max] of [['image_refs',images],['video_refs',videos],['audio_refs',audios]]){
+      assert.ok((body[field]||[]).length<=max);
+      for(const url of body[field]||[])assert.ok(url.startsWith('https://'));
+    }
+    if(body.first_image||body.last_image){
+      assert.ok(body.model.startsWith('sd-2.5-'));
+      assert.ok(body.first_image&&body.last_image);
+      for(const key of ['image_refs','video_refs','audio_refs'])assert.ok(!(key in body));
+    }
+  }
+  assert.ok(requests.filter(b=>b.prompt).length>=6);
+  const gateway=page.blocks.filter(b=>b.lang==='javascript')[1];
+  assert.equal(gateway.value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/sd-video-gateway.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n'));
 });
