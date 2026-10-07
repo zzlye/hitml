@@ -60,6 +60,40 @@ test("视频示例保留真实时长和分辨率字段", () => {
   assert.ok(video.includes("input_reference"));
 });
 
+test("GPT Image文档包含西米露实际图片参数和尺寸限制", () => {
+  const page = pages.find((entry) => entry.id === "image2");
+  const text = pageMarkdown(page);
+  for (const value of [
+    "gpt-image-2",
+    "gpt-image-2.5-flare-4k",
+    "POST /v1/images/edits",
+    "quality",
+    "background",
+    "response_format",
+    "output_format",
+    "1K、2K、4K",
+    "1:1",
+    "3:2",
+    "2:3",
+    "16:9",
+    "9:16",
+    "4:3",
+    "3:4",
+    "21:9",
+    "1024x1024",
+    "1280x720",
+    "720x1280",
+    "宽和高都必须是16的倍数",
+    "3840px",
+    "655360至8294400",
+    "最多16张"
+  ]) assert.ok(text.includes(value), value);
+  assert.ok(!text.includes("是否生效取决于选中的模型与渠道"));
+  const generation = page.blocks.find((block) => block.type === "table" && block.headers.includes("西米露适配说明"));
+  assert.ok(generation);
+  assert.ok(generation.rows.some((row) => row[0] === "quality" && row[3].includes("xhigh")));
+});
+
 test("文档不包含旧域名、私有地址或凭据", () => {
   const text = pages.map(pageMarkdown).join("\n");
   assert.ok(!/bafang|zzlye\.xyz:60|https?:\/\/(?:\d{1,3}\.){3}\d{1,3}|ssh|password/i.test(text));

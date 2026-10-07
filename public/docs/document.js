@@ -1,4 +1,4 @@
-import { pages } from "./content.js?v=20261006-sd";
+import { pages } from "./content.js?v=20261007-image-params";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");

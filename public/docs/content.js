@@ -1,4 +1,12 @@
 // 每个模型页包含完整接入流程，页面目录与Markdown导出共用同一份正文。
+import {
+  IMAGE2_EDIT_BLOCKS,
+  IMAGE2_GENERATION_TABLE,
+  IMAGE2_MODEL_BLOCKS,
+  IMAGE2_RESPONSE_BLOCKS,
+  IMAGE2_SIZE_BLOCKS
+} from "./image2-details.js";
+
 export const API_ORIGIN = "https://api.zzlye.xyz";
 export const mediaModels = [
   {
@@ -104,7 +112,8 @@ export const mediaModels = [
     "protocol": "Videos"
   }
 ];
-export const pages = [
+
+const legacyPages = [
   {
     "id": "image2",
     "label": "GPT Image",
@@ -2655,3 +2664,22 @@ export const pages = [
     ]
   }
 ];
+
+// GPT Image页面保留原有异步闭环示例，只替换参数说明为西米露的实际配置。
+export const pages = legacyPages.map((page) => {
+  if (page.id !== "image2") return page;
+
+  return {
+    ...page,
+    lead: "按西米露实际适配说明图片接口，包含模型、比例、尺寸、质量、图生图和异步结果处理。",
+    blocks: page.blocks.flatMap((block, index) => {
+      if (index === 6) return [block, ...IMAGE2_MODEL_BLOCKS];
+      if (index === 9) return [IMAGE2_GENERATION_TABLE];
+      if (index === 12) return IMAGE2_EDIT_BLOCKS;
+      if (index === 14 || index === 16 || index === 17) return [];
+      if (index === 15) return IMAGE2_SIZE_BLOCKS;
+      if (index === 18) return [...IMAGE2_RESPONSE_BLOCKS, block];
+      return [block];
+    })
+  };
+});
