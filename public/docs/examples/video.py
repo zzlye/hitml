@@ -14,10 +14,18 @@ KEY = os.environ.get('WENYUN_API_KEY')
 if not KEY:
     raise SystemExit('请设置 WENYUN_API_KEY')
 TASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')
+# 高清型号按请求选择分辨率，支持720p或1080p。
+MODEL = os.environ.get('WENYUN_VIDEO_MODEL') or 'wan-3.0'
+RESOLUTION = os.environ.get('WENYUN_VIDEO_RESOLUTION') or '720p'
+if MODEL not in ('wan-3.0', 'wan-3.0-1080p'):
+    raise SystemExit('未知Wan模型：' + MODEL)
+RESOLUTIONS = ('720p',) if MODEL == 'wan-3.0' else ('720p', '1080p')
+if RESOLUTION not in RESOLUTIONS:
+    raise SystemExit('当前型号不支持此分辨率：' + RESOLUTION)
 BODY = {
-    'model': 'wan-3.0',
+    'model': MODEL,
     'prompt': '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
-    'duration': 10, 'resolution': '720p', 'aspect_ratio': '16:9',
+    'duration': 10, 'resolution': RESOLUTION, 'aspect_ratio': '16:9',
     # 图生视频时增加 image_urls: ['https://你的域名/参考图.jpg']。
 }
 

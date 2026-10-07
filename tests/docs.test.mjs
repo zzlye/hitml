@@ -265,9 +265,35 @@ test('Wan页同时包含Videos与网关可恢复示例',()=>{
   assert.equal(examples.length,2);
   assert.ok(examples[0].value.includes("'/v1/videos/'"));
   assert.ok(examples[1].value.includes("Prefer: 'respond-async'"));
-  assert.ok(examples[1].value.includes("model: 'wan-3.0'"));
+  assert.ok(examples[1].value.includes("WENYUN_VIDEO_MODEL || 'wan-3.0'"));
   assert.equal(examples[1].value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/video-gateway.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n'));
   assert.ok(!pageMarkdown(page).includes('“任务与下载”章节'));
+});
+
+test('Wan两型号共享时长与素材规则，高清分辨率可选择而非固定',()=>{
+  const page=pages.find(p=>p.id==='video');
+  const table=page.blocks.find(b=>b.type==='table'&&b.headers[0]==='模型名称');
+  assert.equal(table.rows.length,2);
+  for(const row of table.rows){assert.equal(row[2],'1–30秒（整数）');assert.equal(row[3],'最多2张');}
+  assert.ok(table.rows[1][1].includes('720p')&&table.rows[1][1].includes('最高'));
+  const requests=[];
+  for(const b of page.blocks.filter(b=>b.type==='code')){
+    if(b.lang==='json')requests.push(JSON.parse(b.value));
+    if(b.lang==='bash')for(const [,body] of b.value.matchAll(/--data\s+'([\s\S]*?)'/g))requests.push(JSON.parse(body));
+  }
+  const submissions=requests.filter(body=>body.prompt);
+  for(const body of submissions){
+    assert.ok(['wan-3.0','wan-3.0-1080p'].includes(body.model));
+    assert.ok(Number.isInteger(body.duration)&&body.duration>=1&&body.duration<=30);
+    assert.ok((body.model==='wan-3.0'?['720p']:['720p','1080p']).includes(body.resolution));
+    assert.ok((body.image_urls||[]).length<=2);
+    for(const key of ['image_urls','video_urls','audio_urls'])for(const url of body[key]||[])assert.ok(url.startsWith('https://'));
+    assert.ok(!('seconds' in body)&&!('input_reference' in body));
+  }
+  for(const resolution of ['720p','1080p'])assert.ok(submissions.some(b=>b.model==='wan-3.0-1080p'&&b.resolution===resolution));
+  assert.ok(submissions.some(b=>b.model==='wan-3.0-1080p'&&b.duration===30&&b.image_urls?.length===2));
+  const markdown=pageMarkdown(page);
+  assert.ok(!/808relay|SKYLEE|不自动继承720p|30秒示例适用于wan-3.0的720p/.test(markdown));
 });
 
 test('SD型号、素材数量、时长与示例契约保持一致',()=>{

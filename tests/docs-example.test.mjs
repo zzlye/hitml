@@ -46,7 +46,7 @@ globalThis.fetch = async (input, options = {}) => {
 };
 `;
 
-function execute(pageId, scenario, resume = false, exampleIndex = 0, model = '') {
+function execute(pageId, scenario, resume = false, exampleIndex = 0, model = '', resolution = '') {
   const base = process.platform === 'win32' ? 'D:/tmp' : tmpdir();
   mkdirSync(base, {recursive:true});
   const dir = mkdtempSync(join(base, 'hitml-doc-example-'));
@@ -58,7 +58,7 @@ function execute(pageId, scenario, resume = false, exampleIndex = 0, model = '')
     if (resume) writeFileSync(join(dir, 'saved.json'), JSON.stringify({task_id:'async_test',poll_url:'/v1/tasks/async_test'}));
     const child = spawnSync(process.execPath, ['--import', pathToFileURL(join(dir,'mock.mjs')).href, join(dir,'generate.mjs'), ...(resume ? ['saved.json'] : [])], {
       cwd: dir, encoding: 'utf8', timeout: 8000,
-      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario, WENYUN_IMAGE_MODEL: model }
+      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario, WENYUN_IMAGE_MODEL: model, WENYUN_VIDEO_MODEL: pageId==='video'?model:'', WENYUN_VIDEO_RESOLUTION: resolution }
     });
     assert.ok(!child.error, child.error?.message);
     assert.ok(existsSync(join(dir,'calls.json')), child.stderr);
@@ -160,6 +160,16 @@ test('Wan网关示例使用视频创建入口且仅提交一次',()=>{
   const resumed=execute('video','success',true,1);
   assert.equal(resumed.status,0,resumed.output);
   assert.equal(resumed.calls.filter(call=>call.method==='POST').length,0);
+});
+
+for(const resolution of ['720p','1080p'])test('Wan网关高清型号选择'+resolution+'并完成归档下载',()=>{
+  const r=execute('video','success',false,1,'wan-3.0-1080p',resolution);
+  assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-media');
+  const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  assert.equal(JSON.parse(posts[0].body).model,'wan-3.0-1080p');assert.equal(JSON.parse(posts[0].body).resolution,resolution);
+});
+test('Wan网关示例拒绝基础型号的1080p请求且不提交',()=>{
+  const r=execute('video','success',false,1,'wan-3.0','1080p');assert.equal(r.status,1);assert.equal(r.calls.length,0);
 });
 
 test('SD网关示例按本页模型创建并支持恢复与过期停止',()=>{

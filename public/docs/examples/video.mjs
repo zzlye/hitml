@@ -9,10 +9,16 @@ const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
 const taskFile = process.argv[2] || 'video-task.json';
+// 高清型号可以选择720p或1080p，模型名称不等于固定输出分辨率。
+const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';
+const resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';
+if (!['wan-3.0', 'wan-3.0-1080p'].includes(model)) throw new Error('未知Wan模型：' + model);
+const resolutions = model === 'wan-3.0' ? ['720p'] : ['720p', '1080p'];
+if (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);
 const request = {
-  model: 'wan-3.0',
+  model,
   prompt: '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
-  duration: 10, resolution: '720p', aspect_ratio: '16:9'
+  duration: 10, resolution, aspect_ratio: '16:9'
   // 图生视频时增加 image_urls: ['https://你的域名/参考图.jpg']。
 };
 

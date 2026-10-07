@@ -101,7 +101,7 @@ try:
 finally:
     Path('calls.json').write_text(json.dumps({'calls':calls,'delays':delays}),encoding='utf8')
 `;
-function execute(pageId,lang,scenario,{resume=false,existing=false}={}){
+function execute(pageId,lang,scenario,{resume=false,existing=false,model='',resolution=''}={}){
  const base=process.platform==='win32'?'D:/tmp':tmpdir();mkdirSync(base,{recursive:true});
  const dir=mkdtempSync(join(base,'hitml-video-example-'));
  try{
@@ -113,7 +113,7 @@ function execute(pageId,lang,scenario,{resume=false,existing=false}={}){
   const python=process.env.PYTHON||(process.platform==='win32'&&existsSync('D:/tools/python-3.12.10-embed/python.exe')?'D:/tools/python-3.12.10-embed/python.exe':'python3');
   const args=lang==='python'?['mock.py']:['--import',pathToFileURL(join(dir,'mock.mjs')).href,file];
   if(resume)args.push('video-task.json');
-  const child=spawnSync(lang==='python'?python:process.execPath,args,{cwd:dir,encoding:'utf8',timeout:10000,env:{...process.env,PYTHONIOENCODING:'utf-8',WENYUN_API_KEY:'test-key',DOCS_SCENARIO:scenario}});
+  const child=spawnSync(lang==='python'?python:process.execPath,args,{cwd:dir,encoding:'utf8',timeout:10000,env:{...process.env,PYTHONIOENCODING:'utf-8',WENYUN_API_KEY:'test-key',DOCS_SCENARIO:scenario,WENYUN_VIDEO_MODEL:model,WENYUN_VIDEO_RESOLUTION:resolution}});
   assert.ok(!child.error,child.error?.message);
   const report=JSON.parse(readFileSync(join(dir,'calls.json'),'utf8'));
   return {...report,status:child.status,output:child.stdout+child.stderr,file:existsSync(join(dir,'result.mp4'))?readFileSync(join(dir,'result.mp4'),'utf8'):null,partial:existsSync(join(dir,'result.mp4.part')),saved:existsSync(join(dir,'video-task.json'))};
@@ -136,3 +136,16 @@ for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd-2.0
  });
 }
 test('下载中断清理部分文件并保留任务编号',()=>{const r=execute('video','javascript','broken-download');assert.equal(r.status,1);assert.equal(r.file,null);assert.equal(r.partial,false);assert.ok(r.saved);});
+
+// 执行两个语言的高清请求，验证720p和1080p都能完成同一异步闭环。
+for(const lang of ['javascript','python']) {
+ for(const resolution of ['720p','1080p']) test('Wan高清 '+lang+'可选择'+resolution,()=>{
+  const r=execute('video',lang,'success',{model:'wan-3.0-1080p',resolution});
+  assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');
+  const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,'wan-3.0-1080p');assert.equal(body.resolution,resolution);
+ });
+ for(const [model,resolution] of [['wan-3.0','1080p'],['wan-3.0-1080p','4K'],['missing-model','720p']]) test('Wan '+lang+'无效型号或分辨率在提交前停止：'+model+'/'+resolution,()=>{
+  const r=execute('video',lang,'success',{model,resolution});assert.equal(r.status,1,r.output);assert.equal(r.calls.length,0);
+ });
+}

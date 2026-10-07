@@ -8,6 +8,12 @@ const ORIGIN = 'https://api.zzlye.xyz';
 const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
+// 分别选择公开模型与输出分辨率，高清型号最高支持1080p。
+const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';
+const resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';
+if (!['wan-3.0', 'wan-3.0-1080p'].includes(model)) throw new Error('未知Wan模型：' + model);
+const resolutions = model === 'wan-3.0' ? ['720p'] : ['720p', '1080p'];
+if (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);
 
 // 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。
 function ownUrl(path) {
@@ -41,7 +47,7 @@ if (process.argv[2]) {
   const response = await fetch(ORIGIN + '/v1/videos', {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },
-    body: JSON.stringify({ model: 'wan-3.0', prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 10, resolution: '720p', aspect_ratio: '16:9' }),
+    body: JSON.stringify({ model, prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 10, resolution, aspect_ratio: '16:9' }),
     redirect: 'error',
     signal: AbortSignal.timeout(120000)
   });
