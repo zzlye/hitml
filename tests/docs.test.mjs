@@ -12,11 +12,12 @@ test("图片与视频文档页面完整且编号唯一", () => {
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
 
-test("公开模型包含服务器配置的十七个图片和视频名称", () => {
+test("公开模型包含最新香蕉型号且移除下架名称", () => {
   assert.equal(mediaModels.length, 17);
-  for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-sunburst-4k", "nano-banana-pro", "sd5p", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
+  for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-sunburst-4k", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
+  assert.ok(!mediaModels.some(model => model.name === 'sd5p'));
   assert.ok(mediaModels.every((model) => ["image2", "banana", "seedream", "video", "sd-video"].includes(model.page)));
 });
 
@@ -60,7 +61,7 @@ test("视频示例保留真实时长和分辨率字段", () => {
   assert.ok(video.includes("input_reference"));
 });
 
-test("GPT Image文档包含西米露实际图片参数和尺寸限制", () => {
+test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
   const page = pages.find((entry) => entry.id === "image2");
   const text = pageMarkdown(page);
   for (const value of [
@@ -89,15 +90,71 @@ test("GPT Image文档包含西米露实际图片参数和尺寸限制", () => {
     "最多16张"
   ]) assert.ok(text.includes(value), value);
   assert.ok(!text.includes("是否生效取决于选中的模型与渠道"));
-  const generation = page.blocks.find((block) => block.type === "table" && block.headers.includes("西米露适配说明"));
+  const generation = page.blocks.find((block) => block.type === "table" && block.headers.includes("取值与说明"));
   assert.ok(generation);
   assert.ok(generation.rows.some((row) => row[0] === "quality" && row[3].includes("xhigh")));
+  const models = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称');
+  for (const row of models.rows) {
+    if (row[0].endsWith('-4k')) assert.ok(!row[2].includes('xhigh'));
+    assert.equal(row[3].includes('transparent'),row[0].endsWith('-满血'));
+    assert.equal(row[4]==='支持',row[0].endsWith('-满血'));
+  }
+});
+
+test('GPT Image的24个预设尺寸同时满足像素与比例限制', async()=>{
+  const { IMAGE2_SIZE_ROWS }=await import('../public/docs/image2-details.js');
+  assert.equal(IMAGE2_SIZE_ROWS.length,8);
+  for(const [ratio,...sizes] of IMAGE2_SIZE_ROWS) {
+    assert.equal(sizes.length,3);
+    for(const size of sizes){
+      const [width,height]=size.split('x').map(Number);
+      assert.ok(width%16===0&&height%16===0,ratio+size);
+      assert.ok(Math.max(width,height)<=3840);
+      assert.ok(Math.max(width/height,height/width)<=3);
+      assert.ok(width*height>=655360&&width*height<=8294400);
+    }
+  }
+});
+
+test('香蕉型号、14种比例和512专属档位不套用GPT像素限制',async()=>{
+  const { BANANA_MODELS,BANANA_SIZE_ROWS }=await import('../public/docs/image-model-details.js');
+  assert.equal(BANANA_SIZE_ROWS.length,14);
+  assert.equal(new Set(BANANA_SIZE_ROWS.map(row=>row[0])).size,14);
+  const models=new Map(BANANA_MODELS.map(row=>[row[0],row]));
+  assert.ok(models.get('nano-banana-2')[1].includes('512'));
+  assert.ok(!models.get('nano-banana-2.1')[1].includes('512'));
+  assert.equal(models.get('nano-banana-pro')[2],'10种');
+  const square=BANANA_SIZE_ROWS.find(row=>row[0]==='1:1');
+  assert.deepEqual(square.slice(1),['512x512','1024x1024','2048x2048','4096x4096']);
+  assert.equal(BANANA_SIZE_ROWS.find(row=>row[0]==='8:1')[4],'12288x1536');
+  const page=pages.find(p=>p.id==='banana');
+  assert.ok(pageMarkdown(page).includes('最多14张'));
+  // 验证新增型号的实际可复制请求，而不是只检查标题中有没有名称。
+  const block=page.blocks.find(b=>b.lang==='bash'&&b.value.includes('/nano-banana-2.1:generateContent'));
+  const body=JSON.parse(block.value.match(/--data\s+'([\s\S]*?)'/)[1]);
+  assert.deepEqual(body.generationConfig.imageConfig,{aspectRatio:'16:9',imageSize:'2K'});
+});
+
+test('Seedream提供具体1K/2K尺寸且未混入4K、背景或遮罩控制',()=>{
+  const page=pages.find(p=>p.id==='seedream');
+  const table=page.blocks.find(b=>b.type==='table'&&b.headers[0]==='比例');
+  assert.equal(table.rows.length,8);
+  assert.equal(table.headers.length,3);
+  for(const block of page.blocks.filter(b=>b.lang==='bash')){
+    for(const [,text] of block.value.matchAll(/--data\s+'([\s\S]*?)'/g)){
+      const body=JSON.parse(text);
+      assert.equal(body.model,'seedream-5-pro');
+      assert.ok(table.rows.some(row=>row.includes(body.size)));
+      assert.ok(!('background' in body)&&!('mask' in body));
+    }
+  }
 });
 
 test("文档不包含旧域名、私有地址或凭据", () => {
   const text = pages.map(pageMarkdown).join("\n");
   assert.ok(!/bafang|zzlye\.xyz:60|https?:\/\/(?:\d{1,3}\.){3}\d{1,3}|ssh|password/i.test(text));
   assert.ok(!text.includes("每90秒"));
+  assert.ok(!/西米露|sd5p|以.*页面.*为准/.test(text));
   assert.ok(!text.includes("会被忽略，默认按 medium"));
   const html = readFileSync(new URL("../public/docs/index.html", import.meta.url), "utf8");
   assert.ok(html.includes("docs-nav"));
@@ -162,12 +219,13 @@ test('所有cURL请求体是合法JSON且使用本站端点', () => {
   assert.ok(count>=7);
 });
 
-test('本页目录与正文锚点对应并支持旧路由', () => {
+test('所有模型页不显示本页目录，正文仍支持深链接', () => {
   for(const page of pages) {
     const html=renderPage(page);
+    assert.ok(!html.includes('page-toc'));
+    assert.ok(!html.includes('本页目录'));
     for(const [index,block] of page.blocks.entries()) if(block.type==='heading') {
       assert.ok(html.includes('id="section-'+index+'"'));
-      assert.ok(html.includes('#/'+page.id+'?section='+index));
       assert.equal(resolveRoute('#/'+page.id+'?section='+index),page.id);
     }
   }
@@ -214,10 +272,10 @@ test('Wan页同时包含Videos与网关可恢复示例',()=>{
 
 test('SD型号、素材数量、时长与示例契约保持一致',()=>{
   const page=pages.find(p=>p.id==='sd-video'),text=pageMarkdown(page);
-  const limits={'sd-2.0':[15,9,3,3],'sd-2.5-30-10-10':[15,30,10,10],'sd-2.5-10-10-10':[30,10,10,10]};
+  const limits={'sd-2.0':[15,9,3,3],'sd-2.5-30-10-10':[30,30,10,10],'sd-2.5-10-10-10':[30,10,10,10]};
   assert.equal(resolveRoute('#/sd-video'),'sd-video');
   for(const name of Object.keys(limits))assert.ok(mediaModels.some(m=>m.name===name&&m.page==='sd-video'));
-  for(const term of ['image_refs','video_refs','audio_refs','first_image','last_image','@Image1','@Video1','@Audio1','completed','succeeded','result_expired','15秒','HTTPS'])assert.ok(text.includes(term),term);
+  for(const term of ['image_urls','video_urls','audio_urls','first_frame','last_frame','@Image1','@Video1','@Audio1','completed','succeeded','result_expired','15秒','HTTPS'])assert.ok(text.includes(term),term);
   assert.ok(!/rolldek|sd-2\.[05]-ch[12]/.test(text));
   // 检查实际可复制的请求，不只检查文字是否出现关键字。
   const requests=[];
@@ -230,15 +288,15 @@ test('SD型号、素材数量、时长与示例契约保持一致',()=>{
     const [duration,images,videos,audios]=limits[body.model];
     assert.ok(Number.isInteger(body.duration)&&body.duration>=4&&body.duration<=duration);
     assert.equal(body.resolution,'720p');
-    assert.ok(!('image_urls' in body)&&!('input_reference' in body)&&!('seconds' in body));
-    for(const [field,max] of [['image_refs',images],['video_refs',videos],['audio_refs',audios]]){
+    assert.ok(!('image_refs' in body)&&!('input_reference' in body)&&!('seconds' in body));
+    for(const [field,max] of [['image_urls',images],['video_urls',videos],['audio_urls',audios]]){
       assert.ok((body[field]||[]).length<=max);
       for(const url of body[field]||[])assert.ok(url.startsWith('https://'));
     }
-    if(body.first_image||body.last_image){
+    if(body.first_frame||body.last_frame){
       assert.ok(body.model.startsWith('sd-2.5-'));
-      assert.ok(body.first_image&&body.last_image);
-      for(const key of ['image_refs','video_refs','audio_refs'])assert.ok(!(key in body));
+      assert.ok(body.first_frame&&body.last_frame);
+      for(const key of ['image_urls','video_urls','audio_urls'])assert.ok(!(key in body));
     }
   }
   assert.ok(requests.filter(b=>b.prompt).length>=6);

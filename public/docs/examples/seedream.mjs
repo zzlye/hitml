@@ -41,7 +41,7 @@ if (process.argv[2]) {
   const response = await fetch(ORIGIN + '/v1/images/generations', {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },
-    body: JSON.stringify({ model: 'seedream-5-pro', prompt: '浅色背景上的一杯橘子汽水', n: 1 }),
+    body: JSON.stringify({ model: 'seedream-5-pro', prompt: '浅色背景上的一杯橘子汽水', size: '2048x2048', response_format: 'b64_json', n: 1 }),
     redirect: 'error',
     signal: AbortSignal.timeout(120000)
   });

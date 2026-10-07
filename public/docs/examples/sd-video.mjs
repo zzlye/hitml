@@ -13,7 +13,7 @@ const request = {
   model: 'sd-2.0',
   prompt: '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
   duration: 6, resolution: '720p', aspect_ratio: '16:9'
-  // 图生视频时在提示词中引用@Image1，并增加 image_refs: ['https://你的域名/参考图.jpg']。
+  // 图生视频时在提示词中引用@Image1，并增加 image_urls: ['https://你的域名/参考图.jpg']。
 };
 
 async function readJson(response) {

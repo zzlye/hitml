@@ -8,6 +8,11 @@ const ORIGIN = 'https://api.zzlye.xyz';
 const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
+// 可切换三款公开型号；恢复已有任务时不重新生成。
+const model = process.env.WENYUN_IMAGE_MODEL || 'nano-banana-2';
+if (!['nano-banana-2', 'nano-banana-2.1', 'nano-banana-pro'].includes(model)) {
+  throw new Error('请填写文档中的完整香蕉模型名称');
+}
 
 // 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。
 function ownUrl(path) {
@@ -39,7 +44,7 @@ if (process.argv[2]) {
 } else {
   if (existsSync('task.json')) throw new Error('已有task.json，请传入此文件恢复，或在新目录创建新任务');
   const image = await readFile('reference.png');
-  const response = await fetch(ORIGIN + '/v1beta/models/nano-banana-2:generateContent', {
+  const response = await fetch(ORIGIN + '/v1beta/models/' + model + ':generateContent', {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },
     body: JSON.stringify({
@@ -47,7 +52,7 @@ if (process.argv[2]) {
         { text: '保持主体外观，替换为纯白背景' },
         { inlineData: { mimeType: 'image/png', data: image.toString('base64') } }
       ] }],
-      generationConfig: { responseModalities: ['TEXT', 'IMAGE'],
+      generationConfig: { responseModalities: ['IMAGE'],
         imageConfig: { aspectRatio: '1:1', imageSize: '1K' } }
     }),
     redirect: 'error',

@@ -46,7 +46,7 @@ globalThis.fetch = async (input, options = {}) => {
 };
 `;
 
-function execute(pageId, scenario, resume = false, exampleIndex = 0) {
+function execute(pageId, scenario, resume = false, exampleIndex = 0, model = '') {
   const base = process.platform === 'win32' ? 'D:/tmp' : tmpdir();
   mkdirSync(base, {recursive:true});
   const dir = mkdtempSync(join(base, 'hitml-doc-example-'));
@@ -58,7 +58,7 @@ function execute(pageId, scenario, resume = false, exampleIndex = 0) {
     if (resume) writeFileSync(join(dir, 'saved.json'), JSON.stringify({task_id:'async_test',poll_url:'/v1/tasks/async_test'}));
     const child = spawnSync(process.execPath, ['--import', pathToFileURL(join(dir,'mock.mjs')).href, join(dir,'generate.mjs'), ...(resume ? ['saved.json'] : [])], {
       cwd: dir, encoding: 'utf8', timeout: 8000,
-      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario }
+      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario, WENYUN_IMAGE_MODEL: model }
     });
     assert.ok(!child.error, child.error?.message);
     assert.ok(existsSync(join(dir,'calls.json')), child.stderr);
@@ -115,6 +115,25 @@ test('香蕉示例使用原生端点和正确的参考图编码', () => {
   const data=body.contents[0].parts[1].inlineData;
   assert.equal(data.mimeType,'image/png');
   assert.equal(Buffer.from(data.data,'base64').toString(),'reference-bytes');
+});
+
+for (const model of ['nano-banana-2','nano-banana-2.1','nano-banana-pro']) {
+  test('香蕉完整示例按型号选择端点：'+model,()=>{
+    const result=execute('banana','success',false,0,model);
+    assert.equal(result.status,0,result.output);
+    const posts=result.calls.filter(call=>call.method==='POST');
+    assert.equal(posts.length,1);
+    assert.ok(posts[0].url.endsWith('/v1beta/models/'+model+':generateContent'));
+    const body=JSON.parse(posts[0].body);
+    assert.deepEqual(body.generationConfig.imageConfig,{aspectRatio:'1:1',imageSize:'1K'});
+    assert.deepEqual(body.generationConfig.responseModalities,['IMAGE']);
+    assert.equal(result.file,'mock-media');
+  });
+}
+test('香蕉错误型号在发送请求前停止',()=>{
+  const result=execute('banana','success',false,0,'missing-model');
+  assert.equal(result.status,1);
+  assert.equal(result.calls.length,0);
 });
 
 for (const [pageId, model] of [['image2','gpt-image-2.5-flare'],['seedream','seedream-5-pro']]) {
