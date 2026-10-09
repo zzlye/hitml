@@ -87,6 +87,13 @@ function execute(model, scenario, { resume = false, request } = {}) {
 }
 
 for (const model of ['mj-niji7', 'mj-v8.2']) {
+  test(model + '的独立示例拒绝其他型号，不提交生成请求', () => {
+    const otherModel = model === 'mj-niji7' ? 'mj-v8.2' : 'mj-niji7';
+    const result = execute(model, 'success', { request: { model: otherModel, prompt: '橘子', n: 1 } });
+    assert.notEqual(result.status, 0);
+    assert.ok(result.output.includes('请求文件中的模型名称必须为' + model), result.output);
+    assert.equal(result.calls.length, 0);
+  });
   test(model + '仅提交一次，保存四张单图并隔离外部下载鉴权', () => {
     const result = execute(model, 'success');
     assert.equal(result.status, 0, result.output);
@@ -181,12 +188,17 @@ test('两款MJ文档分别包含28项与7项参数，比例、动作和导出保
     assert.ok(mediaModels.some(item => item.name === model && item.page === model));
     assert.equal(resolveRoute('#/' + model), model);
     const markdown = pageMarkdown(page);
+    // 每个页面及其导出正文只说明当前型号，防止混入另一个模型的参数或示例。
+    const otherModel = model === 'mj-niji7' ? 'mj-v8.2' : 'mj-niji7';
+    assert.ok(!markdown.includes(otherModel), model + '的导出正文混入其他型号');
+    assert.ok(!renderPage(page).includes(otherModel), model + '的页面正文混入其他型号');
     assert.ok(markdown.startsWith('# ' + model + '\n'));
     assert.ok(renderPage(page).includes(page.title));
     for (const ratio of MJ_SIZES) assert.ok(markdown.includes(ratio), ratio);
     for (const field of ['task_id', 'X-NewAPI-Task-Id', 'image_urls', 'grid_image_url', 'Retry-After', 'submitted', 'completed']) assert.ok(markdown.includes(field));
     assert.ok(!markdown.includes('newapi.prompt-hubs.com'));
     const source = page.blocks.find(block => block.lang === 'javascript').value;
+    if (model === 'mj-v8.2') assert.ok(!/describe|saved\.action|request\.action/.test(source));
     assert.equal(source.replaceAll('\r\n', '\n'), readFileSync(new URL('../public/docs/examples/' + model + '.mjs', import.meta.url), 'utf8').replaceAll('\r\n', '\n'));
     for (const block of page.blocks.filter(block => block.lang === 'bash')) for (const [, body] of block.value.matchAll(/--data\s+'([\s\S]*?)'/g)) {
       const request = JSON.parse(body);

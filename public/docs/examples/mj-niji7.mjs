@@ -9,7 +9,8 @@ const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
 const model = process.env.WENYUN_MJ_MODEL || 'mj-niji7';
-if (!['mj-niji7', 'mj-v8.2'].includes(model)) throw new Error('请填写公开MJ模型名称');
+// 当前示例只接受本页型号，防止请求文件与文档使用不同的模型。
+if (model !== 'mj-niji7') throw new Error('本示例仅适用于mj-niji7');
 
 function ownUrl(path) {
   const url = new URL(path, ORIGIN);
@@ -43,7 +44,7 @@ if (process.argv[2]) {
   const request = process.env.WENYUN_MJ_REQUEST
     ? JSON.parse(await readFile(process.env.WENYUN_MJ_REQUEST, 'utf8'))
     : { model, prompt: '浅色背景上的橘子汽水，柔和光线，细腻插画', size: '1:1', raw: false, n: 1 };
-  if (!['mj-niji7', 'mj-v8.2'].includes(request.model)) throw new Error('请求文件中的模型名称错误');
+  if (request.model !== model) throw new Error('请求文件中的模型名称必须为mj-niji7');
   if (request.n != null && request.n !== 1) throw new Error('MJ的n固定为1');
   const response = await fetch(ORIGIN + '/v1/midjourney/generations', {
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
@@ -58,6 +59,7 @@ if (process.argv[2]) {
   interval = intervalFor(response);
 }
 if (typeof saved.task_id !== 'string' || !saved.task_id) throw new Error('任务文件缺少task_id');
+if (saved.model && saved.model !== model) throw new Error('任务文件中的模型名称必须为mj-niji7');
 const pollUrl = ownUrl('/v1/tasks/' + encodeURIComponent(saved.task_id));
 const deadline = Date.now() + 30 * 60 * 1000;
 let task;

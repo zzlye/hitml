@@ -58,7 +58,7 @@ const curl = (body) => code('bash', `curl --fail-with-body --max-time 120 'https
   --data '${JSON.stringify(body, null, 2)}'`);
 
 // 原始示例作为网页与独立文件的共同正文，由契约测试检查逐字一致。
-export const MJ_CLIENT = String.raw`import { readFile, writeFile, rename, rm } from 'node:fs/promises';
+const MJ_CLIENT = String.raw`import { readFile, writeFile, rename, rm } from 'node:fs/promises';
 import { createWriteStream, existsSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -69,7 +69,8 @@ const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
 const model = process.env.WENYUN_MJ_MODEL || '__MODEL__';
-if (!['mj-niji7', 'mj-v8.2'].includes(model)) throw new Error('请填写公开MJ模型名称');
+// 当前示例只接受本页型号，防止请求文件与文档使用不同的模型。
+if (model !== '__MODEL__') throw new Error('本示例仅适用于__MODEL__');
 
 function ownUrl(path) {
   const url = new URL(path, ORIGIN);
@@ -103,7 +104,7 @@ if (process.argv[2]) {
   const request = process.env.WENYUN_MJ_REQUEST
     ? JSON.parse(await readFile(process.env.WENYUN_MJ_REQUEST, 'utf8'))
     : { model, prompt: '浅色背景上的橘子汽水，柔和光线，细腻插画', size: '1:1', raw: false, n: 1 };
-  if (!['mj-niji7', 'mj-v8.2'].includes(request.model)) throw new Error('请求文件中的模型名称错误');
+  if (request.model !== model) throw new Error('请求文件中的模型名称必须为__MODEL__');
   if (request.n != null && request.n !== 1) throw new Error('MJ的n固定为1');
   const response = await fetch(ORIGIN + '/v1/midjourney/generations', {
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
@@ -112,12 +113,13 @@ if (process.argv[2]) {
   const submitted = await readJson(response);
   const id = submitted.data?.task_id || response.headers.get('X-NewAPI-Task-Id');
   if (!id) throw new Error('未返回task_id，请保留响应并核对任务记录，不要自动重新生成');
-  saved = { task_id: id, model: request.model, action: request.action || 'generate' };
+  saved = { task_id: id, model: request.model__SAVED_ACTION__ };
   await writeFile('task.json', JSON.stringify(saved, null, 2), { flag: 'wx' });
   console.log('任务已保存：' + id);
   interval = intervalFor(response);
 }
 if (typeof saved.task_id !== 'string' || !saved.task_id) throw new Error('任务文件缺少task_id');
+if (saved.model && saved.model !== model) throw new Error('任务文件中的模型名称必须为__MODEL__');
 const pollUrl = ownUrl('/v1/tasks/' + encodeURIComponent(saved.task_id));
 const deadline = Date.now() + 30 * 60 * 1000;
 let task;
@@ -151,8 +153,7 @@ const result = task.result?.data;
 const urls = result?.image_urls || [];
 if (!Array.isArray(urls)) throw new Error('image_urls必须是数组');
 if (!urls.length) {
-  if (saved.action !== 'describe') throw new Error('任务没有图片，请检查result.json');
-  console.log('反推提示词结果已保存到result.json');
+__EMPTY_RESULT__
 } else {
   // 封面与四张单图分别保存，不能把封面计入生成的单图数量。
   const files = urls.map((url, index) => ({ url, name: 'image-' + (index + 1) }));
@@ -178,6 +179,13 @@ if (!urls.length) {
   console.log('已保存' + urls.length + '张单图' + (result.grid_image_url ? '和四宫格封面' : ''));
 }
 `;
+
+// 每页生成固定型号的独立示例，正文与下载文件使用同一份内容。
+export const createMjClient = (model) => MJ_CLIENT.replaceAll('__MODEL__', model)
+  .replace('__SAVED_ACTION__', model === 'mj-niji7' ? ", action: request.action || 'generate'" : '')
+  .replace('__EMPTY_RESULT__', model === 'mj-niji7'
+    ? "  if (saved.action !== 'describe') throw new Error('任务没有图片，请检查result.json');\n  console.log('反推提示词结果已保存到result.json');"
+    : "  throw new Error('任务没有图片，请检查result.json');");
 
 function resultBlocks(model) {
   const niji = model === 'mj-niji7';
@@ -209,12 +217,12 @@ node ${model}.mjs
 
 # 中断后仅恢复查询，不重复提交。
 node ${model}.mjs task.json`),
-    paragraph('可设置`WENYUN_MJ_MODEL`切换两款模型。自定义请求可保存为JSON文件，再设置`WENYUN_MJ_REQUEST`为该文件路径。' + (niji ? '后续动作的JSON请求也使用此方式。' : '') + '恢复已有任务不会重新读取请求文件，也不会再次生成。'),
-    code('javascript', MJ_CLIENT.replace('__MODEL__', model)),
+    paragraph('本示例固定使用`' + model + '`。自定义请求可保存为JSON文件，再设置`WENYUN_MJ_REQUEST`为该文件路径，请求中的`model`也填写`' + model + '`。' + (niji ? '后续动作的JSON请求也使用此方式。' : '') + '恢复已有任务不会重新读取请求文件，也不会再次生成。'),
+    code('javascript', createMjClient(model)),
     heading('常见错误与处理'),
     table(['情况', '处理方式'], [
       ['鉴权失败', '确认使用文运工坊Key，并对提交和查询使用同一个Key。'],
-      ['模型不存在', '填写`mj-niji7`或`mj-v8.2`，须与模型列表中的名称一致。'],
+      ['模型不存在', '本页请求的`model`填写`' + model + '`，包括自定义JSON请求文件。'],
       ['比例不合法', '填写本页比例枚举；`size`不是GPT Image的像素尺寸字段。'],
       ['参考图加载失败', '确认URL无需登录即可读取图片，或提供完整data:image/...内容；检查张数和顺序。'],
       ['只有task_id、没有图片', '受理响应是异步任务凭据，继续查询，直到`data.status`为`completed`。'],
@@ -235,7 +243,7 @@ function commonBlocks(model, niji) {
       ['鉴权', 'Authorization: Bearer YOUR_API_KEY'], ['请求格式', 'Content-Type: application/json'],
       ['普通生成输出', '一次任务4张单图；可选四宫格封面'], ['参考图片', '单张image或1–5张images']
     ]),
-    paragraph(niji ? '`mj-niji7`面向动漫和插画风格，支持文生图、参考图生成、风格与角色控制，以及任务完成后的放大和变体等动作。' : '`mj-v8.2`支持文生图和参考图生成，结构化参数为本页列出的7项。`mj-niji7`专属的风格控制和action字段不属于`mj-v8.2`参数。'),
+    paragraph(niji ? '`mj-niji7`面向动漫和插画风格，支持文生图、参考图生成、风格与角色控制，以及任务完成后的放大和变体等动作。' : '`mj-v8.2`支持文生图、单张参考图和多张参考图生成。请求参数包括`model`、`prompt`、`size`、`image`、`images`、`raw`、`n`，取值与填写方式见下表。'),
     heading('请求参数'),
     table(['参数', '类型', '必填', '取值或默认值', '用途'], mjCommonRows(model)),
     heading('画面比例与Raw'),

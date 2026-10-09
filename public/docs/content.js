@@ -5,9 +5,9 @@ import {
   IMAGE2_MODEL_BLOCKS,
   IMAGE2_RESPONSE_BLOCKS,
   IMAGE2_SIZE_BLOCKS
-} from "./image2-details.js?v=20261009-mj-names";
-import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261009-mj-names";
-import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261009-mj-names";
+} from "./image2-details.js?v=20261009-mj-independent";
+import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261009-mj-independent";
+import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261009-mj-independent";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
 export const mediaModels = [
