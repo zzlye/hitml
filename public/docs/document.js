@@ -1,4 +1,4 @@
-import { pages } from "./content.js?v=20261009-mj-v82-task-contract";
+import { pages } from "./content.js?v=20261010-mj-task-contract";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");

@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261009-mj-v82-task-contract";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261009-mj-v82-task-contract";
+import { pages } from "./content.js?v=20261010-mj-task-contract";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261010-mj-task-contract";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
