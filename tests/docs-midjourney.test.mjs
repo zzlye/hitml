@@ -172,12 +172,16 @@ test('两款MJ文档分别包含28项与7项参数，比例、动作和导出保
   assert.equal(MJ_ACTIONS.length, 10);
   for (const model of ['mj-niji7', 'mj-v8.2']) {
     const page = pages.find(page => page.id === model);
+    // 页面、目录与导出标题统一使用用户提供的完整模型名称。
+    assert.equal(page.title, model);
+    assert.equal(page.label, model);
     const rows = page.blocks.filter(block => block.type === 'table' && block.headers[0] === '参数').flatMap(block => block.rows);
     assert.equal(rows.length, model === 'mj-niji7' ? 28 : 7);
     assert.equal(new Set(rows.map(row => row[0])).size, rows.length);
     assert.ok(mediaModels.some(item => item.name === model && item.page === model));
     assert.equal(resolveRoute('#/' + model), model);
     const markdown = pageMarkdown(page);
+    assert.ok(markdown.startsWith('# ' + model + '\n'));
     assert.ok(renderPage(page).includes(page.title));
     for (const ratio of MJ_SIZES) assert.ok(markdown.includes(ratio), ratio);
     for (const field of ['task_id', 'X-NewAPI-Task-Id', 'image_urls', 'grid_image_url', 'Retry-After', 'submitted', 'completed']) assert.ok(markdown.includes(field));

@@ -243,7 +243,7 @@ test('网页代码和可独立运行的示例文件逐字一致', () => {
 
 
 test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
-  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','Niji 7','MJ v8.2','Wan 视频','SD 视频']);
+  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','mj-niji7','mj-v8.2','Wan 视频','SD 视频']);
   for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
   const all=pages.map(pageMarkdown).join('\n\n');
   // 代码围栏内的中文注释不是Markdown页面标题。

@@ -214,7 +214,7 @@ node ${model}.mjs task.json`),
     heading('常见错误与处理'),
     table(['情况', '处理方式'], [
       ['鉴权失败', '确认使用文运工坊Key，并对提交和查询使用同一个Key。'],
-      ['模型不存在', 'Niji填写`mj-niji7`，高速版填写`mj-v8.2`，不要使用展示标题代替模型名称。'],
+      ['模型不存在', '填写`mj-niji7`或`mj-v8.2`，须与模型列表中的名称一致。'],
       ['比例不合法', '填写本页比例枚举；`size`不是GPT Image的像素尺寸字段。'],
       ['参考图加载失败', '确认URL无需登录即可读取图片，或提供完整data:image/...内容；检查张数和顺序。'],
       ['只有task_id、没有图片', '受理响应是异步任务凭据，继续查询，直到`data.status`为`completed`。'],
@@ -235,13 +235,13 @@ function commonBlocks(model, niji) {
       ['鉴权', 'Authorization: Bearer YOUR_API_KEY'], ['请求格式', 'Content-Type: application/json'],
       ['普通生成输出', '一次任务4张单图；可选四宫格封面'], ['参考图片', '单张image或1–5张images']
     ]),
-    paragraph(niji ? 'Niji 7面向动漫和插画风格，支持文生图、参考图生成、风格与角色控制，以及任务完成后的放大和变体等动作。' : '高速版支持文生图和参考图生成，结构化参数为本页列出的7项。Niji专属的风格控制和action字段不属于高速版参数。'),
+    paragraph(niji ? '`mj-niji7`面向动漫和插画风格，支持文生图、参考图生成、风格与角色控制，以及任务完成后的放大和变体等动作。' : '`mj-v8.2`支持文生图和参考图生成，结构化参数为本页列出的7项。`mj-niji7`专属的风格控制和action字段不属于`mj-v8.2`参数。'),
     heading('请求参数'),
     table(['参数', '类型', '必填', '取值或默认值', '用途'], mjCommonRows(model)),
     heading('画面比例与Raw'),
     table(['size', '适用画幅'], sizeRows),
     note('`size`填写比例，不提供固定输出像素保证；`n`固定1，普通生成返回4张单图。默认比例为9:16，推荐在请求中明确指定所需比例。'),
-    paragraph('Raw通过`raw: true`开启。' + (niji ? '比例使用size填写，Raw使用布尔值填写。' : '高速版会将size、raw补充到提示词中；提示词已有`--ar`、`--raw`等参数时保留已有参数并避免重复追加。为避免冲突，结构化字段与提示词中的比例应保持一致。')),
+    paragraph('Raw通过`raw: true`开启。' + (niji ? '比例使用size填写，Raw使用布尔值填写。' : '`mj-v8.2`会将size、raw补充到提示词中；提示词已有`--ar`、`--raw`等参数时保留已有参数并避免重复追加。为避免冲突，结构化字段与提示词中的比例应保持一致。')),
     heading('文生图'),
     curl({ model, prompt: niji ? '橘子汽水店门口的少女，清新日系插画，暖色自然光' : '一杯橘子汽水，玻璃杯上的水珠，清晨自然光，精致商业摄影', size: '1:1', raw: false, n: 1 }),
     heading('单张与多张参考图'),
@@ -252,11 +252,11 @@ function commonBlocks(model, niji) {
 }
 
 const nijiActions = [
-  heading('Niji专属风格与参考控制'),
+  heading('mj-niji7专属风格与参考控制'),
   table(['参数', '类型', '必填', '取值或默认值', '用途'], MJ_NIJI_STYLE_ROWS),
   paragraph('未标出数值范围的字段按类型填写，不套用其他模型的枚举或默认值。普通参考图权重`iw`、角色权重`cw`、风格权重`sw`和深度权重`dw`作用不同，应与相应参考图字段配对。'),
   curl({ model: 'mj-niji7', prompt: '柔和水彩风格的城市街角，细腻线条', size: '3:4', stylize: 200, chaos: 10, weird: 0, quality: 1, sref: 'https://example.com/style.jpg', sw: 100, n: 1 }),
-  heading('Niji后续动作与输入要求'),
+  heading('mj-niji7后续动作与输入要求'),
   table(['参数', '类型', '必填', '取值或默认值', '用途'], MJ_NIJI_ACTION_ROWS),
   table(['action', '是否需要父task_id', '其他输入', '结果或用途'], [
     ['upscale', '是：已完成四图任务', 'index为1–4，或返回的custom_id', '放大选中的图片，返回1张单图。'],
@@ -288,6 +288,6 @@ const nijiActions = [
 ];
 
 export const MIDJOURNEY_PAGES = [
-  { id: 'mj-niji7', label: 'Niji 7', title: 'Midjourney Niji 7', lead: '动漫插画模型：比例、28项参数、参考图、放大与变体、异步任务和图片下载。', blocks: [...commonBlocks('mj-niji7', true), ...nijiActions, ...resultBlocks('mj-niji7')] },
-  { id: 'mj-v8.2', label: 'MJ v8.2', title: 'Midjourney v8.2 高速', lead: '高速四图生成：7项参数、12种比例、Raw、参考图与可恢复的异步任务示例。', blocks: [...commonBlocks('mj-v8.2', false), ...resultBlocks('mj-v8.2')] }
+  { id: 'mj-niji7', label: 'mj-niji7', title: 'mj-niji7', lead: '动漫插画模型：比例、28项参数、参考图、放大与变体、异步任务和图片下载。', blocks: [...commonBlocks('mj-niji7', true), ...nijiActions, ...resultBlocks('mj-niji7')] },
+  { id: 'mj-v8.2', label: 'mj-v8.2', title: 'mj-v8.2', lead: '四图生成：7项参数、12种比例、Raw、参考图与可恢复的异步任务示例。', blocks: [...commonBlocks('mj-v8.2', false), ...resultBlocks('mj-v8.2')] }
 ];
