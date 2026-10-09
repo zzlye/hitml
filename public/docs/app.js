@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261008-wan-final";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261008-wan-final";
+import { pages } from "./content.js?v=20261009-mj-docs";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261009-mj-docs";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");

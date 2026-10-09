@@ -5,11 +5,14 @@ import {
   IMAGE2_MODEL_BLOCKS,
   IMAGE2_RESPONSE_BLOCKS,
   IMAGE2_SIZE_BLOCKS
-} from "./image2-details.js?v=20261008-wan-final";
-import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261008-wan-final";
+} from "./image2-details.js?v=20261009-mj-docs";
+import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261009-mj-docs";
+import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261009-mj-docs";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
 export const mediaModels = [
+  { name: 'mj-niji7', page: 'mj-niji7', kind: '图片', protocol: 'Midjourney' },
+  { name: 'mj-v8.2', page: 'mj-v8.2', kind: '图片', protocol: 'Midjourney' },
   {
     "name": "gpt-image-2",
     "page": "image2",
@@ -2787,4 +2790,4 @@ export const pages = legacyPages.map((page) => {
     lead: '1K、2K图片生成与最多10张参考图编辑，包含具体像素尺寸、异步任务与文件下载。'
   };
   return page;
-});
+}).flatMap((page) => page.id === 'seedream' ? [page, ...MIDJOURNEY_PAGES] : [page]);
