@@ -7,13 +7,13 @@ const { pages, mediaModels, API_ORIGIN } = await import("../public/docs/content.
 const { pageMarkdown, renderPage, resolveRoute } = await import("../public/docs/document.js");
 
 test("图片与视频文档页面完整且编号唯一", () => {
-  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-niji7", "mj-v8.2", "video", "sd-video"]);
+  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-v8.2", "video", "sd-video"]);
   assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 19);
+  assert.equal(mediaModels.length, 18);
   for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-sunburst-4k", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
@@ -243,7 +243,7 @@ test('网页代码和可独立运行的示例文件逐字一致', () => {
 
 
 test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
-  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','mj-niji7','mj-v8.2','Wan 视频','SD 视频']);
+  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','mj-v8.2','Wan 视频','SD 视频']);
   for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
   const all=pages.map(pageMarkdown).join('\n\n');
   // 代码围栏内的中文注释不是Markdown页面标题。
@@ -252,7 +252,7 @@ test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
     if(line.startsWith('```')) inCode=!inCode;
     return !inCode&&line.startsWith('# ');
   });
-  assert.equal(headings.length,7);
+  assert.equal(headings.length,6);
   for(const page of pages)for(const block of page.blocks.filter(b=>b.type==='links')){
     assert.ok(block.items.every(item=>pages.some(p=>p.id===item.id)));
   }

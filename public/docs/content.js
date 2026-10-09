@@ -5,13 +5,12 @@ import {
   IMAGE2_MODEL_BLOCKS,
   IMAGE2_RESPONSE_BLOCKS,
   IMAGE2_SIZE_BLOCKS
-} from "./image2-details.js?v=20261009-mj-independent";
-import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261009-mj-independent";
-import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261009-mj-independent";
+} from "./image2-details.js?v=20261009-mj-v82-task-contract";
+import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261009-mj-v82-task-contract";
+import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261009-mj-v82-task-contract";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
 export const mediaModels = [
-  { name: 'mj-niji7', page: 'mj-niji7', kind: '图片', protocol: 'Midjourney' },
   { name: 'mj-v8.2', page: 'mj-v8.2', kind: '图片', protocol: 'Midjourney' },
   {
     "name": "gpt-image-2",
