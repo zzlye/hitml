@@ -18,6 +18,8 @@ test("首页不再包含外部接入模块", () => {
 test("模型列表包含香蕉2.1和无后缀的GPT Image 2.5", () => {
   assert.match(content, /name: "gpt-image-2\.5"/);
   assert.match(content, /pricingNames: \["gpt-image-2\.5-flare", "gpt-image-2\.5-sunburst"\]/);
+  assert.match(content, /name: "gpt-image-2\.5-4k"/);
+  assert.match(content, /pricingNames: \["gpt-image-2\.5-flare-4k", "gpt-image-2\.5-sunburst-4k"\]/);
   assert.match(content, /name: "Nano-Banana-2\.1"/);
   assert.match(content, /pricingName: "nano-banana-2\.1"/);
   assert.match(main, /modelPriceNames/);
