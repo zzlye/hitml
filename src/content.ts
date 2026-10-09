@@ -31,6 +31,7 @@ export type TutorialModule = {
 export type ModelListItem = {
   name: string;
   pricingName: string;
+  pricingNames?: string[];
   resolutions: string[];
   fallbackPrice: number;
 };
@@ -92,10 +93,23 @@ export const modelListModule = {
       fallbackPrice: 0.09
     },
     {
+      name: "gpt-image-2.5",
+      pricingName: "gpt-image-2.5",
+      pricingNames: ["gpt-image-2.5-flare", "gpt-image-2.5-sunburst"],
+      resolutions: ["1K"],
+      fallbackPrice: 0.03
+    },
+    {
       name: "Nano-Banana-2",
       pricingName: "nano-banana-2",
       resolutions: ["1K", "2K", "4K"],
       fallbackPrice: 0.06
+    },
+    {
+      name: "Nano-Banana-2.1",
+      pricingName: "nano-banana-2.1",
+      resolutions: ["1K", "2K", "4K"],
+      fallbackPrice: 0.07
     },
     {
       name: "Nano-Banana-Pro",

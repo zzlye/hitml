@@ -300,7 +300,11 @@ const syncModelPrices = async () => {
       const priceMap = readPriceMap(await fetchPricing(endpoint));
       let matchedCount = 0;
       priceCells.forEach((cell) => {
-        const price = priceMap.get(normalizeModelName(cell.dataset.modelPrice ?? ""));
+        const pricingNames = (cell.dataset.modelPriceNames ?? cell.dataset.modelPrice ?? "")
+          .split(",")
+          .map(normalizeModelName)
+          .filter(Boolean);
+        const price = pricingNames.map((name) => priceMap.get(name)).find((value) => typeof value === "number");
         if (typeof price === "number") {
           cell.textContent = formatModelPrice(price);
           matchedCount += 1;
@@ -428,6 +432,7 @@ const renderModelListModule = () => {
     const resolutionCell = createElement("td");
     const priceCell = createElement("td", "model-price", formatModelPrice(item.fallbackPrice));
     priceCell.dataset.modelPrice = item.pricingName;
+    priceCell.dataset.modelPriceNames = [item.pricingName, ...(item.pricingNames ?? [])].join(",");
     resolutionCell.append(renderResolutionList(item));
     row.append(nameCell, resolutionCell, priceCell);
     tbody.append(row);

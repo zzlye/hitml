@@ -14,3 +14,12 @@ test("首页不再包含外部接入模块", () => {
   assert.equal(existsSync(new URL("../public/images/external-access/", import.meta.url)), false);
 });
 
+// 模型列表需要展示服务器新增的两个公开型号，并保留价格同步用的后端名称。
+test("模型列表包含香蕉2.1和无后缀的GPT Image 2.5", () => {
+  assert.match(content, /name: "gpt-image-2\.5"/);
+  assert.match(content, /pricingNames: \["gpt-image-2\.5-flare", "gpt-image-2\.5-sunburst"\]/);
+  assert.match(content, /name: "Nano-Banana-2\.1"/);
+  assert.match(content, /pricingName: "nano-banana-2\.1"/);
+  assert.match(main, /modelPriceNames/);
+});
+
