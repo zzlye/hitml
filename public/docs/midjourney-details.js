@@ -10,7 +10,7 @@ const json = (value) => code('json', JSON.stringify(value, null, 2));
 
 export const mjCommonRows = [
   ['model', 'string', '是', 'mj-v8.2', '固定填写公开模型名称`mj-v8.2`。'],
-  ['prompt', 'string', '是', '至少1个字符', '描述主体、场景、构图、画风、光线及参考图需要保留或修改的部分。'],
+  ['prompt', 'string', '是', '至少1个字符', '描述主体、场景、构图、画风、光线，以及希望从参考图中借鉴的主体、配色或构图。'],
   ['size', 'string', '否', '默认9:16；见下表', '填写画面比例，例如`16:9`，不是`1024x1024`这样的像素尺寸。'],
   ['image', 'string', '否', '公网图片URL或data:image/...', '单张参考图；有多张时使用`images`。'],
   ['images', 'string[]', '否', '1–5张', '每项为图片URL或data:image/...；数组顺序保留。单张和多张写法选一种即可。'],
@@ -264,7 +264,7 @@ function commonBlocks() {
       ['鉴权', 'Authorization: Bearer YOUR_API_KEY'], ['请求格式', 'Content-Type: application/json'],
       ['普通生成输出', '一次任务4张单图'], ['参考图片', '单张image或1–5张images']
     ]),
-    paragraph('`mj-v8.2`支持文生图、单张参考图和多张参考图生成。任务接口的外层字段兼容顶层和`data`包装，完成结果从`image_urls`读取。'),
+    paragraph('`mj-v8.2`支持文生图和参考生图，可提供单张或多张参考图片。任务接口的外层字段兼容顶层和`data`包装，完成结果从`image_urls`读取。'),
     heading('请求参数'),
     table(['参数', '类型', '必填', '取值或默认值', '用途'], mjCommonRows),
     heading('画面比例与Raw'),
@@ -273,13 +273,15 @@ function commonBlocks() {
     paragraph('Raw通过`raw: true`开启。`mj-v8.2`会将size、raw补充到提示词中；提示词已有`--ar`、`--raw`等参数时保留已有参数并避免重复追加。为避免冲突，结构化字段与提示词中的比例应保持一致。'),
     heading('文生图'),
     curl({ model: 'mj-v8.2', prompt: '一杯橘子汽水，玻璃杯上的水珠，清晨自然光，精致商业摄影', size: '1:1', raw: false, n: 1 }),
-    heading('单张与多张参考图'),
+    // 参考图用于生成新图片，统一使用参考生图的功能名称。
+    heading('参考生图（单张与多张参考图）'),
+    paragraph('提供参考图片并配合提示词生成新的图片。单张参考图使用`image`，多张参考图使用`images`；在提示词中说明希望参考的主体、配色、光线或构图。'),
     paragraph('图片URL必须能从公网直接读取。使用Base64时传完整的`data:image/png;base64,...`或对应图片类型的Data URL，不能只传裸Base64。多图按数组顺序说明各张图的用途，最多5张。'),
-    curl({ model: 'mj-v8.2', prompt: '保留参考图主体外形，改为夜晚街道的电影感构图', size: '16:9', image: 'https://example.com/reference.jpg', raw: true, n: 1 }),
-    curl({ model: 'mj-v8.2', prompt: '保留第一张图中的主体，参考第二张图的配色和光线', size: '4:5', images: ['https://example.com/subject.jpg', 'https://example.com/style.jpg'], n: 1 })
+    curl({ model: 'mj-v8.2', prompt: '参考图片中的主体外形，生成夜晚街道场景，电影感构图', size: '16:9', image: 'https://example.com/reference.jpg', raw: true, n: 1 }),
+    curl({ model: 'mj-v8.2', prompt: '参考第一张图中的主体、第二张图的配色和光线，生成一张商业海报', size: '4:5', images: ['https://example.com/subject.jpg', 'https://example.com/style.jpg'], n: 1 })
   ];
 }
 
 export const MIDJOURNEY_PAGES = [
-  { id: 'mj-v8.2', label: 'mj-v8.2', title: 'mj-v8.2', lead: '四图生成：7项参数、12种比例、Raw、参考图与兼容实际返回结构的异步任务示例。', blocks: [...commonBlocks(), ...resultBlocks()] }
+  { id: 'mj-v8.2', label: 'mj-v8.2', title: 'mj-v8.2', lead: '四图生成：7项参数、12种比例、Raw、参考生图与兼容实际返回结构的异步任务示例。', blocks: [...commonBlocks(), ...resultBlocks()] }
 ];
