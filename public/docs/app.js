@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261010-mj-reference";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261010-mj-reference";
+import { pages } from "./content.js?v=20261010-ximilu";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261010-ximilu";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
@@ -22,7 +22,7 @@ const render = (focusContent = false) => {
   currentPage = pages.find((page) => page.id === resolveRoute(location.hash));
   content.innerHTML = renderPage(currentPage);
   currentTitle.textContent = currentPage.label;
-  document.title = currentPage.title + " · 文运工坊接口文档";
+  document.title = currentPage.title + " · 西米露接口文档";
   nav.querySelectorAll("a").forEach((link) => {
     const active = link.dataset.route === currentPage.id;
     link.classList.toggle("is-active", active);
@@ -59,11 +59,11 @@ const downloadMarkdown = (value, name) => {
 };
 
 document.querySelector("#docs-export").addEventListener("click", () => {
-  downloadMarkdown(pageMarkdown(currentPage), "文运工坊-" + currentPage.title);
+  downloadMarkdown(pageMarkdown(currentPage), "西米露-" + currentPage.title);
   showToast("已导出当前章节");
 });
 document.querySelector("#docs-export-all").addEventListener("click", () => {
-  downloadMarkdown(pages.map(pageMarkdown).join("\n\n"), "文运工坊-图片与视频接口文档");
+  downloadMarkdown(pages.map(pageMarkdown).join("\n\n"), "西米露-图片与视频接口文档");
   showToast("已导出全部文档");
 });
 document.querySelector("#docs-menu").addEventListener("click", () => {

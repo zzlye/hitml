@@ -7,7 +7,7 @@ import {
   IMAGE2_SIZE_BLOCKS
 } from "./image2-details.js?v=20261010-mj-task-contract";
 import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261010-mj-task-contract";
-import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261010-mj-reference";
+import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261010-ximilu";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
 export const mediaModels = [
@@ -685,7 +685,7 @@ const legacyPages = [
       },
       {
         "type": "paragraph",
-        "value": "模型别名放在请求路径中，无需在请求体再填写 model。Key 使用文运工坊的 Key，不是上游厂商 Key。"
+        "value": "模型别名放在请求路径中，无需在请求体再填写 model。Key 使用西米露的 Key，不是上游厂商 Key。"
       },
       {
         "type": "heading",

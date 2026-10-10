@@ -69,10 +69,11 @@ export const supportModule = {
     },
     {
       title: "售后交流群",
-      image: "/images/contact-group.webp",
+      // 使用新群二维码，群聊按钮同步到图片内的扫码地址。
+      image: "/images/contact-group-ximilu.webp",
       alt: "售后交流群二维码",
-      actionLabel: "点击链接加入群聊【文运工坊】",
-      actionUrl: "https://qm.qq.com/q/ugpXlSuJXO"
+      actionLabel: "点击链接加入群聊【西米露】",
+      actionUrl: "https://qm.qq.com/q/mV48P9XdHa"
     }
   ] satisfies ContactItem[]
 };
@@ -141,7 +142,7 @@ export const tutorialModules: TutorialModule[] = [
       {
         tag: "步骤 01",
         title: "打开生图工坊",
-        description: "进入文运工坊主页，点击左侧“生图工坊”，打开在线生图页面。",
+        description: "进入西米露主页，点击左侧“生图工坊”，打开在线生图页面。",
         image: "/images/online-use/open-studio.webp",
         imageWidth: 1912,
         imageHeight: 948,
@@ -233,7 +234,7 @@ export const tutorialModules: TutorialModule[] = [
     cards: [
       {
         tag: "统一文档",
-        title: "文运工坊接口文档",
+        title: "西米露接口文档",
         description: "图片与视频模型的接口说明、调用示例与结果下载。",
         notes: [
           {

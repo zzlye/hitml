@@ -1,4 +1,4 @@
-import { pages } from "./content.js?v=20261010-mj-reference";
+import { pages } from "./content.js?v=20261010-ximilu";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -21,7 +21,7 @@ export const renderPage = (page) => {
     if (block.type === "code") return `<div class="code-example"><div class="code-caption"><span>${escapeHtml(block.lang)}</span><button type="button" class="code-copy" data-copy-index="${index}" aria-label="复制${escapeHtml(block.lang)}示例">复制</button></div><pre class="code-block" data-lang="${escapeHtml(block.lang)}"><code>${escapeHtml(block.value.trim())}</code></pre></div>`;
     return "";
   }).join("\n");
-  return `<article class="doc-page"><p class="doc-eyebrow">文运工坊 · 图片与视频</p><h1>${escapeHtml(page.title)}</h1><p class="lead">${inline(page.lead)}</p>${blocks}<footer>© 文运工坊</footer></article>`;
+  return `<article class="doc-page"><p class="doc-eyebrow">西米露 · 图片与视频</p><h1>${escapeHtml(page.title)}</h1><p class="lead">${inline(page.lead)}</p>${blocks}<footer>© 西米露</footer></article>`;
 };
 
 const markdownCell = (value) => String(value).replaceAll("|", "\\|").replaceAll("\n", "<br>");
@@ -40,5 +40,5 @@ export const pageMarkdown = (page) => {
     }
     return "";
   });
-  return [`# ${page.title}`, page.lead, ...blocks, "---\n\n© 文运工坊"].filter(Boolean).join("\n\n") + "\n";
+  return [`# ${page.title}`, page.lead, ...blocks, "---\n\n© 西米露"].filter(Boolean).join("\n\n") + "\n";
 };

@@ -154,7 +154,9 @@ test("文档不包含旧域名、私有地址或凭据", () => {
   const text = pages.map(pageMarkdown).join("\n");
   assert.ok(!/bafang|zzlye\.xyz:60|https?:\/\/(?:\d{1,3}\.){3}\d{1,3}|ssh|password/i.test(text));
   assert.ok(!text.includes("每90秒"));
-  assert.ok(!/西米露|sd5p|以.*页面.*为准/.test(text));
+  // 西米露已成为公开品牌，继续禁止旧品牌和依赖内部页面的操作说明。
+  assert.ok(!/文运工坊|sd5p|以.*页面.*为准/.test(text));
+  for (const page of pages) assert.ok(pageMarkdown(page).includes("© 西米露"));
   assert.ok(!text.includes("会被忽略，默认按 medium"));
   const html = readFileSync(new URL("../public/docs/index.html", import.meta.url), "utf8");
   assert.ok(html.includes("docs-nav"));

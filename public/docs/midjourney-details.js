@@ -230,7 +230,7 @@ function resultBlocks() {
     json({ id: 'task_mj_example', task_id: 'task_mj_example', status: 'succeeded', result_expired: false, data: { task_id: 'task_mj_example', status: 'completed', progress: '100%', result: { data: {
       image_urls: [1, 2, 3, 4].map(index => '/task-media/task_mj_example/media/' + (index - 1) + '?expires=...&signature=...')
     } } }, result: { data: { image_urls: [1, 2, 3, 4].map(index => '/task-media/task_mj_example/media/' + (index - 1) + '?expires=...&signature=...') } } }),
-    paragraph('完成响应的图片字段以`image_urls`为准。返回地址可能是带签名的相对地址，需以当前API域名补全；地址可能过期，完成后及时下载。下载图片时不要携带文运工坊Key。'),
+    paragraph('完成响应的图片字段以`image_urls`为准。返回地址可能是带签名的相对地址，需以当前API域名补全；地址可能过期，完成后及时下载。下载图片时不要携带西米露Key。'),
     heading('完整示例：生成、断点恢复与图片下载'),
     paragraph('将下面代码保存为`mj-v8.2.mjs`，使用Node.js 22或更新版本运行。设置`WENYUN_API_KEY`，执行`node mj-v8.2.mjs`；中断后执行`node mj-v8.2.mjs task.json`恢复查询。结果保存为`result.json`和`image-1.png`等。'),
     code('bash', `export WENYUN_API_KEY='YOUR_API_KEY'
@@ -242,7 +242,7 @@ node mj-v8.2.mjs task.json`),
     code('javascript', createMjClient()),
     heading('常见错误与处理'),
     table(['情况', '处理方式'], [
-      ['鉴权失败', '确认使用文运工坊Key，并对提交和查询使用同一个Key。'],
+      ['鉴权失败', '确认使用西米露Key，并对提交和查询使用同一个Key。'],
       ['模型不存在', '请求的`model`必须填写`mj-v8.2`。'],
       ['提交后取不到任务号', '按顶层`task_id`、`data.task_id`、`X-NewAPI-Task-Id`的顺序读取，保留原始响应后再排查。'],
       ['查询响应没有data.status', '同时兼容顶层`status`和`data.status`，不要只读取固定一层。'],
