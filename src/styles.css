@@ -691,6 +691,18 @@ h2.module-title {
   margin-top: 14px;
 }
 
+.tutorial-notice {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
 .note-list {
   display: grid;
   gap: 8px;

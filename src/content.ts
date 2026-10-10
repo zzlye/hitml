@@ -11,6 +11,8 @@ export type TutorialCard = {
   title: string;
   description: string;
   notes: TutorialNote[];
+  // 关键账号说明单独强调，避免与普通操作提示混在一起。
+  notice?: string;
   image?: string;
   imageWidth?: number;
   imageHeight?: number;
@@ -138,8 +140,23 @@ export const tutorialModules: TutorialModule[] = [
     cards: [
       {
         tag: "步骤 01",
-        title: "进入在线使用主页",
-        description: "打开在线使用主页，点击右上角“登录”，再切换到“注册”。",
+        title: "打开生图工坊",
+        description: "进入文运工坊主页，点击左侧“生图工坊”，打开在线生图页面。",
+        image: "/images/online-use/open-studio.webp",
+        imageWidth: 1912,
+        imageHeight: 948,
+        notes: [
+          {
+            text: "主页地址：",
+            href: "https://zzlye.xyz/",
+            label: "https://zzlye.xyz/"
+          }
+        ]
+      },
+      {
+        tag: "步骤 02",
+        title: "打开注册窗口",
+        description: "在生图工坊页面点击右上角“登录”，再切换到“注册”。",
         image: "/images/online-use/home-register.webp",
         imageWidth: 1912,
         imageHeight: 948,
@@ -152,7 +169,7 @@ export const tutorialModules: TutorialModule[] = [
         ]
       },
       {
-        tag: "步骤 02",
+        tag: "步骤 03",
         title: "填写邀请码注册",
         description: "填写账号、密码和收到的邀请码，点击“注册”完成账号创建。",
         image: "/images/online-use/register.webp",
@@ -161,7 +178,7 @@ export const tutorialModules: TutorialModule[] = [
         notes: ["注册成功后，切换到“登录”，使用刚注册的账号和密码登录。"]
       },
       {
-        tag: "步骤 03",
+        tag: "步骤 04",
         title: "登录并填写兑换码",
         description: "登录后，点击右上角的账号打开账号窗口，在底部填写拿到的兑换码，再点击“兑换”。",
         image: "/images/online-use/redeem.webp",
@@ -170,7 +187,7 @@ export const tutorialModules: TutorialModule[] = [
         notes: ["邀请码用于注册，兑换码用于充值，请分别填写。", "兑换成功后即可正常使用。"]
       },
       {
-        tag: "步骤 04",
+        tag: "步骤 05",
         title: "开始生成图片",
         description: "关闭账号窗口，输入提示词，选择模型、尺寸、品质和数量，再点击右侧箭头开始生成。",
         image: "/images/online-use/generate.webp",
@@ -179,13 +196,32 @@ export const tutorialModules: TutorialModule[] = [
         notes: ["需要参考图时，点击回形针图标上传图片。"]
       },
       {
-        tag: "步骤 05",
+        tag: "步骤 06",
         title: "切换画布工坊",
         description: "如需使用画布，点击左上角画布工坊切换即可。",
         image: "/images/online-use/step-3.webp",
         imageWidth: 126,
         imageHeight: 55,
         notes: ["需要画布时再切换", "不使用画布可保持当前页面"]
+      },
+      {
+        tag: "步骤 07",
+        title: "如何调用API",
+        description: "需要在其他工具或代码中调用模型时，访问API平台并登录，创建API Key，再按照接口文档填写模型和请求参数。",
+        notice: "账号通用：API平台与在线生图使用同一账号，使用已注册的账号和密码登录即可，无需重复注册。",
+        notes: [
+          {
+            text: "API平台：",
+            href: "https://api.zzlye.xyz/",
+            label: "https://api.zzlye.xyz/"
+          },
+          "API地址：https://api.zzlye.xyz/v1",
+          {
+            text: "调用方法：",
+            href: "/docs/index.html#/",
+            label: "查看接口文档"
+          }
+        ]
       }
     ]
   },

@@ -526,6 +526,13 @@ const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]
     createElement("p", "tutorial-card-description", cardData.description)
   );
 
+  // 账号通用等重要提示使用独立强调块，同时兼容明暗主题。
+  if (cardData.notice) {
+    const notice = createElement("p", "tutorial-notice");
+    notice.append(createElement("strong", "", cardData.notice));
+    body.append(notice);
+  }
+
   const notes = createElement("ul", "note-list");
   cardData.notes.forEach((note) => notes.append(renderTutorialNote(note)));
   body.append(notes);
