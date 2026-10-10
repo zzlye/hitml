@@ -12,6 +12,8 @@ export type TutorialCard = {
   description: string;
   notes: TutorialNote[];
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
 };
 
 export type TutorialNote = string | {
@@ -136,9 +138,11 @@ export const tutorialModules: TutorialModule[] = [
     cards: [
       {
         tag: "步骤 01",
-        title: "打开在线使用页面",
-        description: "复制 key 后打开在线使用地址，点击右上角的设置。",
-        image: "/images/online-use/step-1.webp",
+        title: "进入在线使用主页",
+        description: "打开在线使用主页，点击右上角“登录”，再切换到“注册”。",
+        image: "/images/online-use/home-register.webp",
+        imageWidth: 1912,
+        imageHeight: 948,
         notes: [
           {
             text: "地址：",
@@ -149,16 +153,38 @@ export const tutorialModules: TutorialModule[] = [
       },
       {
         tag: "步骤 02",
-        title: "填写 API key",
-        description: "将得到的 key 填写在文运站的API key内，填写完成后即可使用",
-        image: "/images/online-use/step-2.webp",
-        notes: ["填写完成后关闭设置窗口", "关闭后即可开始在线使用"]
+        title: "填写邀请码注册",
+        description: "填写账号、密码和收到的邀请码，点击“注册”完成账号创建。",
+        image: "/images/online-use/register.webp",
+        imageWidth: 450,
+        imageHeight: 342,
+        notes: ["注册成功后，切换到“登录”，使用刚注册的账号和密码登录。"]
       },
       {
         tag: "步骤 03",
+        title: "登录并填写兑换码",
+        description: "登录后，点击右上角的账号打开账号窗口，在底部填写拿到的兑换码，再点击“兑换”。",
+        image: "/images/online-use/redeem.webp",
+        imageWidth: 448,
+        imageHeight: 607,
+        notes: ["邀请码用于注册，兑换码用于充值，请分别填写。", "兑换成功后即可正常使用。"]
+      },
+      {
+        tag: "步骤 04",
+        title: "开始生成图片",
+        description: "关闭账号窗口，输入提示词，选择模型、尺寸、品质和数量，再点击右侧箭头开始生成。",
+        image: "/images/online-use/generate.webp",
+        imageWidth: 1912,
+        imageHeight: 948,
+        notes: ["需要参考图时，点击回形针图标上传图片。"]
+      },
+      {
+        tag: "步骤 05",
         title: "切换画布工坊",
         description: "如需使用画布，点击左上角画布工坊切换即可。",
         image: "/images/online-use/step-3.webp",
+        imageWidth: 126,
+        imageHeight: 55,
         notes: ["需要画布时再切换", "不使用画布可保持当前页面"]
       }
     ]

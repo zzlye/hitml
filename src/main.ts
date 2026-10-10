@@ -507,8 +507,9 @@ const renderTutorialCard = (cardData: TutorialCard, tone: TutorialModule["tone"]
     image.alt = cardData.title;
     image.loading = "lazy";
     image.decoding = "async";
-    image.width = 640;
-    image.height = 400;
+    // 按截图原始比例预留空间，避免横向主页和竖向弹窗加载时造成布局跳动。
+    image.width = cardData.imageWidth ?? 640;
+    image.height = cardData.imageHeight ?? 400;
     media.append(image);
     media.addEventListener("click", () => openImagePreview(cardData.image ?? "", cardData.title, `放大查看${cardData.title}图片`));
     card.append(media);
