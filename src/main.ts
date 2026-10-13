@@ -3,7 +3,8 @@ import "./styles.css";
 import { introModule, modelListModule, supportModule, tutorialModules, type ContactItem, type ModelListItem, type TutorialCard, type TutorialModule, type TutorialNote } from "./content";
 
 const app = document.querySelector<HTMLDivElement>("#app");
-const DORO_TARGET_URL = "https://zzlye.xyz/";
+// Doro彩蛋与首屏在线入口保持一致。
+const DORO_TARGET_URL = introModule.actionUrl;
 const DORO_CLICK_LIMIT = 20;
 const THEME_STORAGE_KEY = "hitml-theme";
 const PRICE_UNIT = "HUHN";

@@ -5,6 +5,19 @@ import { existsSync, readFileSync } from "node:fs";
 const content = readFileSync(new URL("../src/content.ts", import.meta.url), "utf8");
 const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
 
+// 在线入口、教程和Doro同步迁移，API仍使用独立域名。
+test("所有在线使用入口共用新域名且不影响API地址", () => {
+  assert.match(content, /export const ONLINE_USE_URL = "https:\/\/xn--v5z30ywuk\.com"/);
+  assert.match(content, /actionLabel: `在线使用：\$\{ONLINE_USE_URL\}`/);
+  assert.match(content, /actionUrl: ONLINE_USE_URL/);
+  assert.equal([...content.matchAll(/href: ONLINE_USE_URL/g)].length, 2);
+  assert.equal([...content.matchAll(/label: ONLINE_USE_URL/g)].length, 2);
+  assert.match(main, /const DORO_TARGET_URL = introModule\.actionUrl/);
+  assert.doesNotMatch(content + main, /https:\/\/zzlye\.xyz(?:\/|["\s]|$)/);
+  assert.match(content, /pricingBaseUrl: "https:\/\/api\.zzlye\.xyz\/v1"/);
+  assert.match(content, /href: "https:\/\/api\.zzlye\.xyz\/"/);
+});
+
 // 主页模块、目录和图片资源必须同步移除已下线的接入教程。
 test("首页不再包含外部接入模块", () => {
   assert.doesNotMatch(content, /tutorial-notes|外部接入|external-access|Cherry Studio/);

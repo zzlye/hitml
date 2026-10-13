@@ -49,11 +49,14 @@ export type ModelListModule = {
   items: ModelListItem[];
 };
 
+// 在线入口和教程统一引用同一地址，避免更换域名时遗漏跳转。
+export const ONLINE_USE_URL = "https://xn--v5z30ywuk.com";
+
 export const introModule = {
   id: "intro",
   title: "gpt-image-2+nano-banana-2+nano-banana-pro",
-  actionLabel: "在线使用：https://zzlye.xyz/",
-  actionUrl: "https://zzlye.xyz/"
+  actionLabel: `在线使用：${ONLINE_USE_URL}`,
+  actionUrl: ONLINE_USE_URL
 };
 
 export const supportModule = {
@@ -149,8 +152,8 @@ export const tutorialModules: TutorialModule[] = [
         notes: [
           {
             text: "主页地址：",
-            href: "https://zzlye.xyz/",
-            label: "https://zzlye.xyz/"
+            href: ONLINE_USE_URL,
+            label: ONLINE_USE_URL
           }
         ]
       },
@@ -164,8 +167,8 @@ export const tutorialModules: TutorialModule[] = [
         notes: [
           {
             text: "地址：",
-            href: "https://zzlye.xyz/",
-            label: "https://zzlye.xyz/"
+            href: ONLINE_USE_URL,
+            label: ONLINE_USE_URL
           }
         ]
       },
