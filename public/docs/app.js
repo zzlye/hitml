@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261010-ximilu";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261010-ximilu";
+import { pages } from "./content.js?v=20261014-sd25";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261014-sd25";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");

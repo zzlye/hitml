@@ -113,13 +113,13 @@ function execute(pageId,lang,scenario,{resume=false,existing=false,model='',reso
   const python=process.env.PYTHON||(process.platform==='win32'&&existsSync('D:/tools/python-3.12.10-embed/python.exe')?'D:/tools/python-3.12.10-embed/python.exe':'python3');
   const args=lang==='python'?['mock.py']:['--import',pathToFileURL(join(dir,'mock.mjs')).href,file];
   if(resume)args.push('video-task.json');
-  const child=spawnSync(lang==='python'?python:process.execPath,args,{cwd:dir,encoding:'utf8',timeout:10000,env:{...process.env,PYTHONIOENCODING:'utf-8',WENYUN_API_KEY:'test-key',DOCS_SCENARIO:scenario,WENYUN_VIDEO_MODEL:model,WENYUN_VIDEO_RESOLUTION:resolution}});
+  const child=spawnSync(lang==='python'?python:process.execPath,args,{cwd:dir,encoding:'utf8',timeout:10000,env:{...process.env,PYTHONIOENCODING:'utf-8',WENYUN_API_KEY:'test-key',DOCS_SCENARIO:scenario,WENYUN_VIDEO_MODEL:model,WENYUN_VIDEO_RESOLUTION:resolution,WENYUN_SD_MODEL:pageId==='sd-video'?model:''}});
   assert.ok(!child.error,child.error?.message);
   const report=JSON.parse(readFileSync(join(dir,'calls.json'),'utf8'));
   return {...report,status:child.status,output:child.stdout+child.stderr,file:existsSync(join(dir,'result.mp4'))?readFileSync(join(dir,'result.mp4'),'utf8'):null,partial:existsSync(join(dir,'result.mp4.part')),saved:existsSync(join(dir,'video-task.json'))};
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
-for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd-2.0',6]]) for(const lang of ['javascript','python']){
+for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd2.5-720p',6]]) for(const lang of ['javascript','python']){
  for(const scenario of ['success','retry'])test(pageId+' '+lang+'视频示例完成创建、轮询及下载：'+scenario,()=>{
   const r=execute(pageId,lang,scenario);assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.equal(r.partial,false);assert.ok(r.saved);
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
@@ -136,6 +136,21 @@ for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd-2.0
  });
 }
 test('下载中断清理部分文件并保留任务编号',()=>{const r=execute('video','javascript','broken-download');assert.equal(r.status,1);assert.equal(r.file,null);assert.equal(r.partial,false);assert.ok(r.saved);});
+
+// 两种语言都执行四款SD型号，确认分辨率自动匹配且保留本站下载接口。
+for(const lang of ['javascript','python']) {
+ for(const [model,resolution] of [['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p'],['sd2.5-720p-pro','720p']]) test('SD '+lang+'型号与分辨率一致：'+model,()=>{
+  const r=execute('sd-video',lang,'success',{model});
+  assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');
+  const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.resolution,resolution);
+  assert.ok(r.calls.some(c=>c.url.endsWith('/v1/videos/task_test/content')));
+ });
+ test('SD '+lang+'旧型号在提交前停止',()=>{
+  const r=execute('sd-video',lang,'success',{model:'sd-2.0'});
+  assert.equal(r.status,1,r.output);assert.equal(r.calls.length,0);
+ });
+}
 
 // 执行两个语言的高清请求，验证720p和1080p都能完成同一异步闭环。
 for(const lang of ['javascript','python']) {

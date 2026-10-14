@@ -8,6 +8,15 @@ const ORIGIN = 'https://api.zzlye.xyz';
 const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
+// 型号的后缀就是对应分辨率，网关示例与标准视频示例采用同一组型号。
+const model = process.env.WENYUN_SD_MODEL || 'sd2.5-720p';
+const resolutions = {
+  'sd2.5-480p': '480p',
+  'sd2.5-720p': '720p',
+  'sd2.5-1080p': '1080p',
+  'sd2.5-720p-pro': '720p'
+};
+if (!Object.hasOwn(resolutions, model)) throw new Error('未知SD模型：' + model);
 
 // 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。
 function ownUrl(path) {
@@ -41,7 +50,7 @@ if (process.argv[2]) {
   const response = await fetch(ORIGIN + '/v1/videos', {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },
-    body: JSON.stringify({ model: 'sd-2.0', prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 6, resolution: '720p', aspect_ratio: '16:9' }),
+    body: JSON.stringify({ model, prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 6, resolution: resolutions[model], aspect_ratio: '16:9' }),
     redirect: 'error',
     signal: AbortSignal.timeout(120000)
   });

@@ -14,10 +14,20 @@ KEY = os.environ.get('WENYUN_API_KEY')
 if not KEY:
     raise SystemExit('请设置 WENYUN_API_KEY')
 TASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')
+MODEL = os.environ.get('WENYUN_SD_MODEL') or 'sd2.5-720p'
+# 型号与分辨率绑定，避免高清型号误用示例的默认清晰度。
+RESOLUTIONS = {
+    'sd2.5-480p': '480p',
+    'sd2.5-720p': '720p',
+    'sd2.5-1080p': '1080p',
+    'sd2.5-720p-pro': '720p',
+}
+if MODEL not in RESOLUTIONS:
+    raise SystemExit('未知SD模型：' + MODEL)
 BODY = {
-    'model': 'sd-2.0',
+    'model': MODEL,
     'prompt': '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
-    'duration': 6, 'resolution': '720p', 'aspect_ratio': '16:9',
+    'duration': 6, 'resolution': RESOLUTIONS[MODEL], 'aspect_ratio': '16:9',
     # 图生视频时在提示词中引用@Image1，并增加 image_urls: ['https://你的域名/参考图.jpg']。
 }
 

@@ -58,7 +58,7 @@ function execute(pageId, scenario, resume = false, exampleIndex = 0, model = '',
     if (resume) writeFileSync(join(dir, 'saved.json'), JSON.stringify({task_id:'async_test',poll_url:'/v1/tasks/async_test'}));
     const child = spawnSync(process.execPath, ['--import', pathToFileURL(join(dir,'mock.mjs')).href, join(dir,'generate.mjs'), ...(resume ? ['saved.json'] : [])], {
       cwd: dir, encoding: 'utf8', timeout: 8000,
-      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario, WENYUN_IMAGE_MODEL: model, WENYUN_VIDEO_MODEL: pageId==='video'?model:'', WENYUN_VIDEO_RESOLUTION: resolution }
+      env: { ...process.env, WENYUN_API_KEY: 'test-key', DOCS_SCENARIO: scenario, WENYUN_IMAGE_MODEL: model, WENYUN_VIDEO_MODEL: pageId==='video'?model:'', WENYUN_VIDEO_RESOLUTION: resolution, WENYUN_SD_MODEL:pageId==='sd-video'?model:'' }
     });
     assert.ok(!child.error, child.error?.message);
     assert.ok(existsSync(join(dir,'calls.json')), child.stderr);
@@ -180,11 +180,19 @@ test('SD网关示例按本页模型创建并支持恢复与过期停止',()=>{
     assert.equal(posts.length,1);
     assert.ok(posts[0].url.endsWith('/v1/videos'));
     const body=JSON.parse(posts[0].body);
-    assert.equal(body.model,'sd-2.0');assert.equal(body.duration,6);
+    assert.equal(body.model,'sd2.5-720p');assert.equal(body.duration,6);
     assert.equal(body.resolution,'720p');
     assert.ok(result.calls.every(c=>new URL(c.url).origin==='https://api.zzlye.xyz'));
   }
   const resumed=execute('sd-video','success',true,1);
   assert.equal(resumed.status,0,resumed.output);
   assert.equal(resumed.calls.filter(c=>c.method==='POST').length,0);
+});
+
+// 网关模式也按同一模型分辨率提交，任务返回与查询格式保持原样。
+for(const [model,resolution] of [['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p'],['sd2.5-720p-pro','720p']]) test('SD网关型号分辨率：'+model,()=>{
+  const r=execute('sd-video','success',false,1,model);
+  assert.equal(r.status,0,r.output);
+  const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.resolution,resolution);
 });
