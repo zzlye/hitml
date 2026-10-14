@@ -14,8 +14,7 @@ const model = process.env.WENYUN_SD_MODEL || 'sd2.5-720p';
 const resolutions = {
   'sd2.5-480p': '480p',
   'sd2.5-720p': '720p',
-  'sd2.5-1080p': '1080p',
-  'sd2.5-720p-pro': '720p'
+  'sd2.5-1080p': '1080p'
 };
 if (!Object.hasOwn(resolutions, model)) throw new Error('未知SD模型：' + model);
 const request = {

@@ -20,7 +20,6 @@ RESOLUTIONS = {
     'sd2.5-480p': '480p',
     'sd2.5-720p': '720p',
     'sd2.5-1080p': '1080p',
-    'sd2.5-720p-pro': '720p',
 }
 if MODEL not in RESOLUTIONS:
     raise SystemExit('未知SD模型：' + MODEL)
