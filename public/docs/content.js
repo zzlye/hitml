@@ -5,8 +5,8 @@ import {
   IMAGE2_MODEL_BLOCKS,
   IMAGE2_RESPONSE_BLOCKS,
   IMAGE2_SIZE_BLOCKS
-} from "./image2-details.js?v=20261010-mj-task-contract";
-import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261010-mj-task-contract";
+} from "./image2-details.js?v=20261016-image-url-edit";
+import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261016-image-url-edit";
 import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261010-ximilu";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
@@ -519,7 +519,7 @@ const legacyPages = [
         "type": "list",
         "items": [
           "HTTP 202只表示任务受理；先查询到succeeded，再读取图片，不把提交响应当作成品。",
-          "参考图不生效：编辑接口使用image或image[]文件字段；multipart请求不要手动省略boundary。",
+          "参考图不生效：本地文件使用image或image[]，URL使用JSON的images数组；不要混传两种请求格式，multipart的boundary由客户端自动生成。",
           "没有图片：检查result.data中的url或b64_json、error和result_expired，不只检查HTTP状态。",
           "下载返回401：media[].url需要Bearer鉴权；临时展示链接也可能过期，不在URL中拼接自己的Key。",
           "排查时提供模型、task_id、请求时间、HTTP状态及去掉Key的参数，不发送完整Key。"
@@ -944,7 +944,7 @@ const legacyPages = [
         "type": "list",
         "items": [
           "HTTP 202只表示任务受理；先查询到succeeded，再读取图片，不把提交响应当作成品。",
-          "参考图不生效：检查contents[].parts[].inlineData、纯Base64数据、mimeType与图片顺序。",
+          "参考图不生效：本地图片检查inlineData的纯Base64与mimeType，URL检查fileData.fileUri的可访问性；两种方式均按图片part顺序引用。",
           "没有图片：遍历candidates[].content.parts[]，检查inlineData以及finishReason、promptFeedback，纯文字不算出图成功。",
           "下载返回401：media[].url需要Bearer鉴权；临时展示链接也可能过期，不在URL中拼接自己的Key。",
           "排查时提供模型、task_id、请求时间、HTTP状态及去掉Key的参数，不发送完整Key。"
@@ -2778,16 +2778,16 @@ export const pages = legacyPages.map((page) => {
       '尺寸与扩展参数': () => IMAGE2_SIZE_BLOCKS,
       '同步响应与结果保存': (blocks) => [blocks[0], blocks[1], blocks[2], ...IMAGE2_RESPONSE_BLOCKS.slice(1), blocks.at(-1)]
     }),
-    lead: 'Images接口的型号、请求参数、完整比例尺寸表、图片编辑、透明背景与异步任务处理。'
+    lead: 'Images接口的型号、完整比例尺寸表、本地或URL图生图、审核参数、图片编辑与异步任务处理。'
   };
   if (page.id === 'banana') return {
     ...replaceSections(page, {
       '模型与接口': (blocks) => [blocks[0], ...BANANA_MODEL_BLOCKS],
       '参数说明': (blocks) => [blocks[0], ...BANANA_PARAMETER_BLOCKS],
-      '带参考图的请求体': (blocks) => [blocks[0], ...BANANA_REFERENCE_BLOCKS]
+      '带参考图的请求体': () => [{ type: 'heading', value: '图生图与图片编辑' }, ...BANANA_REFERENCE_BLOCKS]
     }),
     title: 'Nano Banana 2 / 2.1 / Pro',
-    lead: '三款香蕉型号的Gemini原生接入、比例与尺寸档位、多参考图、异步查询及图片保存。'
+    lead: '三款香蕉型号的Gemini原生接入、比例与尺寸、URL或Base64参考图、图片编辑、异步查询及图片保存。'
   };
   if (page.id === 'seedream') return {
     ...replaceSections(page, {

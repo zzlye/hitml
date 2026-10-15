@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261014-sd25-3models";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261014-sd25-3models";
+import { pages } from "./content.js?v=20261016-image-url-edit";
+import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261016-image-url-edit";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");

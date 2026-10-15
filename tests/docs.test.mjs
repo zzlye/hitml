@@ -72,6 +72,8 @@ test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
     "background",
     "response_format",
     "output_format",
+    "moderation",
+    "URL图生图",
     "1K、2K、4K",
     "1:1",
     "3:2",
@@ -99,6 +101,23 @@ test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
     assert.equal(row[3].includes('transparent'),row[0].endsWith('-满血'));
     assert.equal(row[4]==='支持',row[0].endsWith('-满血'));
   }
+  // 检查可复制的URL请求及审核枚举，避免参数只写在说明中却未进入示例。
+  const urlRequest=page.blocks.find(block=>block.lang==='bash'&&block.value.includes('/v1/images/edits')&&block.value.includes('--data'));
+  const urlBody=JSON.parse(urlRequest.value.match(/--data\s+'([\s\S]*?)'/)[1]);
+  assert.equal(urlBody.model,'gpt-image-2-4k');
+  assert.equal(urlBody.images.length,2);
+  assert.ok(urlBody.images.every(url=>new URL(url).protocol==='https:'));
+  assert.equal(urlBody.moderation,'auto');
+  assert.ok(!('image' in urlBody));
+  assert.ok(urlRequest.value.includes('Content-Type: application/json'));
+  assert.ok(generation.rows.some(row=>row[0]==='moderation'&&row[3].includes('low')));
+  const editParameters=page.blocks.find(block=>block.type==='table'&&block.headers.includes('限制与说明'));
+  assert.ok(editParameters.rows.some(row=>row[0]==='moderation'&&row[2].includes('low')));
+  const moderation=page.blocks.find(block=>block.type==='table'&&block.headers[0]==='取值');
+  assert.deepEqual(moderation.rows.map(row=>row[0]),['auto','low']);
+  const lowRequest=page.blocks.find(block=>block.lang==='bash'&&/"moderation"\s*:\s*"low"/.test(block.value));
+  assert.equal(JSON.parse(lowRequest.value.match(/--data\s+'([\s\S]*?)'/)[1]).moderation,'low');
+  assert.ok(page.blocks.some(block=>block.lang==='bash'&&block.value.includes("-F 'moderation=auto'")));
 });
 
 test('GPT Image的24个预设尺寸同时满足像素与比例限制', async()=>{
@@ -133,6 +152,26 @@ test('香蕉型号、14种比例和512专属档位不套用GPT像素限制',asyn
   const block=page.blocks.find(b=>b.lang==='bash'&&b.value.includes('/nano-banana-2.1:generateContent'));
   const body=JSON.parse(block.value.match(/--data\s+'([\s\S]*?)'/)[1]);
   assert.deepEqual(body.generationConfig.imageConfig,{aspectRatio:'16:9',imageSize:'2K'});
+  // URL输入与编辑沿用原生请求，不引入Images或聊天协议的字段。
+  const urlRequests=page.blocks.filter(block=>block.lang==='bash'&&block.value.includes('"fileData"'));
+  assert.equal(urlRequests.length,2);
+  for(const request of urlRequests){
+    const data=JSON.parse(request.value.match(/--data\s+'([\s\S]*?)'/)[1]);
+    assert.ok(!('model' in data)&&!('images' in data)&&!('prompt' in data)&&!('mask' in data));
+    const parts=data.contents[0].parts;
+    assert.equal(data.contents[0].role,'user');
+    assert.ok(parts[0].text);
+    const images=parts.filter(part=>part.fileData);
+    assert.ok(images.length>0&&images.length<=14);
+    for(const part of images){
+      assert.ok(!part.inlineData);
+      assert.equal(new URL(part.fileData.fileUri).protocol,'https:');
+      assert.ok(['image/png','image/jpeg','image/webp'].includes(part.fileData.mimeType));
+    }
+    assert.ok(data.generationConfig.responseModalities.includes('IMAGE'));
+  }
+  assert.ok(urlRequests.some(request=>request.value.includes('/nano-banana-pro:generateContent')&&request.value.includes('编辑第一张图')));
+  assert.ok(pageMarkdown(page).includes('contents[].parts[].fileData.fileUri'));
 });
 
 test('Seedream提供具体1K/2K尺寸且未混入4K、背景或遮罩控制',()=>{

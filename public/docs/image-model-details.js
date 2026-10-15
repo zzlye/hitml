@@ -1,4 +1,4 @@
-import { IMAGE2_SIZE_ROWS } from './image2-details.js?v=20261008-customer-docs';
+import { IMAGE2_SIZE_ROWS } from './image2-details.js?v=20261016-image-url-edit';
 
 // 各模型独立列出可用参数，不向客户展示内部参考工具或渠道地址。
 const heading = (value) => ({ type: 'heading', value });
@@ -39,10 +39,12 @@ export const BANANA_PARAMETER_BLOCKS = [
   table(['字段', '类型', '要求 / 默认建议', '说明'], [
     ['contents', 'array', '必填', '单次生成传一条user消息，不用Images的prompt字段替代'],
     ['contents[].role', 'string', '建议user', '当前用户的生成要求'],
-    ['contents[].parts', 'array', '必填', '至少一个text提示词，可追加多个inlineData参考图'],
+    ['contents[].parts', 'array', '必填', '至少一个text提示词；参考图使用inlineData或fileData，每张图单独一个part'],
     ['contents[].parts[].text', 'string', '必填', '多图时按排列顺序说明参考图用途'],
-    ['contents[].parts[].inlineData.mimeType', 'string', '图生图必填', 'image/png、image/jpeg、image/webp，与文件内容一致'],
-    ['contents[].parts[].inlineData.data', 'string', '图生图必填', '纯Base64，不带data:image/png;base64,前缀，不使用本机路径'],
+    ['contents[].parts[].inlineData.mimeType', 'string', 'Base64传图时必填', 'image/png、image/jpeg、image/webp，与文件内容一致'],
+    ['contents[].parts[].inlineData.data', 'string', 'Base64传图时必填', '纯Base64，不带data:image/png;base64,前缀，不填写URL或本机路径'],
+    ['contents[].parts[].fileData.mimeType', 'string', 'URL传图时填写', 'image/png、image/jpeg、image/webp，与链接返回的图片内容一致'],
+    ['contents[].parts[].fileData.fileUri', 'string', 'URL传图时必填', '可访问的图片HTTPS直链；无需放入inlineData.data或在客户端转为Base64'],
     ['generationConfig.responseModalities', 'string[]', '建议["IMAGE"]', '如需同时读取文字可用["TEXT","IMAGE"]'],
     ['generationConfig.imageConfig.aspectRatio', 'string', '建议1:1', '枚举值见下表，不使用1376x768等像素字符串'],
     ['generationConfig.imageConfig.imageSize', 'string', '建议1K', '1K、2K、4K区分大小写；仅nano-banana-2支持字符串"512"，不是512px或数字512']
@@ -64,26 +66,67 @@ export const BANANA_PARAMETER_BLOCKS = [
   json({ contents: [{ role: 'user', parts: [{ text: '一个橘子图标，白色背景' }] }], generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '1:1', imageSize: '512' } } })
 ];
 export const BANANA_REFERENCE_BLOCKS = [
-  paragraph('文字与参考图放在同一个contents[0].parts数组里，第一项写要求，后续inlineData逐张提供图片。客户端读取文件并Base64编码即可，不需要额外图片转换服务。'),
+  paragraph('文字与参考图放在同一个contents[0].parts数组里，第一项写生成或编辑要求。参考图支持本地图片Base64（inlineData）和图片URL（fileData）；每张图单独一个part，同一个part不同时放inlineData与fileData。'),
+  table(['输入来源', '字段', '内容'], [
+    ['本地图片或已有Base64', 'inlineData.mimeType + inlineData.data', '实际MIME和纯Base64，不含Data URL前缀'],
+    ['远程图片URL', 'fileData.mimeType + fileData.fileUri', '实际MIME和图片HTTPS直链，无需客户端下载、编码'],
+    ['多张参考图', '多个inlineData / fileData part', '可按各图来源分别选择；三款型号合计最多14张']
+  ]),
+  heading('本地参考图：inlineData'),
   json({ contents: [{ role: 'user', parts: [
     { text: '保留第一张图的人物，使用第二张图的服装，背景改成纯白' },
     { inlineData: { mimeType: 'image/png', data: '<FIRST_IMAGE_BASE64>' } },
     { inlineData: { mimeType: 'image/jpeg', data: '<SECOND_IMAGE_BASE64>' } }
   ] }], generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: '2K' } } }),
+  heading('URL图生图：fileData'),
+  paragraph('使用fileData.fileUri填写图片URL，不把URL写入inlineData.data，也不在请求顶层添加images。下面将远程图片作为参考，三款型号均使用同一请求结构，切换时替换URL中的完整模型名称。'),
+  { type: 'code', lang: 'bash', value: `curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1beta/models/nano-banana-2.1:generateContent' \\
+  -H "Authorization: Bearer $WENYUN_API_KEY" \\
+  -H 'Content-Type: application/json' \\
+  -H 'Prefer: respond-async' \\
+  --data '${JSON.stringify({
+    contents: [{ role: 'user', parts: [
+      { text: '参考图片中的商品外观，生成一张简洁的商业海报，背景为浅蓝色' },
+      { fileData: { mimeType: 'image/png', fileUri: 'https://example.com/product.png' } }
+    ] }],
+    generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: '2K' } }
+  }, null, 2)}'` },
   table(['检查项', '要求'], [
     ['格式', 'PNG、JPEG或WebP，mimeType与实际内容一致'],
     ['Base64', '不含Data URL前缀，不把URL或文件名放入data'],
-    ['多图顺序', '提示词中的第一张、第二张对应inlineData排列顺序'],
+    ['URL', '必须直接返回图片，不能是网页、网盘预览页、本机地址或需要Cookie登录的链接；签名链接需在排队与生成期间有效'],
+    ['多图顺序', '提示词中的第一张、第二张对应所有图片part的排列顺序，与使用inlineData还是fileData无关'],
     ['数量', '三款型号总输入最多14张参考图，不将参考图数量等同于输出数量'],
-    ['体积', 'Base64约比原文件大三分之一，大图先在客户端压缩；413后不要原样重复提交']
+    ['体积', 'URL减少请求体积，但不绕过图片数量及文件大小限制；Base64约比原文件大三分之一，大图先压缩，413后不要原样重复提交']
   ]),
+  heading('图片编辑：换背景、局部修改与多图组合'),
+  paragraph('nano-banana-2、nano-banana-2.1和nano-banana-pro均支持基于参考图的图片编辑，仍调用本页generateContent接口。把原图作为参考图传入，text明确写出要修改的内容和必须保留的部分；URL与Base64两种输入都可用于编辑。'),
+  table(['编辑目标', '提示词写法'], [
+    ['更换背景', '保留商品的形状、颜色和标签，仅将背景替换为白色摄影棚'],
+    ['局部修改', '仅将人物手中的杯子改为蓝色，保留人物面容、姿态、衣服与其他区域'],
+    ['修改文字', '将招牌上的文字替换为“橘子汽水”，保留招牌材质、透视与环境'],
+    ['多图组合', '保留第一张图的人物外观，换上第二张图的服装，不改变人物姿态']
+  ]),
+  { type: 'code', lang: 'bash', value: `curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1beta/models/nano-banana-pro:generateContent' \\
+  -H "Authorization: Bearer $WENYUN_API_KEY" \\
+  -H 'Content-Type: application/json' \\
+  -H 'Prefer: respond-async' \\
+  --data '${JSON.stringify({
+    contents: [{ role: 'user', parts: [
+      { text: '编辑第一张图：保持人物面容、姿态与背景不变，只将衣服换成第二张图的款式与颜色' },
+      { fileData: { mimeType: 'image/png', fileUri: 'https://example.com/person.png' } },
+      { fileData: { mimeType: 'image/jpeg', fileUri: 'https://example.com/clothes.jpg' } }
+    ] }],
+    generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '3:4', imageSize: '2K' } }
+  }, null, 2)}'` },
+  note('这里的局部修改通过文字指令表达，不使用GPT Images接口的mask字段，也不承诺未修改区域逐像素一致。需要继续编辑时，把上一次结果作为新参考图再次提交；异步任务编号用于查询结果，不是编辑会话编号。'),
   heading('参考图组合与主体一致性'),
   table(['型号', '物体参考', '人物一致性参考', '独立风格参考', '总上限'], [
     ['nano-banana-2', '最多10张', '最多4张', '使用提示词描述风格', '14张'],
     ['nano-banana-2.1', '最多10张', '最多4张', '使用提示词描述风格', '14张'],
     ['nano-banana-pro', '最多6张', '最多5张', '最多3张', '14张']
   ]),
-  note('上表描述参考主体的高保真组合能力，不表示一定逐像素保留原图。将人物、商品与风格用途写进text，所有inlineData合计不超过14项；不要通过重复同一图片填满数量。')
+  note('上表描述参考主体的高保真组合能力，不表示一定逐像素保留原图。将人物、商品与风格用途写进text，所有inlineData与fileData图片合计不超过14项；不要通过重复同一图片填满数量。')
 ];
 
 export const SEEDREAM_MODEL_BLOCKS = [
