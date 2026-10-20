@@ -343,7 +343,7 @@ test('SD四款型号的分辨率与素材上限在全部请求中保持一致',(
   const limits={
     'sd-2.0-720p':['720p',9,0,3],
     'sd2.5-480p':['480p',30,10,10],
-    'sd2.5-720p':['720p',9,0,3],
+    'sd2.5-720p':['720p',30,0,10],
     'sd2.5-1080p':['1080p',30,10,10]
   };
   assert.equal(resolveRoute('#/sd-video'),'sd-video');
@@ -356,6 +356,12 @@ test('SD四款型号的分辨率与素材上限在全部请求中保持一致',(
     assert.deepEqual(modelTable.rows.find(row=>row[0]==='`'+model+'`'),
       ['`'+model+'`','`'+resolution+'`','最多'+images+'张','最多'+audios+'条',videos?'最多'+videos+'条':'不支持']);
   }
+  // 表格、提示和参数说明都要区分两个720p型号，不能只修表格而遗留旧上限。
+  assert.ok(page.blocks.some(block=>block.type==='note'&&block.value.includes('sd-2.0-720p最多9张图片、3条音频')&&block.value.includes('sd2.5-720p最多30张图片、10条音频')));
+  const parameters=page.blocks.find(block=>block.type==='table'&&block.headers.includes('规则'));
+  assert.ok(parameters.rows.find(row=>row[0]==='`image_urls`')[3].includes('sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多30张'));
+  assert.ok(parameters.rows.find(row=>row[0]==='`audio_urls`')[3].includes('sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多10条'));
+  assert.ok(!/两个720p型号均最多9张|sd-2\.0-720p与sd2\.5-720p均最多9张/.test(text));
   // 检查实际可复制的请求，不只检查文字是否出现关键字。
   const requests=[];
   for(const block of page.blocks.filter(b=>b.type==='code')){

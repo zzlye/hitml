@@ -2152,8 +2152,8 @@ const legacyPages = [
           [
             "`sd2.5-720p`",
             "`720p`",
-            "最多9张",
-            "最多3条",
+            "最多30张",
+            "最多10条",
             "不支持"
           ],
           [
@@ -2171,7 +2171,7 @@ const legacyPages = [
       },
       {
         "type": "note",
-        "value": "素材上限按每次请求、每种类型分别计算。sd-2.0-720p与sd2.5-720p均最多9张图片、3条音频，不支持参考视频，请省略video_urls。"
+        "value": "素材上限按每次请求、每种类型分别计算。sd-2.0-720p最多9张图片、3条音频；sd2.5-720p最多30张图片、10条音频。两个720p型号均不支持参考视频，请省略video_urls。"
       },
       {
         "type": "heading",
@@ -2243,7 +2243,7 @@ const legacyPages = [
             "`image_urls`",
             "string[]",
             "否",
-            "图片HTTPS直链数组。sd-2.0-720p与sd2.5-720p最多9张，sd2.5-480p与sd2.5-1080p最多30张；从@Image1起编号"
+            "图片HTTPS直链数组。sd-2.0-720p最多9张；sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多30张。从@Image1起编号"
           ],
           [
             "`video_urls`",
@@ -2255,7 +2255,7 @@ const legacyPages = [
             "`audio_urls`",
             "string[]",
             "否",
-            "音频HTTPS直链数组。sd-2.0-720p与sd2.5-720p最多3条，sd2.5-480p与sd2.5-1080p最多10条；从@Audio1起编号"
+            "音频HTTPS直链数组。sd-2.0-720p最多3条；sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多10条。从@Audio1起编号"
           ],
           [
             "`first_frame`",
@@ -2303,7 +2303,7 @@ const legacyPages = [
       },
       {
         "type": "paragraph",
-        "value": "sd-2.0-720p与sd2.5-720p均支持图片参考：将图片放入image_urls，并用@Image1说明用途。多图时按数组顺序引用@Image1、@Image2，以此类推；编号区分大小写。两个720p型号均最多9张图片。"
+        "value": "sd-2.0-720p与sd2.5-720p均支持图片参考：将图片放入image_urls，并用@Image1说明用途。多图时按数组顺序引用@Image1、@Image2，以此类推；编号区分大小写。sd-2.0-720p最多9张图片，sd2.5-720p最多30张图片。"
       },
       {
         "type": "code",
