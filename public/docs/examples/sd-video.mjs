@@ -12,6 +12,7 @@ const taskFile = process.argv[2] || 'video-task.json';
 // 型号与分辨率绑定，只修改型号即可切换对应清晰度。
 const model = process.env.WENYUN_SD_MODEL || 'sd2.5-720p';
 const resolutions = {
+  'sd-2.0-720p': '720p',
   'sd2.5-480p': '480p',
   'sd2.5-720p': '720p',
   'sd2.5-1080p': '1080p'

@@ -190,7 +190,7 @@ test('SD网关示例按本页模型创建并支持恢复与过期停止',()=>{
 });
 
 // 网关模式也按同一模型分辨率提交，任务返回与查询格式保持原样。
-for(const [model,resolution] of [['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p']]) test('SD网关型号分辨率：'+model,()=>{
+for(const [model,resolution] of [['sd-2.0-720p','720p'],['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p']]) test('SD网关型号分辨率：'+model,()=>{
   const r=execute('sd-video','success',false,1,model);
   assert.equal(r.status,0,r.output);
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
