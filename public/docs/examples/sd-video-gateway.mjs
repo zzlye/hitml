@@ -11,7 +11,7 @@ const headers = { Authorization: 'Bearer ' + key };
 // 型号的后缀就是对应分辨率，网关示例与标准视频示例采用同一组型号。
 const model = process.env.WENYUN_SD_MODEL || 'sd2.5-720p';
 const resolutions = {
-  'sd-2.0-720p': '720p',
+  'sd2.0-720p': '720p',
   'sd2.5-480p': '480p',
   'sd2.5-720p': '720p',
   'sd2.5-1080p': '1080p'

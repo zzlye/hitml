@@ -14,10 +14,11 @@ test("图片与视频文档页面完整且编号唯一", () => {
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
   assert.equal(mediaModels.length, 19);
-  for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-sunburst-4k", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
+  for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-flare-官渠", "gpt-image-2.5-sunburst-官渠", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
   assert.ok(!mediaModels.some(model => model.name === 'sd5p'));
+  assert.ok(!mediaModels.some(model => /gpt-image-2\.5-(flare|sunburst)-4k|sd-2\.0-720p/.test(model.name)));
   assert.ok(mediaModels.every((model) => pages.some(page => page.id === model.page)));
 });
 
@@ -66,7 +67,8 @@ test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
   const text = pageMarkdown(page);
   for (const value of [
     "gpt-image-2",
-    "gpt-image-2.5-flare-4k",
+    "gpt-image-2.5-flare-官渠",
+    "gpt-image-2.5-sunburst-官渠",
     "POST /v1/images/edits",
     "quality",
     "background",
@@ -98,9 +100,17 @@ test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
   const models = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称');
   for (const row of models.rows) {
     if (row[0].endsWith('-4k')) assert.ok(!row[2].includes('xhigh'));
-    assert.equal(row[3].includes('transparent'),row[0].endsWith('-满血'));
-    assert.equal(row[4]==='支持',row[0].endsWith('-满血'));
+    const fullCapability = /-(满血|官渠)$/.test(row[0]);
+    assert.equal(row[3].includes('transparent'),fullCapability);
+    assert.equal(row[4]==='支持',fullCapability);
   }
+  // 官渠只换完整模型名称，参数能力必须与对应满血型号逐项相同。
+  for (const family of ['flare', 'sunburst']) {
+    const official = models.rows.find(row=>row[0]==='gpt-image-2.5-'+family+'-官渠');
+    const full = models.rows.find(row=>row[0]==='gpt-image-2.5-'+family+'-满血');
+    assert.deepEqual(official.slice(1), full.slice(1));
+  }
+  assert.ok(!/gpt-image-2\.5-(flare|sunburst)-4k/.test(text));
   // 检查可复制的URL请求及审核枚举，避免参数只写在说明中却未进入示例。
   const urlRequest=page.blocks.find(block=>block.lang==='bash'&&block.value.includes('/v1/images/edits')&&block.value.includes('--data'));
   const urlBody=JSON.parse(urlRequest.value.match(/--data\s+'([\s\S]*?)'/)[1]);
@@ -341,7 +351,7 @@ test('SD四款型号的分辨率与素材上限在全部请求中保持一致',(
   const page=pages.find(p=>p.id==='sd-video'),text=pageMarkdown(page);
   // 按图片、视频、音频分别校验，720p型号必须拒绝视频参考。
   const limits={
-    'sd-2.0-720p':['720p',9,0,3],
+    'sd2.0-720p':['720p',9,0,3],
     'sd2.5-480p':['480p',30,10,10],
     'sd2.5-720p':['720p',30,0,10],
     'sd2.5-1080p':['1080p',30,10,10]
@@ -349,7 +359,7 @@ test('SD四款型号的分辨率与素材上限在全部请求中保持一致',(
   assert.equal(resolveRoute('#/sd-video'),'sd-video');
   for(const name of Object.keys(limits))assert.ok(mediaModels.some(m=>m.name===name&&m.page==='sd-video'));
   for(const term of ['image_urls','video_urls','audio_urls','first_frame','last_frame','@Image1','@Video1','@Audio1','completed','succeeded','result_expired','HTTPS'])assert.ok(text.includes(term),term);
-  assert.ok(!/rolldek|sd-2\.5|sd-2\.0(?!-720p)|sd2\.5-720p-pro|固定720p|4–15秒|4–30秒/.test(text));
+  assert.ok(!/rolldek|sd-2\.[05]|sd2\.0(?!-720p)|sd2\.5-720p-pro|固定720p|4–15秒|4–30秒/.test(text));
   const modelTable=page.blocks.find(block=>block.type==='table'&&block.headers[0]==='模型名称');
   assert.equal(modelTable.rows.length,4);
   for(const [model,[resolution,images,videos,audios]] of Object.entries(limits)){
@@ -357,11 +367,11 @@ test('SD四款型号的分辨率与素材上限在全部请求中保持一致',(
       ['`'+model+'`','`'+resolution+'`','最多'+images+'张','最多'+audios+'条',videos?'最多'+videos+'条':'不支持']);
   }
   // 表格、提示和参数说明都要区分两个720p型号，不能只修表格而遗留旧上限。
-  assert.ok(page.blocks.some(block=>block.type==='note'&&block.value.includes('sd-2.0-720p最多9张图片、3条音频')&&block.value.includes('sd2.5-720p最多30张图片、10条音频')));
+  assert.ok(page.blocks.some(block=>block.type==='note'&&block.value.includes('sd2.0-720p最多9张图片、3条音频')&&block.value.includes('sd2.5-720p最多30张图片、10条音频')));
   const parameters=page.blocks.find(block=>block.type==='table'&&block.headers.includes('规则'));
   assert.ok(parameters.rows.find(row=>row[0]==='`image_urls`')[3].includes('sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多30张'));
   assert.ok(parameters.rows.find(row=>row[0]==='`audio_urls`')[3].includes('sd2.5-480p、sd2.5-720p与sd2.5-1080p均最多10条'));
-  assert.ok(!/两个720p型号均最多9张|sd-2\.0-720p与sd2\.5-720p均最多9张/.test(text));
+  assert.ok(!/两个720p型号均最多9张|sd2\.0-720p与sd2\.5-720p均最多9张/.test(text));
   // 检查实际可复制的请求，不只检查文字是否出现关键字。
   const requests=[];
   for(const block of page.blocks.filter(b=>b.type==='code')){

@@ -28,11 +28,14 @@ test("首页不再包含外部接入模块", () => {
 });
 
 // 模型列表需要展示服务器新增的两个公开型号，并保留价格同步用的后端名称。
-test("模型列表包含香蕉2.1和无后缀的GPT Image 2.5", () => {
+test("模型列表包含香蕉2.1、基础GPT Image 2.5与两款官渠型号", () => {
   assert.match(content, /name: "gpt-image-2\.5"/);
   assert.match(content, /pricingNames: \["gpt-image-2\.5-flare", "gpt-image-2\.5-sunburst"\]/);
-  assert.match(content, /name: "gpt-image-2\.5-4k"/);
-  assert.match(content, /pricingNames: \["gpt-image-2\.5-flare-4k", "gpt-image-2\.5-sunburst-4k"\]/);
+  assert.doesNotMatch(content, /gpt-image-2\.5(?:-(?:flare|sunburst))?-4k/);
+  for (const family of ['flare', 'sunburst']) {
+    assert.ok(content.includes('name: "gpt-image-2.5-' + family + '-官渠"'));
+    assert.ok(content.includes('pricingName: "gpt-image-2.5-' + family + '-官渠"'));
+  }
   assert.match(content, /name: "Nano-Banana-2\.1"/);
   assert.match(content, /pricingName: "nano-banana-2\.1"/);
   assert.match(main, /modelPriceNames/);

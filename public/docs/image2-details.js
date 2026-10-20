@@ -1,4 +1,7 @@
 // 参数按型号区分，页面和Markdown导出共用正文。
+// 满血与官渠共用能力定义，避免相同参数在不同型号行中出现偏差。
+const fullModelRow = (name) => [name, '1K、2K、4K', 'auto / low / medium / high / xhigh / max', 'auto / opaque / transparent', '支持'];
+
 export const IMAGE2_MODEL_BLOCKS = [
   { type: 'paragraph', value: '下列型号均使用Images接口。model必须保留完整名称及后缀，文生图与图片编辑使用相同的型号，尺寸和质量按对应行选择。' },
   {
@@ -7,14 +10,14 @@ export const IMAGE2_MODEL_BLOCKS = [
       ['gpt-image-2', '1K', 'auto / low / medium / high', '不传', '不开放'],
       ['gpt-image-2-4k', '1K、2K、4K', 'auto / low / medium / high', '不传', '不开放'],
       ['gpt-image-2.5-flare', '1K', 'auto / low / medium / high / xhigh / max', '不传', '不开放'],
-      ['gpt-image-2.5-flare-4k', '1K、2K、4K', 'auto / low / medium / high', '不传', '不开放'],
-      ['gpt-image-2.5-flare-满血', '1K、2K、4K', 'auto / low / medium / high / xhigh / max', 'auto / opaque / transparent', '支持'],
+      fullModelRow('gpt-image-2.5-flare-满血'),
+      fullModelRow('gpt-image-2.5-flare-官渠'),
       ['gpt-image-2.5-sunburst', '1K', 'auto / low / medium / high / xhigh / max', '不传', '不开放'],
-      ['gpt-image-2.5-sunburst-4k', '1K、2K、4K', 'auto / low / medium / high', '不传', '不开放'],
-      ['gpt-image-2.5-sunburst-满血', '1K、2K、4K', 'auto / low / medium / high / xhigh / max', 'auto / opaque / transparent', '支持']
+      fullModelRow('gpt-image-2.5-sunburst-满血'),
+      fullModelRow('gpt-image-2.5-sunburst-官渠')
     ]
   },
-  { type: 'note', value: '实际请求的size必须是具体像素，例如1024x1024或3840x2160，不是1K、4K或16:9。-4k型号不支持xhigh/max；只有两款“满血”型号发送background。' }
+  { type: 'note', value: '实际请求的size必须是具体像素，例如1024x1024或3840x2160，不是1K、4K或16:9。gpt-image-2-4k不支持xhigh/max。两款“官渠”型号与对应的“满血”型号参数相同，均支持background和mask局部编辑。' }
 ];
 
 export const IMAGE2_GENERATION_TABLE = {
@@ -24,9 +27,9 @@ export const IMAGE2_GENERATION_TABLE = {
     ['prompt', 'string', '必填', '描述主体、构图、风格、文字内容及需要保留的细节'],
     ['size', 'string', '建议显式填写', '宽x高，英文小写x，例如1024x1024；具体值见尺寸表'],
     ['quality', 'string', '建议auto', 'auto、low、medium、high；xhigh、max仅用于型号表允许的版本'],
-    ['background', 'string', '满血型号可选，建议auto', 'auto自动，opaque不透明，transparent透明；其他型号省略'],
+    ['background', 'string', '满血或官渠型号可选，建议auto', 'auto自动，opaque不透明，transparent透明；其他型号省略'],
     ['n', 'integer', '建议1', '输出数量，不是参考图数量；批量生成建议拆成独立n=1请求并控制并发'],
-    ['response_format', 'string', '兼容渠道可选', 'url或b64_json；读取data[].url或data[].b64_json。满血型号可省略'],
+    ['response_format', 'string', '兼容渠道可选', 'url或b64_json；读取data[].url或data[].b64_json。满血或官渠型号可省略'],
     ['output_format', 'string', '建议png', 'PNG可用于透明背景；不使用此字段代替response_format，实际格式读取文件MIME'],
     ['output_compression', 'integer', 'PNG时省略', '0–100，JPEG/WebP的压缩设置，不适用于PNG；基础示例不发送'],
     ['moderation', 'string', '可选，默认auto', 'auto使用默认审核策略；low使用较宽松的审核级别，仍会执行内容安全检查，不代表关闭审核']
@@ -47,11 +50,11 @@ export const IMAGE2_EDIT_BLOCKS = [
     ['images', 'string[]，JSON请求时使用', '参考图URL数组，最多16张；单图也可使用长度为1的数组，顺序即参考顺序'],
     ['image', 'string，JSON单图兼容字段', '填写一张图片的HTTPS直链，不与images同时发送'],
     ['size', 'string，建议填写', '使用具体像素尺寸，遵守型号档位范围'],
-    ['quality', 'string，可选', '满血型号可按型号表发送；其他型号的整图编辑基础请求省略'],
-    ['background', 'string，可选', '只用于满血型号；透明背景用transparent并选择PNG'],
+    ['quality', 'string，可选', '满血或官渠型号可按型号表发送；其他型号的整图编辑基础请求省略'],
+    ['background', 'string，可选', '只用于满血或官渠型号；透明背景用transparent并选择PNG'],
     ['moderation', 'string，可选，默认auto', 'auto为默认审核策略；low为较宽松审核，不等于关闭安全检查；JSON和multipart均可传入'],
     ['n', 'integer，建议1', '输出数量，与image[]参考图数量无关'],
-    ['mask', '文件，可选，仅满血型号', '透明区域表示修改区域，尺寸与第一张参考图相同；主图与遮罩各不超过50MiB；其他型号不传']
+    ['mask', '文件，可选，满血或官渠型号', '透明区域表示修改区域，尺寸与第一张参考图相同；主图与遮罩各不超过50MiB；其他型号不传']
   ] },
   { type: 'paragraph', value: '参考图按文件或URL数组的顺序编号，例如“保留第一张图的人物，使用第二张图的服装”。两种输入方式的参考图上限相同。mask是局部编辑输入，不是透明背景开关。' },
   { type: 'heading', value: 'URL图生图：JSON请求' },
@@ -78,12 +81,12 @@ export const IMAGE2_EDIT_BLOCKS = [
   -F 'image[]=@style.png' \\
   -F 'size=2560x1440' \\
   -F 'n=1'` },
-  { type: 'note', value: '普通图生图以model、prompt、参考图、size为基础。需要mask、background或编辑质量控制时选择gpt-image-2.5-flare-满血或gpt-image-2.5-sunburst-满血，不能用-4k后缀代替这两款型号。' },
-  { type: 'heading', value: '遮罩局部编辑：仅满血型号' },
+  { type: 'note', value: '普通图生图以model、prompt、参考图、size为基础。需要mask、background或编辑质量控制时，选择型号表中的“满血”或“官渠”型号。官渠同样支持JSON的images/image URL输入和multipart文件上传，不需要更换接口。' },
+  { type: 'heading', value: '遮罩局部编辑：满血与官渠型号' },
   { type: 'code', lang: 'bash', value: `curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/images/edits' \\
   -H "Authorization: Bearer $WENYUN_API_KEY" \\
   -H 'Prefer: respond-async' \\
-  -F 'model=gpt-image-2.5-sunburst-满血' \\
+  -F 'model=gpt-image-2.5-sunburst-官渠' \\
   -F 'prompt=只修改遮罩透明区域中的背景，保留人物与衣服' \\
   -F 'image=@original.png' \\
   -F 'mask=@mask.png' \\
@@ -137,7 +140,7 @@ export const IMAGE2_SIZE_BLOCKS = [
   -H "Authorization: Bearer $WENYUN_API_KEY" \\
   -H 'Content-Type: application/json' \\
   -H 'Prefer: respond-async' \\
-  --data '{"model":"gpt-image-2.5-flare-满血","prompt":"一个独立的橘子图标，透明背景，无投影","size":"1024x1024","quality":"high","background":"transparent","output_format":"png","n":1}'` },
+  --data '{"model":"gpt-image-2.5-flare-官渠","prompt":"一个独立的橘子图标，透明背景，无投影","size":"1024x1024","quality":"high","background":"transparent","output_format":"png","n":1}'` },
   { type: 'note', value: '透明背景不能保存成JPEG。不要把GPT Image的3840边长、3:1比例和总像素限制套用到Nano Banana；香蕉有独立的aspectRatio、imageSize配置。' }
 ];
 

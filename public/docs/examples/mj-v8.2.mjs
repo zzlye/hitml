@@ -82,6 +82,30 @@ if (process.argv[2]) {
     : { model, prompt: '浅色背景上的橘子汽水，柔和光线，细腻插画', size: '1:1', raw: false, n: 1 };
   if (request.model !== model) throw new Error('请求文件中的模型名称必须为mj-v8.2');
   if (request.n != null && request.n !== 1) throw new Error('MJ的n固定为1');
+  // 只校验文档已经明确的输入限制，不改写任务返回或静默截断提示词。
+  const promptLength = typeof request.prompt === 'string' ? Array.from(request.prompt).length : 0;
+  if (promptLength < 1 || promptLength > 1023) throw new Error('prompt长度必须为1–1023个字符');
+  if (request.image != null && request.images != null) throw new Error('image与images请选择一种');
+  const validReference = value => {
+    if (typeof value !== 'string' || !value.trim()) return false;
+    if (/^data:image\/[^;,]+;base64,.+/i.test(value)) return true;
+    try { return ['https:', 'http:'].includes(new URL(value).protocol); }
+    catch { return false; }
+  };
+  if (request.image != null && !validReference(request.image)) throw new Error('image必须是图片URL或完整Data URL');
+  if (request.images != null && (!Array.isArray(request.images) || request.images.length < 1 || request.images.length > 5 || !request.images.every(validReference))) {
+    throw new Error('images必须包含1–5张图片URL或完整Data URL');
+  }
+  const ranges = { stylize: [0, 1000], chaos: [0, 100], weird: [0, 3000], iw: [0, 3], cw: [0, 100], sw: [0, 1000], dw: [0, 100] };
+  for (const [field, [min, max]] of Object.entries(ranges)) {
+    if (request[field] != null && (typeof request[field] !== 'number' || !Number.isFinite(request[field]) || request[field] < min || request[field] > max)) {
+      throw new Error(field + '必须为' + min + '–' + max + '之间的数值');
+    }
+  }
+  if (request.quality != null && ![0.25, 0.5, 1, 2].includes(request.quality)) throw new Error('quality必须为数值0.25、0.5、1或2');
+  for (const field of ['raw', 'hd', 'tile']) {
+    if (request[field] != null && typeof request[field] !== 'boolean') throw new Error(field + '必须为JSON布尔值');
+  }
   const response = await fetch(API_BASE + '/midjourney/generations', {
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
     body: JSON.stringify(request), redirect: 'error', signal: AbortSignal.timeout(120000)

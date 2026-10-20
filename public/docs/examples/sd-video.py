@@ -17,7 +17,7 @@ TASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')
 MODEL = os.environ.get('WENYUN_SD_MODEL') or 'sd2.5-720p'
 # 型号与分辨率绑定，避免高清型号误用示例的默认清晰度。
 RESOLUTIONS = {
-    'sd-2.0-720p': '720p',
+    'sd2.0-720p': '720p',
     'sd2.5-480p': '480p',
     'sd2.5-720p': '720p',
     'sd2.5-1080p': '1080p',

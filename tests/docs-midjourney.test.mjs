@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { pages, mediaModels } from '../public/docs/content.js';
 import { pageMarkdown, renderPage, resolveRoute } from '../public/docs/document.js';
-import { MJ_SIZES, createMjClient, mjCommonRows, parseMjTaskResponse } from '../public/docs/midjourney-details.js';
+import { MJ_SIZES, MJ_ACTIONS, createMjClient, mjCommonRows, parseMjTaskResponse } from '../public/docs/midjourney-details.js';
 
 test('目录删除niji7并保留mj-v8.2独立章节', () => {
   assert.deepEqual(pages.filter(page => page.id.startsWith('mj-')).map(page => page.id), ['mj-v8.2']);
@@ -15,17 +15,42 @@ test('目录删除niji7并保留mj-v8.2独立章节', () => {
   assert.equal(resolveRoute('#/mj-niji7'), 'image2');
 });
 
-test('mj-v8.2页面只包含自己的7项参数和独立示例', () => {
+test('mj-v8.2页面包含新版29项参数和独立示例', () => {
   const page = pages.find(item => item.id === 'mj-v8.2');
   assert.equal(page.title, 'mj-v8.2');
   const rows = page.blocks.filter(block => block.type === 'table' && block.headers[0] === '参数').flatMap(block => block.rows);
-  assert.equal(rows.length, 7);
+  assert.equal(rows.length, 29);
   assert.deepEqual(rows.map(row => row[0]), mjCommonRows.map(row => row[0]));
   assert.ok(!pageMarkdown(page).includes('mj-niji7'));
   assert.ok(!renderPage(page).includes('mj-niji7'));
   const source = page.blocks.find(block => block.lang === 'javascript').value;
   assert.equal(source.replaceAll('\r\n', '\n'), readFileSync(new URL('../public/docs/examples/mj-v8.2.mjs', import.meta.url), 'utf8').replaceAll('\r\n', '\n'));
   for (const ratio of MJ_SIZES) assert.ok(pageMarkdown(page).includes(ratio), ratio);
+});
+
+test('新版MJ明确提示词、参考图与数值参数限制', () => {
+  assert.deepEqual(mjCommonRows.map(row => row[0]), ['model', 'prompt', 'size', 'image', 'images', 'raw', 'negative_prompt', 'seed', 'stylize', 'chaos', 'weird', 'tile', 'iw', 'cref', 'sref', 'dref', 'cw', 'sw', 'dw', 'quality', 'hd', 'n', 'action', 'task_id', 'index', 'custom_id', 'direction', 'zoom_ratio', 'dimensions']);
+  const rows = new Map(mjCommonRows.map(row => [row[0], row]));
+  assert.equal(rows.get('prompt')[3], '1–1023个字符');
+  assert.equal(rows.get('images')[3], '1–5张');
+  assert.equal(rows.get('quality')[1], 'number');
+  assert.equal(rows.get('quality')[3], '0.25 / 0.5 / 1 / 2；默认1');
+  for (const [key, value] of [['stylize', '0–1000；默认100'], ['chaos', '0–100；默认0'], ['weird', '0–3000；默认0'], ['iw', '0–3'], ['cw', '0–100'], ['sw', '0–1000'], ['dw', '0–100']]) assert.equal(rows.get(key)[3], value);
+  assert.deepEqual(MJ_ACTIONS, ['upscale', 'variation', 'high_variation', 'low_variation', 'remix_strong', 'remix_subtle', 'reroll', 'zoom', 'pan', 'blend', 'edits', 'describe']);
+  const page = pages.find(item => item.id === 'mj-v8.2');
+  const requests = page.blocks.filter(block => block.lang === 'bash' && block.value.includes('--data')).map(block => JSON.parse(block.value.match(/--data\s+'([\s\S]*?)'/)[1]));
+  assert.ok(requests.some(body => body.image && !body.images && body.iw === 1));
+  assert.ok(requests.some(body => body.images?.length === 2 && body.iw === 1.5));
+  assert.ok(requests.some(body => body.sref && body.sw === 100));
+  assert.ok(requests.some(body => body.quality === 1 && body.hd === false));
+  for (const body of requests) {
+    assert.equal(body.model, 'mj-v8.2');
+    assert.ok(Array.from(body.prompt).length <= 1023);
+    assert.equal(body.n, 1);
+    assert.ok(!body.image || !body.images);
+    assert.ok((body.images || []).length <= 5);
+  }
+  assert.ok(page.blocks.some(block => block.lang === 'json' && JSON.parse(block.value).image?.startsWith('data:image/png;base64,')));
 });
 
 test('任务解析兼容实际的顶层加data包装、响应头任务号和受控图片地址', () => {
@@ -190,4 +215,39 @@ test('请求模型不匹配或n不是1时不会提交', () => {
   const countResult = execute('success', { request: { model: 'mj-v8.2', prompt: '橘子', n: 4 } });
   assert.notEqual(countResult.status, 0);
   assert.equal(countResult.calls.length, 0);
+});
+
+// 执行文档示例验证输入边界，所有响应均为本地模拟，不产生真实生成费用。
+for (const prompt of ['橘', '橘'.repeat(1023), '🍊'.repeat(1023)]) {
+  test('MJ提示词按字符数保留合法边界：' + Array.from(prompt).length + '/' + prompt.length, () => {
+    const request = { model: 'mj-v8.2', prompt, n: 1 };
+    const result = execute('success', { request });
+    assert.equal(result.status, 0, result.output);
+    assert.deepEqual(JSON.parse(result.calls.find(call => call.method === 'POST').body), request);
+  });
+}
+
+for (const input of [
+  { prompt: '' }, { prompt: '橘'.repeat(1024) }, { prompt: null },
+  { images: [] }, { images: Array(6).fill('https://example.com/a.png') },
+  { image: '裸Base64' }, { images: ['C:/a.png'] }, { image: 'https://example.com/a.png', images: ['https://example.com/b.png'] },
+  { quality: 'high' }, { quality: '1' }, { quality: 3 }, { stylize: 1001 },
+  { chaos: -1 }, { weird: 3001 }, { iw: 3.1 }, { cw: 101 }, { sw: 1001 }, { dw: -1 },
+  { raw: 'false' }, { hd: 'true' }, { tile: 1 }
+]) {
+  test('MJ非法参数在提交前停止：' + Object.keys(input).join('/'), () => {
+    const result = execute('success', { request: { model: 'mj-v8.2', prompt: '橘子', n: 1, ...input } });
+    assert.notEqual(result.status, 0, result.output);
+    assert.equal(result.calls.length, 0);
+  });
+}
+
+test('MJ单图Data URL与5张URL参考图保留原字段提交', () => {
+  for (const input of [{ image: 'data:image/png;base64,YWJj' }, { images: Array(5).fill('https://example.com/a.png') }]) {
+    const request = { model: 'mj-v8.2', prompt: '橘子', n: 1, quality: 0.5, raw: true, hd: false, tile: false, iw: 3, stylize: 1000, chaos: 100, weird: 3000, ...input };
+    const result = execute('success', { request });
+    assert.equal(result.status, 0, result.output);
+    assert.deepEqual(JSON.parse(result.calls.find(call => call.method === 'POST').body), request);
+    assert.equal(result.files.length, 4);
+  }
 });

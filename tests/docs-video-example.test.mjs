@@ -139,7 +139,7 @@ test('下载中断清理部分文件并保留任务编号',()=>{const r=execute(
 
 // 两种语言都执行四款SD型号，确认分辨率自动匹配且保留本站下载接口。
 for(const lang of ['javascript','python']) {
- for(const [model,resolution] of [['sd-2.0-720p','720p'],['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p']]) test('SD '+lang+'型号与分辨率一致：'+model,()=>{
+ for(const [model,resolution] of [['sd2.0-720p','720p'],['sd2.5-480p','480p'],['sd2.5-720p','720p'],['sd2.5-1080p','1080p']]) test('SD '+lang+'型号与分辨率一致：'+model,()=>{
   const r=execute('sd-video',lang,'success',{model});
   assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
