@@ -13,11 +13,13 @@ test("图片与视频文档页面完整且编号唯一", () => {
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 27);
-  for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-flare-官渠", "gpt-image-2.5-sunburst-官渠", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
+  assert.equal(mediaModels.length, 25);
+  for (const name of ["gpt-image-2.5-flare-满血", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
   assert.ok(!mediaModels.some(model => model.name === 'sd5p'));
+  assert.ok(!mediaModels.some(model => model.name.endsWith('-官渠')));
+  assert.ok(!pages.map(pageMarkdown).join('\n').includes('-官渠'));
   assert.ok(!mediaModels.some(model => /sd-2\.0-720p/.test(model.name)));
   for (const name of ['gpt-image-2.5-flare-4k', 'gpt-image-2.5-sunburst-4k', 'AZ-gpt-image-2', '官-gpt-image-2.5-flare']) assert.ok(mediaModels.some(model => model.name === name));
   assert.ok(mediaModels.every((model) => pages.some(page => page.id === model.page)));
@@ -68,7 +70,7 @@ test("默认分组明确区分基础1K与Adobe兼容型号", () => {
   const text = pageMarkdown(page);
   for (const value of ['gpt-image-2.5-flare-4k', 'gpt-image-2.5-sunburst-满血', '32768字节', '最多16张', 'moderation', '1024x1024', '3840px', '655360至8294400', 'background', 'mask']) assert.ok(text.includes(value), value);
   const rows = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称').rows;
-  assert.equal(rows.length, 10);
+  assert.equal(rows.length, 8);
   for (const row of rows) {
     const basic = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(row[0]);
     assert.equal(row[1], basic ? '仅1K' : '1K、2K、4K');

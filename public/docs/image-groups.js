@@ -6,7 +6,7 @@ const note = value => ({ type: 'note', value });
 const table = (headers, rows) => ({ type: 'table', headers, rows });
 const code = (lang, value) => ({ type: 'code', lang, value });
 const bases = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'];
-const adobeAliases = ['gpt-image-2-4k', ...bases.slice(1).flatMap(name => ['-4k', '-满血', '-官渠'].map(suffix => name + suffix))];
+const adobeAliases = ['gpt-image-2-4k', ...bases.slice(1).flatMap(name => ['-4k', '-满血'].map(suffix => name + suffix))];
 
 // 分组和完整模型名共同决定能力，不能把同名的1K线路与Adobe线路合并。
 export const IMAGE_GROUPS = [
@@ -120,7 +120,7 @@ function editBlocks(group, model) {
     heading('多张URL参考图'),
     curlJson('/v1/images/edits', { ...request, images: adobeOnly ? references.map(image_url => ({ image_url })) : references }),
     ...(group.kind === 'default' ? [
-      paragraph('默认分组的满血、4k及旧官渠后缀型号使用Adobe多图格式：'),
+      paragraph('默认分组的满血、4k后缀型号使用Adobe多图格式：'),
       curlJson('/v1/images/edits', { ...request, model: 'gpt-image-2.5-flare-满血', size: '2560x1440', images: references.map(image_url => ({ image_url })) })
     ] : []),
     heading('本地图片上传'),
@@ -187,7 +187,7 @@ export function createImageGroupPage(group, legacyPage) {
         const cap = imageCapability(group, name);
         return [name, cap.sizes, cap.quality, cap.background ? 'auto / opaque / transparent' : '不提供，省略', cap.mask ? '支持' : '不开放', cap.adobe ? 'Adobe' : group.kind === 'official' ? group.label : '基础1K'];
       })),
-      ...(group.kind === 'default' ? [note('不带后缀的gpt-image-2、gpt-image-2.5-flare、gpt-image-2.5-sunburst保持基础1K能力。-满血、-4k以及本页列出的旧-官渠后缀按Adobe线路使用；旧-官渠后缀不等于官key-image分组的官-前缀。')] : []),
+      ...(group.kind === 'default' ? [note('不带后缀的gpt-image-2、gpt-image-2.5-flare、gpt-image-2.5-sunburst保持基础1K能力。-满血、-4k后缀按Adobe线路使用。')] : []),
       ...parameterBlocks(group), ...sizeBlocks(group),
       heading('文生图完整请求'),
       curlJson('/v1/images/generations', { model, prompt: '清晨花店门口，柔和日光，精致商业摄影', size: capability.full ? '2560x1440' : '1280x720', quality: 'high', n: 1 }),

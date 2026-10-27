@@ -108,18 +108,6 @@ export const modelListModule = {
       fallbackPrice: 0.03
     },
     {
-      name: "gpt-image-2.5-flare-官渠",
-      pricingName: "gpt-image-2.5-flare-官渠",
-      resolutions: ["1K", "2K", "4K"],
-      fallbackPrice: 0.2
-    },
-    {
-      name: "gpt-image-2.5-sunburst-官渠",
-      pricingName: "gpt-image-2.5-sunburst-官渠",
-      resolutions: ["1K", "2K", "4K"],
-      fallbackPrice: 0.2
-    },
-    {
       name: "Nano-Banana-2",
       pricingName: "nano-banana-2",
       resolutions: ["1K", "2K", "4K"],
