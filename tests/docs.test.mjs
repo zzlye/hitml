@@ -3,22 +3,23 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 // 直接验证发布时使用的文档数据，防止页面和导出内容分别维护后发生偏差。
-const { pages, mediaModels, API_ORIGIN } = await import("../public/docs/content.js");
-const { pageMarkdown, renderPage, resolveRoute } = await import("../public/docs/document.js");
+const { pages, mediaModels, API_ORIGIN, navigation } = await import("../public/docs/content.js");
+const { pageMarkdown, renderPage, renderNavigation, resolveRoute } = await import("../public/docs/document.js");
 
 test("图片与视频文档页面完整且编号唯一", () => {
-  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-v8.2", "video", "sd-video"]);
+  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-v8.2", "video", "sd-video", "image-1k", "image-az", "image-adobe", "image-official"]);
   assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 19);
+  assert.equal(mediaModels.length, 27);
   for (const name of ["gpt-image-2.5-flare-满血", "gpt-image-2.5-flare-官渠", "gpt-image-2.5-sunburst-官渠", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
   assert.ok(!mediaModels.some(model => model.name === 'sd5p'));
-  assert.ok(!mediaModels.some(model => /gpt-image-2\.5-(flare|sunburst)-4k|sd-2\.0-720p/.test(model.name)));
+  assert.ok(!mediaModels.some(model => /sd-2\.0-720p/.test(model.name)));
+  for (const name of ['gpt-image-2.5-flare-4k', 'gpt-image-2.5-sunburst-4k', 'AZ-gpt-image-2', '官-gpt-image-2.5-flare']) assert.ok(mediaModels.some(model => model.name === name));
   assert.ok(mediaModels.every((model) => pages.some(page => page.id === model.page)));
 });
 
@@ -62,72 +63,24 @@ test("视频示例保留真实时长和分辨率字段", () => {
   assert.ok(video.includes("input_reference"));
 });
 
-test("GPT Image文档包含明确的型号参数与完整尺寸表", () => {
-  const page = pages.find((entry) => entry.id === "image2");
+test("默认分组明确区分基础1K与Adobe兼容型号", () => {
+  const page = pages.find(page => page.id === 'image2');
   const text = pageMarkdown(page);
-  for (const value of [
-    "gpt-image-2",
-    "gpt-image-2.5-flare-官渠",
-    "gpt-image-2.5-sunburst-官渠",
-    "POST /v1/images/edits",
-    "quality",
-    "background",
-    "response_format",
-    "output_format",
-    "moderation",
-    "URL图生图",
-    "1K、2K、4K",
-    "1:1",
-    "3:2",
-    "2:3",
-    "16:9",
-    "9:16",
-    "4:3",
-    "3:4",
-    "21:9",
-    "1024x1024",
-    "1280x720",
-    "720x1280",
-    "宽和高都必须是16的倍数",
-    "3840px",
-    "655360至8294400",
-    "最多16张"
-  ]) assert.ok(text.includes(value), value);
-  assert.ok(!text.includes("是否生效取决于选中的模型与渠道"));
-  const generation = page.blocks.find((block) => block.type === "table" && block.headers.includes("取值与说明"));
-  assert.ok(generation);
-  assert.ok(generation.rows.some((row) => row[0] === "quality" && row[3].includes("xhigh")));
-  const models = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称');
-  for (const row of models.rows) {
-    if (row[0].endsWith('-4k')) assert.ok(!row[2].includes('xhigh'));
-    const fullCapability = /-(满血|官渠)$/.test(row[0]);
-    assert.equal(row[3].includes('transparent'),fullCapability);
-    assert.equal(row[4]==='支持',fullCapability);
+  for (const value of ['gpt-image-2.5-flare-4k', 'gpt-image-2.5-sunburst-满血', '32768字节', '最多16张', 'moderation', '1024x1024', '3840px', '655360至8294400', 'background', 'mask']) assert.ok(text.includes(value), value);
+  const rows = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称').rows;
+  assert.equal(rows.length, 10);
+  for (const row of rows) {
+    const basic = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(row[0]);
+    assert.equal(row[1], basic ? '仅1K' : '1K、2K、4K');
+    assert.equal(row[5], basic ? '基础1K' : 'Adobe');
+    assert.equal(row[3].includes('transparent'), !basic && row[0].includes('2.5'));
+    assert.equal(row[4], basic ? '不开放' : '支持');
   }
-  // 官渠只换完整模型名称，参数能力必须与对应满血型号逐项相同。
-  for (const family of ['flare', 'sunburst']) {
-    const official = models.rows.find(row=>row[0]==='gpt-image-2.5-'+family+'-官渠');
-    const full = models.rows.find(row=>row[0]==='gpt-image-2.5-'+family+'-满血');
-    assert.deepEqual(official.slice(1), full.slice(1));
-  }
-  assert.ok(!/gpt-image-2\.5-(flare|sunburst)-4k/.test(text));
-  // 检查可复制的URL请求及审核枚举，避免参数只写在说明中却未进入示例。
-  const urlRequest=page.blocks.find(block=>block.lang==='bash'&&block.value.includes('/v1/images/edits')&&block.value.includes('--data'));
-  const urlBody=JSON.parse(urlRequest.value.match(/--data\s+'([\s\S]*?)'/)[1]);
-  assert.equal(urlBody.model,'gpt-image-2-4k');
-  assert.equal(urlBody.images.length,2);
-  assert.ok(urlBody.images.every(url=>new URL(url).protocol==='https:'));
-  assert.equal(urlBody.moderation,'auto');
-  assert.ok(!('image' in urlBody));
-  assert.ok(urlRequest.value.includes('Content-Type: application/json'));
-  assert.ok(generation.rows.some(row=>row[0]==='moderation'&&row[3].includes('low')));
-  const editParameters=page.blocks.find(block=>block.type==='table'&&block.headers.includes('限制与说明'));
-  assert.ok(editParameters.rows.some(row=>row[0]==='moderation'&&row[2].includes('low')));
-  const moderation=page.blocks.find(block=>block.type==='table'&&block.headers[0]==='取值');
-  assert.deepEqual(moderation.rows.map(row=>row[0]),['auto','low']);
-  const lowRequest=page.blocks.find(block=>block.lang==='bash'&&/"moderation"\s*:\s*"low"/.test(block.value));
-  assert.equal(JSON.parse(lowRequest.value.match(/--data\s+'([\s\S]*?)'/)[1]).moderation,'low');
-  assert.ok(page.blocks.some(block=>block.lang==='bash'&&block.value.includes("-F 'moderation=auto'")));
+  assert.equal(rows.find(row => row[0] === 'gpt-image-2-4k')[3], '不提供，省略');
+  const requests = page.blocks.filter(block => block.lang === 'bash' && block.value.includes('--data')).map(block => JSON.parse(block.value.match(/--data\s+'([\s\S]*?)'/)[1]));
+  assert.ok(requests.some(body => body.model.endsWith('-满血') && body.images?.every(image => typeof image.image_url === 'string')));
+  assert.ok(requests.some(body => body.model === 'gpt-image-2.5-flare' && body.images?.every(image => typeof image === 'string')));
+  assert.ok(requests.every(body => !body.background || body.model.includes('2.5') && body.model.endsWith('-满血')));
 });
 
 test('GPT Image的24个预设尺寸同时满足像素与比例限制', async()=>{
@@ -293,8 +246,14 @@ test('网页代码和可独立运行的示例文件逐字一致', () => {
 });
 
 
-test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
-  assert.deepEqual(pages.map(p=>p.label),['GPT Image','Nano Banana','Seedream','mj-v8.2','Wan 视频','SD 视频']);
+test('目录只有一个文件夹且包含六个平级分组文档',()=>{
+  const folders = navigation.filter(item => item.pages);
+  assert.equal(folders.length, 1);
+  assert.deepEqual(folders[0].pages.map(id => pages.find(page => page.id === id).label), ['1k-image', '香蕉', 'az-image', 'adobe-image', '官key-image', '默认分组']);
+  const html = renderNavigation(navigation);
+  assert.equal((html.match(/<details\b/g) || []).length, 1);
+  assert.equal((html.match(/data-route=/g) || []).length, pages.length);
+  for (const page of pages) assert.ok(html.includes('data-route="' + page.id + '"'));
   for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
   const all=pages.map(pageMarkdown).join('\n\n');
   // 代码围栏内的中文注释不是Markdown页面标题。
@@ -303,7 +262,7 @@ test('目录和整份导出只包含模型，不残留公共章节跳转',()=>{
     if(line.startsWith('```')) inCode=!inCode;
     return !inCode&&line.startsWith('# ');
   });
-  assert.equal(headings.length,6);
+  assert.equal(headings.length,pages.length);
   for(const page of pages)for(const block of page.blocks.filter(b=>b.type==='links')){
     assert.ok(block.items.every(item=>pages.some(p=>p.id===item.id)));
   }

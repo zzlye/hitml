@@ -1,8 +1,19 @@
-import { pages } from "./content.js?v=20261020-models-mj";
+import { pages } from "./content.js?v=20261027-groups";
 
 // 页面和导出都从同一份结构化正文生成，避免示例、参数表出现两个版本。
 export const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const inline = (value) => escapeHtml(value).replace(/`([^`]+)`/g, "<code>$1</code>");
+
+// 原生details支持键盘展开，链接仍使用独立路由，方便收藏与Markdown导出。
+export const renderNavigation = (navigation) => {
+  const link = (id) => {
+    const page = pages.find(page => page.id === id);
+    return '<a href="#/' + escapeHtml(id) + '" data-route="' + escapeHtml(id) + '"><span>' + escapeHtml(page.label) + '</span></a>';
+  };
+  return navigation.map(item => item.pages
+    ? '<details class="docs-folder" data-folder="' + escapeHtml(item.id) + '"><summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z"/></svg><span>' + escapeHtml(item.label) + '</span><span class="docs-folder-chevron" aria-hidden="true">›</span></summary><div class="docs-folder-pages">' + item.pages.map(link).join('') + '</div></details>'
+    : link(item.page)).join('');
+};
 
 export const resolveRoute = (hash) => {
   const id = hash.replace(/^#\/?/, "").split("?")[0];

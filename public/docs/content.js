@@ -1,16 +1,10 @@
 // 每个模型页包含完整接入流程，正文和Markdown导出使用同一份参数说明。
-import {
-  IMAGE2_EDIT_BLOCKS,
-  IMAGE2_GENERATION_TABLE,
-  IMAGE2_MODEL_BLOCKS,
-  IMAGE2_RESPONSE_BLOCKS,
-  IMAGE2_SIZE_BLOCKS
-} from "./image2-details.js?v=20261020-models-mj";
+import { IMAGE_GROUPS, createImageGroupPage, INTERNAL_TASK_BLOCKS } from "./image-groups.js?v=20261027-groups";
 import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261016-image-url-edit";
 import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261020-models-mj";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
-export const mediaModels = [
+const legacyMediaModels = [
   { name: 'mj-v8.2', page: 'mj-v8.2', kind: '图片', protocol: 'Midjourney' },
   {
     "name": "gpt-image-2",
@@ -2791,23 +2785,15 @@ const replaceSections = (page, replacements) => {
   return { ...page, blocks };
 };
 
-export const pages = legacyPages.map((page) => {
-  if (page.id === 'image2') return {
-    ...replaceSections(page, {
-      '选择模型': (blocks) => [blocks[0], ...IMAGE2_MODEL_BLOCKS],
-      '文生图': (blocks) => blocks.map((block) => block.type === 'table' ? IMAGE2_GENERATION_TABLE : block),
-      '图生图 / 图片编辑': (blocks) => [blocks[0], ...IMAGE2_EDIT_BLOCKS],
-      '尺寸与扩展参数': () => IMAGE2_SIZE_BLOCKS,
-      '同步响应与结果保存': (blocks) => [blocks[0], blocks[1], blocks[2], ...IMAGE2_RESPONSE_BLOCKS.slice(1), blocks.at(-1)]
-    }),
-    lead: 'Images接口的型号、完整比例尺寸表、本地或URL图生图、审核参数、图片编辑与异步任务处理。'
-  };
+const modelPages = legacyPages.map((page) => {
+  if (page.id === 'image2') return createImageGroupPage(IMAGE_GROUPS.find(group => group.id === 'image2'), page);
   if (page.id === 'banana') return {
     ...replaceSections(page, {
       '模型与接口': (blocks) => [blocks[0], ...BANANA_MODEL_BLOCKS],
       '参数说明': (blocks) => [blocks[0], ...BANANA_PARAMETER_BLOCKS],
       '带参考图的请求体': () => [{ type: 'heading', value: '图生图与图片编辑' }, ...BANANA_REFERENCE_BLOCKS]
     }),
+    label: '香蕉',
     title: 'Nano Banana 2 / 2.1 / Pro',
     lead: '三款香蕉型号的Gemini原生接入、比例与尺寸、URL或Base64参考图、图片编辑、异步查询及图片保存。'
   };
@@ -2840,3 +2826,21 @@ export const pages = legacyPages.map((page) => {
   };
   return page;
 }).flatMap((page) => page.id === 'seedream' ? [page, ...MIDJOURNEY_PAGES] : [page]);
+
+const imageTemplate = legacyPages.find(page => page.id === 'image2');
+export const pages = [
+  ...modelPages,
+  ...IMAGE_GROUPS.filter(group => group.id !== 'image2').map(group => createImageGroupPage(group, imageTemplate))
+].map(page => ({ ...page, blocks: [...INTERNAL_TASK_BLOCKS, ...page.blocks] }));
+
+// 一个文件夹放六个平级文档，其他模型保留原来的独立入口。
+export const navigation = [
+  { id: 'model-groups', label: '模型分组', pages: ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2'] },
+  ...['seedream', 'mj-v8.2', 'video', 'sd-video'].map(id => ({ page: id }))
+];
+
+// 同名型号可属于多个文档，公开型号注册表使用完整名称去重。
+export const mediaModels = [
+  ...legacyMediaModels.filter(model => model.page !== 'image2'),
+  ...IMAGE_GROUPS.flatMap(group => group.models.map(name => ({ name, page: group.id, kind: '图片', protocol: 'Images' })))
+].filter((model, index, models) => models.findIndex(item => item.name === model.name) === index);

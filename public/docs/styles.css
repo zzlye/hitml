@@ -99,7 +99,7 @@ pre {
 
 .docs-nav a {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   min-height: 48px;
   padding: 8px 10px;
@@ -110,6 +110,38 @@ pre {
   font-weight: 700;
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
+
+/* 单个文件夹包含六篇平级文档，长分组名允许换行。 */
+.docs-folder summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--heading);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  list-style: none;
+}
+
+.docs-folder summary::-webkit-details-marker { display: none; }
+.docs-folder summary:hover,
+.docs-folder summary:focus-visible { background: var(--blue-soft); }
+.docs-folder summary svg {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.docs-folder-chevron { margin-left: auto; transition: transform 180ms ease; }
+.docs-folder[open] .docs-folder-chevron { transform: rotate(90deg); }
+.docs-folder-pages { margin: 0 0 8px 19px; padding-left: 10px; border-left: 1px solid var(--line); }
+.docs-folder-pages a { min-height: 42px; overflow-wrap: anywhere; font-size: 13px; }
 
 .docs-nav a.is-active,
 .docs-nav a:hover,
@@ -464,7 +496,7 @@ td:last-child {
   border: 0;
   border-radius: 0;
 }
-a:focus-visible, button:focus-visible, .table-wrap:focus-visible {
+a:focus-visible, button:focus-visible, summary:focus-visible, .table-wrap:focus-visible {
   outline: 2px solid #1677ff;
   outline-offset: 3px;
 }
@@ -526,13 +558,12 @@ footer {
   }
 
   .docs-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
     gap: 8px;
   }
 
   .docs-nav a {
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     min-height: 44px;
     border: 1px solid var(--line);
     border-bottom: 3px solid transparent;
@@ -603,6 +634,7 @@ footer {
   }
 
   .docs-nav a,
+  .docs-folder-chevron,
   .docs-export,
   .docs-toast {
     transition: none;

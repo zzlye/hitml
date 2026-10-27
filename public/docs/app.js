@@ -1,5 +1,5 @@
-import { pages } from "./content.js?v=20261020-models-mj";
-import { escapeHtml, pageMarkdown, renderPage, resolveRoute } from "./document.js?v=20261020-models-mj";
+import { pages, navigation } from "./content.js?v=20261027-groups";
+import { pageMarkdown, renderPage, renderNavigation, resolveRoute } from "./document.js?v=20261027-groups";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
@@ -9,7 +9,7 @@ let currentPage;
 let toastTimer;
 
 // 目录与正文使用同一份配置，避免新增章节时遗漏菜单。
-nav.innerHTML = pages.map((page, index) => '<a href="#/' + page.id + '" data-route="' + page.id + '"><span class="docs-nav-index">' + String(index + 1).padStart(2, "0") + '</span><span>' + escapeHtml(page.label) + '</span></a>').join("");
+nav.innerHTML = renderNavigation(navigation);
 
 const showToast = (message) => {
   clearTimeout(toastTimer);
@@ -29,6 +29,9 @@ const render = (focusContent = false) => {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+  // 深链接和浏览器后退时自动展开当前页所在文件夹，保留其他目录的状态。
+  const folder = nav.querySelector('[aria-current="page"]')?.closest('details');
+  if (folder) folder.open = true;
   // 公共章节的旧链接回到默认模型，不沿用旧页面的章节索引。
   const requestedRoute = location.hash.replace(/^#\/?/, "").split("?")[0];
   const section = requestedRoute === currentPage.id ? new URLSearchParams(location.hash.split("?")[1] || "").get("section") : null;
@@ -67,6 +70,8 @@ document.querySelector("#docs-export-all").addEventListener("click", () => {
   showToast("已导出全部文档");
 });
 document.querySelector("#docs-menu").addEventListener("click", () => {
+  const folder = nav.querySelector("[aria-current]")?.closest("details");
+  if (folder) folder.open = true;
   document.querySelector(".docs-sidebar").scrollIntoView({ behavior: "instant" });
   nav.querySelector("[aria-current]").focus({ preventScroll: true });
 });
