@@ -62,14 +62,9 @@ export const introModule = {
 export const supportModule = {
   id: "support",
   title: "售后 & 进群",
-  description: "扫码添加微信或加群",
+  description: "扫码加入QQ售后交流群",
   services: ["售后咨询", "续费服务", "加入用户群"],
   contacts: [
-    {
-      title: "微信客服",
-      image: "/images/contact-wechat.jpg",
-      alt: "微信客服二维码"
-    },
     {
       title: "售后交流群",
       // 使用新群二维码，群聊按钮同步到图片内的扫码地址。

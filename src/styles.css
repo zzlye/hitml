@@ -334,6 +334,11 @@ h2.module-title {
   box-shadow: none;
 }
 
+/* 只保留一个联系方式时跨满网格并居中，手机端也不留空列。 */
+.support-card:only-child {
+  grid-column: 1 / -1;
+}
+
 .support-media {
   position: relative;
   display: grid;
