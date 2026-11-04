@@ -67,13 +67,49 @@ const legacyMediaModels = [
     "protocol": "Gemini 原生"
   },
   {
-    "name": "wan-3.0",
+    "name": "wan-3.0-标准",
     "page": "video",
     "kind": "视频",
     "protocol": "Videos"
   },
   {
-    "name": "wan-3.0-1080p",
+    "name": "wan-3.0-480p-标准",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-720p-标准",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-1080p-标准",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-快速",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-480p-快速",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-720p-快速",
+    "page": "video",
+    "kind": "视频",
+    "protocol": "Videos"
+  },
+  {
+    "name": "wan-3.0-1080p-快速",
     "page": "video",
     "kind": "视频",
     "protocol": "Videos"
@@ -1374,12 +1410,97 @@ const legacyPages = [
   {
     "id": "video",
     "label": "Wan 视频",
-    "title": "Wan 3.0 视频生成 API",
-    "lead": "Wan 3.0文生视频、图生视频及音视频参考：型号与分辨率选择、完整参数、异步任务查询、恢复与下载。",
+    "title": "Wan 3.0 标准版 / 快速版",
+    "lead": "8个型号的分辨率选择、2–30秒视频生成、10图5视频5音频参考、首尾帧、异步任务查询与下载。",
     "blocks": [
       {
         "type": "heading",
-        "value": "1. 基础信息与接入流程"
+        "value": "1. 标准版、快速版与模型选择"
+      },
+      {
+        "type": "paragraph",
+        "value": "Wan 3.0提供标准版和快速版，两版均支持文生视频、图生视频、首尾帧以及图片、视频、音频参考。快速版对应Prime，面向更快的生成需求；两版分别计价，实际完成时间随任务复杂度和排队情况变化。"
+      },
+      {
+        "type": "table",
+        "headers": [
+          "模型名称",
+          "版本",
+          "resolution与输出档位",
+          "参考图片",
+          "参考视频",
+          "参考音频"
+        ],
+        "rows": [
+          [
+            "`wan-3.0-标准`",
+            "标准版",
+            "`480p` / `720p` / `1080p`，用resolution选择",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-480p-标准`",
+            "标准版",
+            "固定`480p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-720p-标准`",
+            "标准版",
+            "固定`720p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-1080p-标准`",
+            "标准版",
+            "固定`1080p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-快速`",
+            "快速版",
+            "`480p` / `720p` / `1080p`，用resolution选择",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-480p-快速`",
+            "快速版",
+            "固定`480p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-720p-快速`",
+            "快速版",
+            "固定`720p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ],
+          [
+            "`wan-3.0-1080p-快速`",
+            "快速版",
+            "固定`1080p`，可省略resolution",
+            "最多10张",
+            "最多5条",
+            "最多5条"
+          ]
+        ]
+      },
+      {
+        "type": "note",
+        "value": "带480p、720p或1080p后缀的型号固定使用对应分辨率，适合没有分辨率选项的客户端；若传resolution，必须与后缀一致。wan-3.0-标准和wan-3.0-快速可通过resolution选择三档，建议明确填写。两版参考视频均不计费，生成视频仍按输出时长、分辨率、型号及账户分组计费。"
       },
       {
         "type": "table",
@@ -1394,7 +1515,7 @@ const legacyPages = [
           ],
           [
             "创建视频",
-            "`POST /v1/videos`"
+            "`POST /v1/videos`，JSON请求"
           ],
           [
             "查询视频",
@@ -1405,48 +1526,14 @@ const legacyPages = [
             "`GET /v1/videos/{id}/content`"
           ],
           [
-            "主要接入模式",
-            "异步：创建 → 保存id → 查询 → completed → 下载"
+            "接入流程",
+            "创建 → 保存id → 查询 → completed → 下载"
           ],
           [
             "模型权限",
-            "以当前Key在`GET /v1/models`返回的名称为准"
-          ],
-          [
-            "计费方式",
-            "按生成秒数计费；实际单价由当前型号与账户分组决定"
+            "使用有wan分组权限的Key，完整型号以`GET /v1/models`为准"
           ]
         ]
-      },
-      {
-        "type": "table",
-        "headers": [
-          "模型名称",
-          "输出分辨率",
-          "时长",
-          "参考图片",
-          "参考视频与音频"
-        ],
-        "rows": [
-          [
-            "`wan-3.0`",
-            "`720p`",
-            "1–30秒（整数）",
-            "最多2张",
-            "支持video_urls与audio_urls，可与图片组合"
-          ],
-          [
-            "`wan-3.0-1080p`",
-            "最高`1080p`；可选择`720p`或`1080p`",
-            "1–30秒（整数）",
-            "最多2张",
-            "支持video_urls与audio_urls，可与图片组合"
-          ]
-        ]
-      },
-      {
-        "type": "note",
-        "value": "两个型号使用相同的创建、查询、下载接口及素材字段。wan-3.0-1080p表示最高支持1080p，并非固定输出1080p；请用resolution明确选择输出分辨率。下方示例分别展示720p和1080p。"
       },
       {
         "type": "heading",
@@ -1469,11 +1556,11 @@ const legacyPages = [
       },
       {
         "type": "paragraph",
-        "value": "创建使用JSON，查询和下载只需要Authorization。cURL示例采用Bash换行语法；PowerShell请使用curl.exe并调整变量及换行。Key放在服务端或本机环境变量中，不写入公开网页。"
+        "value": "创建使用JSON，查询和下载同样需要Bearer鉴权。cURL示例使用Bash语法；PowerShell使用curl.exe并调整换行和环境变量。Key保存在服务端或本机环境变量，不写入公开网页。"
       },
       {
         "type": "heading",
-        "value": "3. 请求参数"
+        "value": "3. 请求参数与分辨率"
       },
       {
         "type": "table",
@@ -1488,167 +1575,201 @@ const legacyPages = [
             "`model`",
             "string",
             "是",
-            "`wan-3.0`；高清型号使用完整名称`wan-3.0-1080p`"
+            "使用上表8个完整型号之一，保留“标准”或“快速”后缀"
           ],
           [
             "`prompt`",
             "string",
             "是",
-            "描述主体、动作、场景、镜头和素材用途"
+            "描述主体、动作、场景、镜头及各参考素材的用途"
           ],
           [
             "`duration`",
             "integer",
-            "是",
-            "两个型号均使用1–30的整数，单位秒；显式传入duration，不混传seconds"
+            "建议显式填写",
+            "2–30秒的整数；示例使用10秒。使用duration，不混传seconds"
           ],
           [
             "`resolution`",
             "string",
-            "建议显式传入",
-            "wan-3.0使用`720p`；wan-3.0-1080p可使用`720p`或`1080p`，最高1080p。省略时由服务端决定，不以模型后缀代替该字段"
+            "无分辨率后缀型号建议填写",
+            "`480p`、`720p`、`1080p`；固定档位型号可省略，传入时必须与后缀一致"
           ],
           [
             "`aspect_ratio`",
             "string",
             "否",
-            "例如`16:9`、`9:16`、`1:1`；是比例，不是像素尺寸"
+            "`16:9`、`9:16`、`1:1`、`4:3`、`3:4`；首帧任务可使用`adaptive`跟随输入图片"
           ],
           [
-            "`image_urls`",
+            "`images`",
             "string[]",
             "否",
-            "公网参考图片URL数组，两个型号均最多2张；在prompt中说明各张图片的作用"
+            "最多10张参考图，按数组顺序提交，推荐公网HTTPS图片URL"
           ],
           [
-            "`video_urls`",
+            "`videos`",
             "string[]",
             "否",
-            "公网参考视频URL数组，可用于参考镜头、动作与剧情节奏"
+            "最多5条参考视频，只接受公网HTTP(S)媒体URL，不接受Base64或data URI；参考视频不计费"
           ],
           [
-            "`audio_urls`",
+            "`audios`",
             "string[]",
             "否",
-            "公网参考音频URL数组，可用于参考节拍与声音；与图片或视频一起提交时，在prompt中描述配合方式"
+            "最多5条参考音频，只接受公网HTTP(S)媒体URL，不接受Base64或data URI"
+          ],
+          [
+            "`first_frame_url`",
+            "string",
+            "否",
+            "首帧图片URL；用于指定视频开始画面"
+          ],
+          [
+            "`last_frame_url`",
+            "string",
+            "否",
+            "尾帧图片URL，与first_frame_url一起使用；不能只传尾帧"
+          ],
+          [
+            "`generateAudio`",
+            "boolean",
+            "否",
+            "是否生成音频；使用布尔值true或false，字段名区分大小写"
+          ],
+          [
+            "`seed`",
+            "integer",
+            "否",
+            "随机种子，0也是有效值；相同种子不保证不同版本或参数下结果完全相同"
           ]
         ]
       },
       {
         "type": "table",
         "headers": [
-          "推荐字段",
-          "旧字段别名"
+          "画面比例",
+          "用途"
         ],
         "rows": [
           [
-            "`image_urls`",
-            "`images`、`reference_image_urls`"
+            "`16:9`",
+            "横屏视频"
           ],
           [
-            "`video_urls`",
-            "`videos`、`reference_videos`"
+            "`9:16`",
+            "竖屏视频"
           ],
           [
-            "`audio_urls`",
-            "`audios`、`reference_audios`"
+            "`1:1`",
+            "方形视频"
+          ],
+          [
+            "`4:3`",
+            "横向4:3画面"
+          ],
+          [
+            "`3:4`",
+            "纵向3:4画面"
+          ],
+          [
+            "`adaptive`",
+            "首帧模式下自适应输入图片比例"
           ]
         ]
       },
       {
         "type": "paragraph",
-        "value": "新接入只使用推荐字段，不混传同类素材的新旧名称。旧工具可能生成input_reference，请改用本页的image_urls；字段能被网关转发不代表上游一定采用它。seed、generate_audio等未在本页承诺的参数，不作为基础接入的必要字段。"
+        "value": "resolution表示清晰度档位，aspect_ratio表示宽高比，两者不是同一个参数。按这两个字段控制输出，不把720p写成1280x720，也不把16:9写入resolution。Wan参考素材使用images、videos、audios；image、video、audio是单项兼容字段，数组存在时以数组为准，同类素材只选一种写法。"
       },
       {
         "type": "heading",
-        "value": "4. 文生视频"
+        "value": "4. 文生视频：标准版与快速版"
+      },
+      {
+        "type": "paragraph",
+        "value": "标准版通过resolution选择720p，创建后保存返回的id，按第8节查询。"
       },
       {
         "type": "code",
         "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-标准\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
       },
       {
         "type": "paragraph",
-        "value": "这个请求不添加Prefer: respond-async。视频接口本身就是异步接口：创建返回的是视频任务，不是MP4文件。保存返回的id，再按第8节查询。"
-      },
-      {
-        "type": "paragraph",
-        "value": "1080p文生视频：使用高清型号并显式填写resolution。下例生成10秒横屏视频。"
+        "value": "快速版的请求结构相同，更换完整model即可。下例使用通用快速型号选择1080p。"
       },
       {
         "type": "code",
         "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-1080p\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"1080p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-快速\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"1080p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
       },
       {
         "type": "paragraph",
-        "value": "同一个高清型号也可以请求720p。分辨率由resolution选择，查询和下载流程保持一致："
+        "value": "客户端没有分辨率选项时，直接使用固定档位型号。下例固定生成480p，不需要额外传resolution。"
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-480p-快速\",\n  \"prompt\": \"傍晚湖面波光粼粼，镜头平稳向前推进\",\n  \"duration\": 10,\n  \"aspect_ratio\": \"16:9\"\n}'"
+      },
+      {
+        "type": "paragraph",
+        "value": "不加Prefer: respond-async时，Videos接口返回视频任务而非MP4。添加该请求头时使用第12节的网关任务流程，两套编号与状态不能混用。"
+      },
+      {
+        "type": "heading",
+        "value": "5. 图生视频与多素材参考"
+      },
+      {
+        "type": "paragraph",
+        "value": "单图参考：把图片URL放入images，在prompt中说明需要保留的人物、商品或构图。标准版、快速版均最多10张图片。"
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-720p-标准\",\n  \"prompt\": \"保持参考图商品的造型和颜色，镜头从正面缓慢移到侧面，光线柔和\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"9:16\",\n  \"images\": [\n    \"https://cdn.example.com/product.jpg\"\n  ]\n}'"
+      },
+      {
+        "type": "paragraph",
+        "value": "多图参考：按数组顺序描述每张图片的作用。以下示例将人物和服装分开提供，输出30秒1080p视频。"
       },
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"model\": \"wan-3.0-1080p\",\n  \"prompt\": \"海边公路上一辆蓝色轿车平稳行驶，镜头稳定跟拍\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\"\n}"
+        "value": "{\n  \"model\": \"wan-3.0-1080p-标准\",\n  \"prompt\": \"第一张图片提供人物身份，第二张图片提供服装。前10秒展示全景，中间10秒展示服装细节，最后10秒回到稳定正面构图，保持身份一致\",\n  \"duration\": 30,\n  \"resolution\": \"1080p\",\n  \"aspect_ratio\": \"16:9\",\n  \"images\": [\n    \"https://cdn.example.com/person.jpg\",\n    \"https://cdn.example.com/outfit.jpg\"\n  ]\n}"
+      },
+      {
+        "type": "paragraph",
+        "value": "混合参考：图片、视频和音频分别放在各自数组中。两版均最多10张图片、5条视频、5条音频，参考视频不计费。不要把参考视频的长度加到生成视频的计费时长中。"
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-720p-快速\",\n  \"prompt\": \"保持参考图片的人物外观，借鉴参考视频的镜头运动，让动作配合参考音频的节拍\",\n  \"duration\": 15,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\",\n  \"images\": [\n    \"https://cdn.example.com/person.jpg\"\n  ],\n  \"videos\": [\n    \"https://cdn.example.com/motion.mp4\"\n  ],\n  \"audios\": [\n    \"https://cdn.example.com/rhythm.mp3\"\n  ],\n  \"generateAudio\": true\n}'"
       },
       {
         "type": "heading",
-        "value": "5. 单图、双图与30秒图生视频"
+        "value": "6. 首尾帧与素材要求"
       },
       {
         "type": "paragraph",
-        "value": "单图参考：把图片地址放入image_urls，并在prompt中明确要求保留的身份、商品外观和构图。"
+        "value": "首帧模式指定开始画面；首尾帧模式同时指定开始与结束画面，由模型补全中间运动。下面的示例单独使用首尾帧，不混入普通参考素材。"
       },
       {
         "type": "code",
         "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"保持参考图中商品的造型和颜色，镜头从正面缓慢移动到侧面，光线柔和，不新增文字\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"9:16\",\n  \"image_urls\": [\n    \"https://cdn.example.com/product.jpg\"\n  ]\n}'"
-      },
-      {
-        "type": "paragraph",
-        "value": "双图参考：数组顺序就是提示词中“第一张图”“第二张图”的顺序。"
-      },
-      {
-        "type": "code",
-        "lang": "json",
-        "value": "{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"第一张图用于人物身份，第二张图用于服装设计，人物自然转身展示衣服，镜头稳定\",\n  \"duration\": 15,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"9:16\",\n  \"image_urls\": [\n    \"https://cdn.example.com/person.jpg\",\n    \"https://cdn.example.com/outfit.jpg\"\n  ]\n}"
-      },
-      {
-        "type": "paragraph",
-        "value": "两个型号均支持最长30秒。较长镜头可以在prompt中按时间段组织动作；一次请求创建一个任务。高清输出时使用wan-3.0-1080p并选择resolution为1080p。"
-      },
-      {
-        "type": "code",
-        "lang": "json",
-        "value": "{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"保留参考图主体。前10秒缓慢推近展示全景，中间10秒展示商品细节，最后10秒回到稳定正面构图，镜头连贯自然\",\n  \"duration\": 30,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\",\n  \"image_urls\": [\n    \"https://cdn.example.com/product.jpg\"\n  ]\n}"
-      },
-      {
-        "type": "paragraph",
-        "value": "1080p双图参考：两张图片分别提供人物与服装信息；同样支持最长30秒。"
-      },
-      {
-        "type": "code",
-        "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-1080p\",\n  \"prompt\": \"第一张图用于人物身份，第二张图用于服装设计。前10秒展示人物与环境，中间10秒自然行走展示衣服细节，最后10秒稳定展示正面造型。保持身份与服装一致，镜头衔接自然。\",\n  \"duration\": 30,\n  \"resolution\": \"1080p\",\n  \"aspect_ratio\": \"9:16\",\n  \"image_urls\": [\n    \"https://cdn.example.com/person.jpg\",\n    \"https://cdn.example.com/outfit.jpg\"\n  ]\n}'"
-      },
-      {
-        "type": "heading",
-        "value": "6. 视频、音频参考与素材要求"
-      },
-      {
-        "type": "code",
-        "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"保持参考图人物外观，参考视频的镜头节奏，让人物动作与参考音频节拍自然配合\",\n  \"duration\": 15,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\",\n  \"image_urls\": [\n    \"https://cdn.example.com/person.jpg\"\n  ],\n  \"video_urls\": [\n    \"https://cdn.example.com/motion.mp4\"\n  ],\n  \"audio_urls\": [\n    \"https://cdn.example.com/rhythm.mp3\"\n  ]\n}'"
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\n  \"model\": \"wan-3.0-1080p-快速\",\n  \"prompt\": \"从首帧自然过渡到尾帧，人物缓慢转身，镜头连续稳定\",\n  \"duration\": 10,\n  \"resolution\": \"1080p\",\n  \"aspect_ratio\": \"16:9\",\n  \"first_frame_url\": \"https://cdn.example.com/start.jpg\",\n  \"last_frame_url\": \"https://cdn.example.com/end.jpg\"\n}'"
       },
       {
         "type": "list",
         "items": [
-          "URL必须能被生成服务直接读取，使用公开的HTTP或HTTPS媒体文件地址。",
-          "不依赖Cookie、登录状态、Referer或额外请求头；地址直接返回媒体，不返回网页或预览页。",
-          "图片、视频和音频的Content-Type应与实际内容一致。",
-          "签名地址在排队、提交及生成期间都要有效，不使用即将过期的链接。",
-          "本地磁盘路径不能直接传入JSON；先上传到可公开读取的存储。",
-          "不要把Base64或data:字符串放入URL数组。无需为接入本协议增加视频转码或Base64包装。",
-          "请求中只传本次需要的素材类型；同类字段不要重复传别名。"
+          "图片、视频、音频URL必须直接返回媒体文件，不是分享页或预览页，不依赖Cookie、登录状态或额外鉴权头。",
+          "图片支持URL，渠道也支持图片Base64或data URI；推荐使用URL减少请求体积。参考音频和参考视频只接受HTTP(S)链接。",
+          "本地文件先上传到可公开访问的存储，再将URL写入JSON，不能直接传本机磁盘路径。",
+          "签名链接在排队和生成期间都要有效；Content-Type应与媒体内容一致。",
+          "普通参考图片、视频、音频分别不得超过10张、5条、5条。首尾帧用于画面约束，尾帧必须配合首帧，不用它绕过素材数量限制。",
+          "参考音频是输入素材，generateAudio控制输出是否生成音频，两者含义不同。"
         ]
       },
       {
@@ -1658,7 +1779,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0\",\n  \"status\": \"queued\",\n  \"progress\": 0,\n  \"created_at\": 1790900000\n}"
+        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0-标准\",\n  \"status\": \"queued\",\n  \"progress\": 0,\n  \"created_at\": 1790900000\n}"
       },
       {
         "type": "table",
@@ -1721,7 +1842,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0\",\n  \"status\": \"in_progress\",\n  \"progress\": 45,\n  \"created_at\": 1790900000\n}"
+        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0-标准\",\n  \"status\": \"in_progress\",\n  \"progress\": 45,\n  \"created_at\": 1790900000\n}"
       },
       {
         "type": "code",
@@ -1769,11 +1890,11 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0\",\n  \"status\": \"completed\",\n  \"progress\": 100,\n  \"created_at\": 1790900000,\n  \"completed_at\": 1790900120\n}"
+        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0-标准\",\n  \"status\": \"completed\",\n  \"progress\": 100,\n  \"created_at\": 1790900000,\n  \"completed_at\": 1790900120\n}"
       },
       {
         "type": "paragraph",
-        "value": "completed_at是生成完成时间，单位秒。不同协议可能附带video_urls、metadata或其他扩展字段，但这些不是本站客户端必须依赖的契约。本站不会保证暴露上游私有下载地址；统一使用内容下载接口。"
+        "value": "completed_at是生成完成时间，单位秒。不同响应可能附带metadata等扩展字段，但这些不是客户端必须依赖的结果字段。保存本站任务id，统一使用内容下载接口获取视频。"
       },
       {
         "type": "heading",
@@ -1801,7 +1922,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0\",\n  \"status\": \"failed\",\n  \"progress\": 100,\n  \"created_at\": 1790900000,\n  \"error\": {\n    \"message\": \"参考素材读取失败，请检查媒体地址\",\n    \"code\": \"generation_failed\"\n  }\n}"
+        "value": "{\n  \"id\": \"task_example\",\n  \"object\": \"video\",\n  \"model\": \"wan-3.0-标准\",\n  \"status\": \"failed\",\n  \"progress\": 100,\n  \"created_at\": 1790900000,\n  \"error\": {\n    \"message\": \"参考素材读取失败，请检查媒体地址\",\n    \"code\": \"generation_failed\"\n  }\n}"
       },
       {
         "type": "paragraph",
@@ -1891,12 +2012,12 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "bash",
-        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  -H 'Prefer: respond-async' \\\n  --data '{\n  \"model\": \"wan-3.0\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
+        "value": "curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/videos' \\\n  -H \"Authorization: Bearer $WENYUN_API_KEY\" \\\n  -H 'Content-Type: application/json' \\\n  -H 'Prefer: respond-async' \\\n  --data '{\n  \"model\": \"wan-3.0-标准\",\n  \"prompt\": \"晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍，镜头自然推进\",\n  \"duration\": 10,\n  \"resolution\": \"720p\",\n  \"aspect_ratio\": \"16:9\"\n}'"
       },
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"async_example\",\n  \"task_id\": \"async_example\",\n  \"object\": \"video_generation\",\n  \"status\": \"pending\",\n  \"created\": 1790900000,\n  \"model\": \"wan-3.0\",\n  \"poll_url\": \"/v1/tasks/async_example\",\n  \"request_path\": \"/v1/videos\"\n}"
+        "value": "{\n  \"id\": \"async_example\",\n  \"task_id\": \"async_example\",\n  \"object\": \"video_generation\",\n  \"status\": \"pending\",\n  \"created\": 1790900000,\n  \"model\": \"wan-3.0-标准\",\n  \"poll_url\": \"/v1/tasks/async_example\",\n  \"request_path\": \"/v1/videos\"\n}"
       },
       {
         "type": "code",
@@ -1927,7 +2048,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "json",
-        "value": "{\n  \"id\": \"async_example\",\n  \"task_id\": \"async_example\",\n  \"status\": \"succeeded\",\n  \"result_expired\": false,\n  \"expires_at\": 1790986520,\n  \"response_status_code\": 200,\n  \"content_type\": \"application/json\",\n  \"result\": {\n    \"id\": \"task_example\",\n    \"object\": \"video\",\n    \"model\": \"wan-3.0\",\n    \"status\": \"completed\",\n    \"progress\": 100,\n    \"created_at\": 1790900000,\n    \"completed_at\": 1790900120\n  },\n  \"media\": [\n    {\n      \"url\": \"/v1/tasks/async_example/media/0\",\n      \"kind\": \"video\",\n      \"content_type\": \"video/mp4\"\n    }\n  ]\n}"
+        "value": "{\n  \"id\": \"async_example\",\n  \"task_id\": \"async_example\",\n  \"status\": \"succeeded\",\n  \"result_expired\": false,\n  \"expires_at\": 1790986520,\n  \"response_status_code\": 200,\n  \"content_type\": \"application/json\",\n  \"result\": {\n    \"id\": \"task_example\",\n    \"object\": \"video\",\n    \"model\": \"wan-3.0-标准\",\n    \"status\": \"completed\",\n    \"progress\": 100,\n    \"created_at\": 1790900000,\n    \"completed_at\": 1790900120\n  },\n  \"media\": [\n    {\n      \"url\": \"/v1/tasks/async_example/media/0\",\n      \"kind\": \"video\",\n      \"content_type\": \"video/mp4\"\n    }\n  ]\n}"
       },
       {
         "type": "code",
@@ -1944,21 +2065,21 @@ const legacyPages = [
       },
       {
         "type": "paragraph",
-        "value": "示例默认调用wan-3.0、输出720p。调用高清型号时分别设置WENYUN_VIDEO_MODEL与WENYUN_VIDEO_RESOLUTION；两个完整示例均支持这两个环境变量。"
+        "value": "示例支持全部8个型号。无分辨率后缀时默认输出720p，也可用环境变量选择480p或1080p；固定档位型号自动匹配分辨率，矛盾配置会在提交前停止。"
       },
       {
         "type": "code",
         "lang": "bash",
-        "value": "export WENYUN_VIDEO_MODEL=\"wan-3.0-1080p\"\nexport WENYUN_VIDEO_RESOLUTION=\"1080p\"\n# 同一高清型号需要720p时，将分辨率改为720p。"
+        "value": "export WENYUN_VIDEO_MODEL=\"wan-3.0-1080p-快速\"\nexport WENYUN_VIDEO_RESOLUTION=\"1080p\""
       },
       {
         "type": "code",
         "lang": "powershell",
-        "value": "$env:WENYUN_VIDEO_MODEL = \"wan-3.0-1080p\"\n$env:WENYUN_VIDEO_RESOLUTION = \"1080p\""
+        "value": "$env:WENYUN_VIDEO_MODEL = \"wan-3.0-1080p-快速\"\n$env:WENYUN_VIDEO_RESOLUTION = \"1080p\""
       },
       {
         "type": "paragraph",
-        "value": "Node.js 22或更新版本，无额外依赖。保存为video.mjs，设置WENYUN_API_KEY，在新目录执行。此示例使用默认Videos任务，不加Prefer请求头。"
+        "value": "Node.js 22或更新版本，无额外依赖。保存为video.mjs，设置WENYUN_API_KEY，在新目录运行。此示例使用Videos任务，不加Prefer请求头。"
       },
       {
         "type": "code",
@@ -1968,7 +2089,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "javascript",
-        "value": "import { readFile, writeFile, rename, rm } from 'node:fs/promises';\nimport { createWriteStream, existsSync } from 'node:fs';\nimport { Readable } from 'node:stream';\nimport { pipeline } from 'node:stream/promises';\nimport { setTimeout as delay } from 'node:timers/promises';\n\nconst ORIGIN = 'https://api.zzlye.xyz';\nconst key = process.env.WENYUN_API_KEY;\nif (!key) throw new Error('请设置 WENYUN_API_KEY');\nconst headers = { Authorization: 'Bearer ' + key };\nconst taskFile = process.argv[2] || 'video-task.json';\n// 高清型号可以选择720p或1080p，模型名称不等于固定输出分辨率。\nconst model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';\nconst resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';\nif (!['wan-3.0', 'wan-3.0-1080p'].includes(model)) throw new Error('未知Wan模型：' + model);\nconst resolutions = model === 'wan-3.0' ? ['720p'] : ['720p', '1080p'];\nif (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);\nconst request = {\n  model,\n  prompt: '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',\n  duration: 10, resolution, aspect_ratio: '16:9'\n  // 图生视频时增加 image_urls: ['https://你的域名/参考图.jpg']。\n};\n\nasync function readJson(response) {\n  const text = await response.text();\n  let value;\n  try { value = JSON.parse(text); }\n  catch { throw new Error('接口未返回JSON，HTTP ' + response.status); }\n  if (!response.ok) throw new Error(value.error?.message || value.message || 'HTTP ' + response.status);\n  return value;\n}\nfunction retryAfter(response, fallback = 5000) {\n  const value = response.headers.get('Retry-After');\n  if (!value) return fallback;\n  const seconds = Number(value);\n  const ms = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - Date.now();\n  return Number.isFinite(ms) && ms >= 0 ? Math.max(ms, 1000) : fallback;\n}\n\nlet submitted;\nlet interval = 5000;\nif (process.argv[2]) {\n  // 恢复时只读取已保存的编号，不再次创建收费任务。\n  submitted = JSON.parse(await readFile(taskFile, 'utf8'));\n} else {\n  if (existsSync(taskFile)) throw new Error('已有video-task.json，请传入此文件恢复，或在新目录创建新任务');\n  // 创建请求只发送一次；连接超时也不自动重发。\n  const response = await fetch(ORIGIN + '/v1/videos', {\n    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },\n    body: JSON.stringify(request), redirect: 'error', signal: AbortSignal.timeout(120000)\n  });\n  submitted = await readJson(response);\n  if (!submitted.id && !submitted.task_id) throw new Error('响应缺少视频任务id');\n  console.log('请保留任务编号：', submitted.id || submitted.task_id);\n  await writeFile(taskFile, JSON.stringify(submitted, null, 2), { flag: 'wx' });\n  interval = retryAfter(response);\n}\nconst id = submitted.id || submitted.task_id;\nif (typeof id !== 'string' || !id || id.startsWith('async_')) {\n  throw new Error('需要Videos任务id；async_编号请使用网关任务示例');\n}\nconst endpoint = ORIGIN + '/v1/videos/' + encodeURIComponent(id);\nconst deadline = Date.now() + 30 * 60 * 1000;\nlet task;\nwhile (Date.now() + interval < deadline) {\n  await delay(interval);\n  let response;\n  try {\n    response = await fetch(endpoint, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });\n  } catch {\n    // 网络故障只重试查询，不重新提交生成。\n    interval = Math.min(interval * 2, 30000);\n    continue;\n  }\n  if (response.status === 429 || response.status >= 500) {\n    interval = Math.max(retryAfter(response), Math.min(interval * 2, 30000));\n    await response.body?.cancel();\n    continue;\n  }\n  task = await readJson(response);\n  interval = retryAfter(response);\n  console.log('任务状态：', task.status, '进度：', task.progress ?? '未提供');\n  if (task.status === 'completed') break;\n  if (task.status === 'failed') throw new Error(task.error?.message || '视频生成失败：' + id);\n  if (!['queued', 'in_progress'].includes(task.status)) throw new Error('未知视频状态：' + task.status);\n}\nif (task?.status !== 'completed') throw new Error('本地等待结束；传入任务文件继续查询，服务端任务不会因此取消');\nawait writeFile('video-result.json', JSON.stringify(task, null, 2));\n\n// 流式下载；完成前使用临时扩展名，避免把不完整视频误认为成品。\nconst response = await fetch(endpoint + '/content', {\n  headers, redirect: 'error', signal: AbortSignal.timeout(300000)\n});\nif (!response.ok) throw new Error('视频下载失败，HTTP ' + response.status + '；可以用原任务文件重试');\nif (!response.body) throw new Error('下载响应缺少文件内容');\nconst mime = (response.headers.get('Content-Type') || '').split(';')[0];\nif (mime && !mime.startsWith('video/') && mime !== 'application/octet-stream') {\n  throw new Error('下载返回的不是视频：' + mime);\n}\ntry {\n  await pipeline(Readable.fromWeb(response.body), createWriteStream('result.mp4.part'));\n  await rename('result.mp4.part', 'result.mp4');\n} catch (error) {\n  await rm('result.mp4.part', { force: true });\n  throw error;\n}\nconsole.log('已保存 result.mp4');\n"
+        "value": "import { readFile, writeFile, rename, rm } from 'node:fs/promises';\nimport { createWriteStream, existsSync } from 'node:fs';\nimport { Readable } from 'node:stream';\nimport { pipeline } from 'node:stream/promises';\nimport { setTimeout as delay } from 'node:timers/promises';\n\nconst ORIGIN = 'https://api.zzlye.xyz';\nconst key = process.env.WENYUN_API_KEY;\nif (!key) throw new Error('请设置 WENYUN_API_KEY');\nconst headers = { Authorization: 'Bearer ' + key };\nconst taskFile = process.argv[2] || 'video-task.json';\n// 无分辨率后缀的型号可选三档；固定档位型号自动匹配后缀。\nconst model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0-标准';\nconst models = [\n  \"wan-3.0-标准\",\n  \"wan-3.0-480p-标准\",\n  \"wan-3.0-720p-标准\",\n  \"wan-3.0-1080p-标准\",\n  \"wan-3.0-快速\",\n  \"wan-3.0-480p-快速\",\n  \"wan-3.0-720p-快速\",\n  \"wan-3.0-1080p-快速\"\n];\nif (!models.includes(model)) throw new Error('未知Wan模型：' + model);\nconst fixedResolution = model.match(/-(480p|720p|1080p)-/)?.[1];\nconst resolution = process.env.WENYUN_VIDEO_RESOLUTION || fixedResolution || '720p';\nconst resolutions = fixedResolution ? [fixedResolution] : ['480p', '720p', '1080p'];\nif (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);\nconst request = {\n  model,\n  prompt: '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',\n  duration: 10, resolution, aspect_ratio: '16:9'\n  // 图生视频时增加 images: ['https://你的域名/参考图.jpg']。\n};\n\nasync function readJson(response) {\n  const text = await response.text();\n  let value;\n  try { value = JSON.parse(text); }\n  catch { throw new Error('接口未返回JSON，HTTP ' + response.status); }\n  if (!response.ok) throw new Error(value.error?.message || value.message || 'HTTP ' + response.status);\n  return value;\n}\nfunction retryAfter(response, fallback = 5000) {\n  const value = response.headers.get('Retry-After');\n  if (!value) return fallback;\n  const seconds = Number(value);\n  const ms = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - Date.now();\n  return Number.isFinite(ms) && ms >= 0 ? Math.max(ms, 1000) : fallback;\n}\n\nlet submitted;\nlet interval = 5000;\nif (process.argv[2]) {\n  // 恢复时只读取已保存的编号，不再次创建收费任务。\n  submitted = JSON.parse(await readFile(taskFile, 'utf8'));\n} else {\n  if (existsSync(taskFile)) throw new Error('已有video-task.json，请传入此文件恢复，或在新目录创建新任务');\n  // 创建请求只发送一次；连接超时也不自动重发。\n  const response = await fetch(ORIGIN + '/v1/videos', {\n    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },\n    body: JSON.stringify(request), redirect: 'error', signal: AbortSignal.timeout(120000)\n  });\n  submitted = await readJson(response);\n  if (!submitted.id && !submitted.task_id) throw new Error('响应缺少视频任务id');\n  console.log('请保留任务编号：', submitted.id || submitted.task_id);\n  await writeFile(taskFile, JSON.stringify(submitted, null, 2), { flag: 'wx' });\n  interval = retryAfter(response);\n}\nconst id = submitted.id || submitted.task_id;\nif (typeof id !== 'string' || !id || id.startsWith('async_')) {\n  throw new Error('需要Videos任务id；async_编号请使用网关任务示例');\n}\nconst endpoint = ORIGIN + '/v1/videos/' + encodeURIComponent(id);\nconst deadline = Date.now() + 30 * 60 * 1000;\nlet task;\nwhile (Date.now() + interval < deadline) {\n  await delay(interval);\n  let response;\n  try {\n    response = await fetch(endpoint, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });\n  } catch {\n    // 网络故障只重试查询，不重新提交生成。\n    interval = Math.min(interval * 2, 30000);\n    continue;\n  }\n  if (response.status === 429 || response.status >= 500) {\n    interval = Math.max(retryAfter(response), Math.min(interval * 2, 30000));\n    await response.body?.cancel();\n    continue;\n  }\n  task = await readJson(response);\n  interval = retryAfter(response);\n  console.log('任务状态：', task.status, '进度：', task.progress ?? '未提供');\n  if (task.status === 'completed') break;\n  if (task.status === 'failed') throw new Error(task.error?.message || '视频生成失败：' + id);\n  if (!['queued', 'in_progress'].includes(task.status)) throw new Error('未知视频状态：' + task.status);\n}\nif (task?.status !== 'completed') throw new Error('本地等待结束；传入任务文件继续查询，服务端任务不会因此取消');\nawait writeFile('video-result.json', JSON.stringify(task, null, 2));\n\n// 流式下载；完成前使用临时扩展名，避免把不完整视频误认为成品。\nconst response = await fetch(endpoint + '/content', {\n  headers, redirect: 'error', signal: AbortSignal.timeout(300000)\n});\nif (!response.ok) throw new Error('视频下载失败，HTTP ' + response.status + '；可以用原任务文件重试');\nif (!response.body) throw new Error('下载响应缺少文件内容');\nconst mime = (response.headers.get('Content-Type') || '').split(';')[0];\nif (mime && !mime.startsWith('video/') && mime !== 'application/octet-stream') {\n  throw new Error('下载返回的不是视频：' + mime);\n}\ntry {\n  await pipeline(Readable.fromWeb(response.body), createWriteStream('result.mp4.part'));\n  await rename('result.mp4.part', 'result.mp4');\n} catch (error) {\n  await rm('result.mp4.part', { force: true });\n  throw error;\n}\nconsole.log('已保存 result.mp4');\n"
       },
       {
         "type": "heading",
@@ -1990,7 +2111,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "python",
-        "value": "import json\nimport os\nimport sys\nimport time\nimport urllib.error\nimport urllib.parse\nimport urllib.request\nfrom datetime import datetime, timezone\nfrom email.utils import parsedate_to_datetime\nfrom pathlib import Path\n\nORIGIN = 'https://api.zzlye.xyz'\nKEY = os.environ.get('WENYUN_API_KEY')\nif not KEY:\n    raise SystemExit('请设置 WENYUN_API_KEY')\nTASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')\n# 高清型号按请求选择分辨率，支持720p或1080p。\nMODEL = os.environ.get('WENYUN_VIDEO_MODEL') or 'wan-3.0'\nRESOLUTION = os.environ.get('WENYUN_VIDEO_RESOLUTION') or '720p'\nif MODEL not in ('wan-3.0', 'wan-3.0-1080p'):\n    raise SystemExit('未知Wan模型：' + MODEL)\nRESOLUTIONS = ('720p',) if MODEL == 'wan-3.0' else ('720p', '1080p')\nif RESOLUTION not in RESOLUTIONS:\n    raise SystemExit('当前型号不支持此分辨率：' + RESOLUTION)\nBODY = {\n    'model': MODEL,\n    'prompt': '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',\n    'duration': 10, 'resolution': RESOLUTION, 'aspect_ratio': '16:9',\n    # 图生视频时增加 image_urls: ['https://你的域名/参考图.jpg']。\n}\n\n\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n    # 不向跳转后的其他地址转发鉴权信息。\n    def redirect_request(self, req, fp, code, msg, headers, newurl):\n        return None\n\n\nOPENER = urllib.request.build_opener(NoRedirect())\n\n\ndef open_request(path, data=None, timeout=30):\n    headers = {'Authorization': 'Bearer ' + KEY}\n    if data is not None:\n        headers['Content-Type'] = 'application/json'\n    request = urllib.request.Request(ORIGIN + path, data=data, headers=headers)\n    return OPENER.open(request, timeout=timeout)\n\n\ndef retry_after(headers, fallback=5):\n    value = headers.get('Retry-After')\n    if not value:\n        return fallback\n    try:\n        return max(float(value), 1)\n    except ValueError:\n        try:\n            return max((parsedate_to_datetime(value) - datetime.now(timezone.utc)).total_seconds(), 1)\n        except (TypeError, ValueError, OverflowError):\n            return fallback\n\n\ndef main():\n    interval = 5\n    if len(sys.argv) > 1:\n        # 传入保存的任务文件恢复查询，不创建新任务。\n        submitted = json.loads(TASK_FILE.read_text(encoding='utf-8'))\n    else:\n        if TASK_FILE.exists():\n            raise RuntimeError('已有video-task.json，请传入此文件恢复，或在新目录创建新任务')\n        data = json.dumps(BODY, ensure_ascii=False).encode('utf-8')\n        # 创建只尝试一次；超时不等于服务端没有受理。\n        with open_request('/v1/videos', data, timeout=120) as response:\n            submitted = json.load(response)\n            interval = retry_after(response.headers)\n        task_id = submitted.get('id') or submitted.get('task_id')\n        if not task_id:\n            raise RuntimeError('响应缺少视频任务id')\n        print('请保留任务编号：', task_id)\n        with TASK_FILE.open('x', encoding='utf-8') as file:\n            json.dump(submitted, file, ensure_ascii=False, indent=2)\n    task_id = submitted.get('id') or submitted.get('task_id')\n    if not isinstance(task_id, str) or not task_id or task_id.startswith('async_'):\n        raise RuntimeError('需要Videos任务id；async_编号请使用网关任务示例')\n    endpoint = '/v1/videos/' + urllib.parse.quote(task_id, safe='')\n    deadline = time.monotonic() + 30 * 60\n    task = {}\n    while time.monotonic() + interval < deadline:\n        time.sleep(interval)\n        try:\n            with open_request(endpoint) as response:\n                task = json.load(response)\n                interval = retry_after(response.headers)\n        except urllib.error.HTTPError as error:\n            if error.code == 429 or error.code >= 500:\n                interval = max(retry_after(error.headers), min(interval * 2, 30))\n                error.close()\n                continue\n            raise\n        except (urllib.error.URLError, TimeoutError, ConnectionError):\n            interval = min(interval * 2, 30)\n            continue\n        print('任务状态：', task.get('status'), '进度：', task.get('progress', '未提供'))\n        if task.get('status') == 'completed':\n            break\n        if task.get('status') == 'failed':\n            raise RuntimeError((task.get('error') or {}).get('message') or '视频生成失败：' + task_id)\n        if task.get('status') not in ('queued', 'in_progress'):\n            raise RuntimeError('未知视频状态：' + str(task.get('status')))\n    if task.get('status') != 'completed':\n        raise RuntimeError('本地等待结束；传入任务文件继续查询，服务端任务不会因此取消')\n    Path('video-result.json').write_text(json.dumps(task, ensure_ascii=False, indent=2), encoding='utf-8')\n    partial = Path('result.mp4.part')\n    try:\n        # 固定大小分块下载，不把整个视频加载到内存。\n        with open_request(endpoint + '/content', timeout=300) as response:\n            mime = response.headers.get('Content-Type', '').split(';')[0]\n            if mime and not mime.startswith('video/') and mime != 'application/octet-stream':\n                raise RuntimeError('下载返回的不是视频：' + mime)\n            with partial.open('wb') as file:\n                while True:\n                    chunk = response.read(1024 * 1024)\n                    if not chunk:\n                        break\n                    file.write(chunk)\n        partial.replace('result.mp4')\n    finally:\n        partial.unlink(missing_ok=True)\n    print('已保存 result.mp4')\n\n\nif __name__ == '__main__':\n    try:\n        main()\n    except urllib.error.HTTPError as error:\n        # 输出有限长度的错误正文，避免把大型非JSON响应写满终端。\n        print('HTTP', error.code, error.read(4096).decode('utf-8', errors='replace'), file=sys.stderr)\n        error.close()\n        sys.exit(1)\n    except Exception as error:\n        print(str(error), file=sys.stderr)\n        sys.exit(1)\n"
+        "value": "import json\nimport os\nimport sys\nimport time\nimport urllib.error\nimport urllib.parse\nimport urllib.request\nfrom datetime import datetime, timezone\nfrom email.utils import parsedate_to_datetime\nfrom pathlib import Path\n\nORIGIN = 'https://api.zzlye.xyz'\nKEY = os.environ.get('WENYUN_API_KEY')\nif not KEY:\n    raise SystemExit('请设置 WENYUN_API_KEY')\nTASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')\n# 无分辨率后缀的型号可选三档，固定档位按名称匹配。\nMODEL = os.environ.get('WENYUN_VIDEO_MODEL') or 'wan-3.0-标准'\nMODELS = [\"wan-3.0-标准\",\"wan-3.0-480p-标准\",\"wan-3.0-720p-标准\",\"wan-3.0-1080p-标准\",\"wan-3.0-快速\",\"wan-3.0-480p-快速\",\"wan-3.0-720p-快速\",\"wan-3.0-1080p-快速\"]\nif MODEL not in MODELS:\n    raise SystemExit('未知Wan模型：' + MODEL)\nFIXED_RESOLUTION = next((value for value in ('480p', '720p', '1080p') if '-' + value + '-' in MODEL), None)\nRESOLUTION = os.environ.get('WENYUN_VIDEO_RESOLUTION') or FIXED_RESOLUTION or '720p'\nRESOLUTIONS = (FIXED_RESOLUTION,) if FIXED_RESOLUTION else ('480p', '720p', '1080p')\nif RESOLUTION not in RESOLUTIONS:\n    raise SystemExit('当前型号不支持此分辨率：' + RESOLUTION)\nBODY = {\n    'model': MODEL,\n    'prompt': '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',\n    'duration': 10, 'resolution': RESOLUTION, 'aspect_ratio': '16:9',\n    # 图生视频时增加 images: ['https://你的域名/参考图.jpg']。\n}\n\n\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n    # 不向跳转后的其他地址转发鉴权信息。\n    def redirect_request(self, req, fp, code, msg, headers, newurl):\n        return None\n\n\nOPENER = urllib.request.build_opener(NoRedirect())\n\n\ndef open_request(path, data=None, timeout=30):\n    headers = {'Authorization': 'Bearer ' + KEY}\n    if data is not None:\n        headers['Content-Type'] = 'application/json'\n    request = urllib.request.Request(ORIGIN + path, data=data, headers=headers)\n    return OPENER.open(request, timeout=timeout)\n\n\ndef retry_after(headers, fallback=5):\n    value = headers.get('Retry-After')\n    if not value:\n        return fallback\n    try:\n        return max(float(value), 1)\n    except ValueError:\n        try:\n            return max((parsedate_to_datetime(value) - datetime.now(timezone.utc)).total_seconds(), 1)\n        except (TypeError, ValueError, OverflowError):\n            return fallback\n\n\ndef main():\n    interval = 5\n    if len(sys.argv) > 1:\n        # 传入保存的任务文件恢复查询，不创建新任务。\n        submitted = json.loads(TASK_FILE.read_text(encoding='utf-8'))\n    else:\n        if TASK_FILE.exists():\n            raise RuntimeError('已有video-task.json，请传入此文件恢复，或在新目录创建新任务')\n        data = json.dumps(BODY, ensure_ascii=False).encode('utf-8')\n        # 创建只尝试一次；超时不等于服务端没有受理。\n        with open_request('/v1/videos', data, timeout=120) as response:\n            submitted = json.load(response)\n            interval = retry_after(response.headers)\n        task_id = submitted.get('id') or submitted.get('task_id')\n        if not task_id:\n            raise RuntimeError('响应缺少视频任务id')\n        print('请保留任务编号：', task_id)\n        with TASK_FILE.open('x', encoding='utf-8') as file:\n            json.dump(submitted, file, ensure_ascii=False, indent=2)\n    task_id = submitted.get('id') or submitted.get('task_id')\n    if not isinstance(task_id, str) or not task_id or task_id.startswith('async_'):\n        raise RuntimeError('需要Videos任务id；async_编号请使用网关任务示例')\n    endpoint = '/v1/videos/' + urllib.parse.quote(task_id, safe='')\n    deadline = time.monotonic() + 30 * 60\n    task = {}\n    while time.monotonic() + interval < deadline:\n        time.sleep(interval)\n        try:\n            with open_request(endpoint) as response:\n                task = json.load(response)\n                interval = retry_after(response.headers)\n        except urllib.error.HTTPError as error:\n            if error.code == 429 or error.code >= 500:\n                interval = max(retry_after(error.headers), min(interval * 2, 30))\n                error.close()\n                continue\n            raise\n        except (urllib.error.URLError, TimeoutError, ConnectionError):\n            interval = min(interval * 2, 30)\n            continue\n        print('任务状态：', task.get('status'), '进度：', task.get('progress', '未提供'))\n        if task.get('status') == 'completed':\n            break\n        if task.get('status') == 'failed':\n            raise RuntimeError((task.get('error') or {}).get('message') or '视频生成失败：' + task_id)\n        if task.get('status') not in ('queued', 'in_progress'):\n            raise RuntimeError('未知视频状态：' + str(task.get('status')))\n    if task.get('status') != 'completed':\n        raise RuntimeError('本地等待结束；传入任务文件继续查询，服务端任务不会因此取消')\n    Path('video-result.json').write_text(json.dumps(task, ensure_ascii=False, indent=2), encoding='utf-8')\n    partial = Path('result.mp4.part')\n    try:\n        # 固定大小分块下载，不把整个视频加载到内存。\n        with open_request(endpoint + '/content', timeout=300) as response:\n            mime = response.headers.get('Content-Type', '').split(';')[0]\n            if mime and not mime.startswith('video/') and mime != 'application/octet-stream':\n                raise RuntimeError('下载返回的不是视频：' + mime)\n            with partial.open('wb') as file:\n                while True:\n                    chunk = response.read(1024 * 1024)\n                    if not chunk:\n                        break\n                    file.write(chunk)\n        partial.replace('result.mp4')\n    finally:\n        partial.unlink(missing_ok=True)\n    print('已保存 result.mp4')\n\n\nif __name__ == '__main__':\n    try:\n        main()\n    except urllib.error.HTTPError as error:\n        # 输出有限长度的错误正文，避免把大型非JSON响应写满终端。\n        print('HTTP', error.code, error.read(4096).decode('utf-8', errors='replace'), file=sys.stderr)\n        error.close()\n        sys.exit(1)\n    except Exception as error:\n        print(str(error), file=sys.stderr)\n        sys.exit(1)\n"
       },
       {
         "type": "note",
@@ -2003,6 +2124,7 @@ const legacyPages = [
       {
         "type": "list",
         "items": [
+          "标准版和快速版均按输出视频计费；参考视频不计费，不将输入参考视频时长叠加计入输出时长。固定档位按型号对应分辨率结算，可选档位按resolution结算；以账户实时价格和使用日志为准。",
           "生成费用按平台实际价格、时长和账户分组结算，不把文档示例中的时长当作固定价格。",
           "POST创建不做自动重试。连接断开、504或本地超时，不证明服务端没有接收任务。",
           "收到id后立即落盘，后续继续查询这个id。查询和下载的重试不应再触发创建。",
@@ -2026,7 +2148,7 @@ const legacyPages = [
       {
         "type": "code",
         "lang": "javascript",
-        "value": "import { readFile, writeFile, rename, rm } from 'node:fs/promises';\nimport { createWriteStream, existsSync } from 'node:fs';\nimport { Readable } from 'node:stream';\nimport { pipeline } from 'node:stream/promises';\nimport { setTimeout as delay } from 'node:timers/promises';\n\nconst ORIGIN = 'https://api.zzlye.xyz';\nconst key = process.env.WENYUN_API_KEY;\nif (!key) throw new Error('请设置 WENYUN_API_KEY');\nconst headers = { Authorization: 'Bearer ' + key };\n// 分别选择公开模型与输出分辨率，高清型号最高支持1080p。\nconst model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';\nconst resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';\nif (!['wan-3.0', 'wan-3.0-1080p'].includes(model)) throw new Error('未知Wan模型：' + model);\nconst resolutions = model === 'wan-3.0' ? ['720p'] : ['720p', '1080p'];\nif (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);\n\n// 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。\nfunction ownUrl(path) {\n  const url = new URL(path, ORIGIN);\n  if (url.origin !== ORIGIN) throw new Error('收到非本站的鉴权接口地址');\n  return url;\n}\nasync function readJson(response) {\n  const text = await response.text();\n  let value;\n  try { value = JSON.parse(text); }\n  catch { throw new Error('接口未返回 JSON，HTTP ' + response.status); }\n  if (!response.ok) throw new Error(value.error?.message || value.message || 'HTTP ' + response.status);\n  return value;\n}\nfunction nextInterval(response) {\n  const value = response.headers.get('Retry-After');\n  if (!value) return 3000;\n  const seconds = Number(value);\n  const ms = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - Date.now();\n  return Number.isFinite(ms) && ms > 0 ? Math.max(ms, 1000) : 3000;\n}\n\nlet submitted;\nlet interval = 3000;\nif (process.argv[2]) {\n  // 传入已保存的任务文件时只恢复查询，不重新生成或扣费。\n  submitted = JSON.parse(await readFile(process.argv[2], 'utf8'));\n} else {\n  if (existsSync('task.json')) throw new Error('已有task.json，请传入此文件恢复，或在新目录创建新任务');\n  const response = await fetch(ORIGIN + '/v1/videos', {\n    method: 'POST',\n    headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },\n    body: JSON.stringify({ model, prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 10, resolution, aspect_ratio: '16:9' }),\n    redirect: 'error',\n    signal: AbortSignal.timeout(120000)\n  });\n  submitted = await readJson(response);\n  if (response.status !== 202) throw new Error('未收到预期的异步任务响应');\n  interval = nextInterval(response);\n  console.log('请保留任务编号：', submitted.task_id);\n  await writeFile('task.json', JSON.stringify(submitted, null, 2), { flag: 'wx' });\n  console.log('任务已保存：', submitted.task_id);\n}\nif (!submitted.poll_url || !submitted.task_id) throw new Error('任务缺少 task_id 或 poll_url');\nconst pollUrl = ownUrl(submitted.poll_url);\nconst deadline = Date.now() + 30 * 60 * 1000;\nlet task;\nwhile (Date.now() < deadline) {\n  // 尊重服务端的查询间隔；超过本地等待期限后仍保留任务编号。\n  if (Date.now() + interval >= deadline) break;\n  await delay(interval);\n  let check;\n  try {\n    check = await fetch(pollUrl, {\n      headers, redirect: 'error', signal: AbortSignal.timeout(30000)\n    });\n  } catch {\n    // 查询网络错误只重试查询，绝不重新提交生成。\n    interval = Math.min(interval * 2, 30000);\n    continue;\n  }\n  if (check.status === 429 || check.status >= 500) {\n    await check.body?.cancel();\n    interval = Math.max(nextInterval(check), Math.min(interval * 2, 30000));\n    continue;\n  }\n  interval = nextInterval(check);\n  task = await readJson(check);\n  if (task.status === 'succeeded') break;\n  if (['failed', 'cancelled'].includes(task.status)) {\n    throw new Error(task.error?.message || task.status);\n  }\n  if (!['pending', 'processing', 'waiting'].includes(task.status)) {\n    throw new Error('未识别的任务状态：' + task.status);\n  }\n}\nif (task?.status !== 'succeeded') throw new Error('等待已结束，可运行 node video-gateway.mjs task.json 恢复查询');\nif (task.result_expired) throw new Error('结果文件已过期');\nawait writeFile('result.json', JSON.stringify(task.result ?? task, null, 2));\nconst files = task.media ?? [];\nfor (const [index, item] of files.entries()) {\n  const file = await fetch(ownUrl(item.url), {\n    headers, redirect: 'error', signal: AbortSignal.timeout(120000)\n  });\n  if (!file.ok) throw new Error('下载失败，HTTP ' + file.status);\n  if (!file.body) throw new Error('下载响应缺少文件内容');\n  const mime = item.content_type || file.headers.get('Content-Type') || '';\n  const ext = ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'video/mp4': 'mp4' })[mime.split(';')[0].trim()] || 'bin';\n  // 流式写入图片和视频，避免把整个视频文件一次性加载到内存。\n  const name = 'result-' + index + '.' + ext;\n  try {\n    await pipeline(Readable.fromWeb(file.body), createWriteStream(name + '.part'));\n    await rename(name + '.part', name);\n  } catch (error) {\n    await rm(name + '.part', { force: true });\n    throw error;\n  }\n}\nif (!files.length) throw new Error('没有归档媒体，请检查result.json中的原生图片结果或失败原因');\nconsole.log('文件已保存');\n"
+        "value": "import { readFile, writeFile, rename, rm } from 'node:fs/promises';\nimport { createWriteStream, existsSync } from 'node:fs';\nimport { Readable } from 'node:stream';\nimport { pipeline } from 'node:stream/promises';\nimport { setTimeout as delay } from 'node:timers/promises';\n\nconst ORIGIN = 'https://api.zzlye.xyz';\nconst key = process.env.WENYUN_API_KEY;\nif (!key) throw new Error('请设置 WENYUN_API_KEY');\nconst headers = { Authorization: 'Bearer ' + key };\n// 无分辨率后缀的型号可选三档；固定档位型号自动匹配后缀。\nconst model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0-标准';\nconst models = [\n  \"wan-3.0-标准\",\n  \"wan-3.0-480p-标准\",\n  \"wan-3.0-720p-标准\",\n  \"wan-3.0-1080p-标准\",\n  \"wan-3.0-快速\",\n  \"wan-3.0-480p-快速\",\n  \"wan-3.0-720p-快速\",\n  \"wan-3.0-1080p-快速\"\n];\nif (!models.includes(model)) throw new Error('未知Wan模型：' + model);\nconst fixedResolution = model.match(/-(480p|720p|1080p)-/)?.[1];\nconst resolution = process.env.WENYUN_VIDEO_RESOLUTION || fixedResolution || '720p';\nconst resolutions = fixedResolution ? [fixedResolution] : ['480p', '720p', '1080p'];\nif (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);\n\n// 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。\nfunction ownUrl(path) {\n  const url = new URL(path, ORIGIN);\n  if (url.origin !== ORIGIN) throw new Error('收到非本站的鉴权接口地址');\n  return url;\n}\nasync function readJson(response) {\n  const text = await response.text();\n  let value;\n  try { value = JSON.parse(text); }\n  catch { throw new Error('接口未返回 JSON，HTTP ' + response.status); }\n  if (!response.ok) throw new Error(value.error?.message || value.message || 'HTTP ' + response.status);\n  return value;\n}\nfunction nextInterval(response) {\n  const value = response.headers.get('Retry-After');\n  if (!value) return 3000;\n  const seconds = Number(value);\n  const ms = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - Date.now();\n  return Number.isFinite(ms) && ms > 0 ? Math.max(ms, 1000) : 3000;\n}\n\nlet submitted;\nlet interval = 3000;\nif (process.argv[2]) {\n  // 传入已保存的任务文件时只恢复查询，不重新生成或扣费。\n  submitted = JSON.parse(await readFile(process.argv[2], 'utf8'));\n} else {\n  if (existsSync('task.json')) throw new Error('已有task.json，请传入此文件恢复，或在新目录创建新任务');\n  const response = await fetch(ORIGIN + '/v1/videos', {\n    method: 'POST',\n    headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'respond-async' },\n    body: JSON.stringify({ model, prompt: '海边公路上一辆蓝色轿车平稳行驶', duration: 10, resolution, aspect_ratio: '16:9' }),\n    redirect: 'error',\n    signal: AbortSignal.timeout(120000)\n  });\n  submitted = await readJson(response);\n  if (response.status !== 202) throw new Error('未收到预期的异步任务响应');\n  interval = nextInterval(response);\n  console.log('请保留任务编号：', submitted.task_id);\n  await writeFile('task.json', JSON.stringify(submitted, null, 2), { flag: 'wx' });\n  console.log('任务已保存：', submitted.task_id);\n}\nif (!submitted.poll_url || !submitted.task_id) throw new Error('任务缺少 task_id 或 poll_url');\nconst pollUrl = ownUrl(submitted.poll_url);\nconst deadline = Date.now() + 30 * 60 * 1000;\nlet task;\nwhile (Date.now() < deadline) {\n  // 尊重服务端的查询间隔；超过本地等待期限后仍保留任务编号。\n  if (Date.now() + interval >= deadline) break;\n  await delay(interval);\n  let check;\n  try {\n    check = await fetch(pollUrl, {\n      headers, redirect: 'error', signal: AbortSignal.timeout(30000)\n    });\n  } catch {\n    // 查询网络错误只重试查询，绝不重新提交生成。\n    interval = Math.min(interval * 2, 30000);\n    continue;\n  }\n  if (check.status === 429 || check.status >= 500) {\n    await check.body?.cancel();\n    interval = Math.max(nextInterval(check), Math.min(interval * 2, 30000));\n    continue;\n  }\n  interval = nextInterval(check);\n  task = await readJson(check);\n  if (task.status === 'succeeded') break;\n  if (['failed', 'cancelled'].includes(task.status)) {\n    throw new Error(task.error?.message || task.status);\n  }\n  if (!['pending', 'processing', 'waiting'].includes(task.status)) {\n    throw new Error('未识别的任务状态：' + task.status);\n  }\n}\nif (task?.status !== 'succeeded') throw new Error('等待已结束，可运行 node video-gateway.mjs task.json 恢复查询');\nif (task.result_expired) throw new Error('结果文件已过期');\nawait writeFile('result.json', JSON.stringify(task.result ?? task, null, 2));\nconst files = task.media ?? [];\nfor (const [index, item] of files.entries()) {\n  const file = await fetch(ownUrl(item.url), {\n    headers, redirect: 'error', signal: AbortSignal.timeout(120000)\n  });\n  if (!file.ok) throw new Error('下载失败，HTTP ' + file.status);\n  if (!file.body) throw new Error('下载响应缺少文件内容');\n  const mime = item.content_type || file.headers.get('Content-Type') || '';\n  const ext = ({ 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'video/mp4': 'mp4' })[mime.split(';')[0].trim()] || 'bin';\n  // 流式写入图片和视频，避免把整个视频文件一次性加载到内存。\n  const name = 'result-' + index + '.' + ext;\n  try {\n    await pipeline(Readable.fromWeb(file.body), createWriteStream(name + '.part'));\n    await rename(name + '.part', name);\n  } catch (error) {\n    await rm(name + '.part', { force: true });\n    throw error;\n  }\n}\nif (!files.length) throw new Error('没有归档媒体，请检查result.json中的原生图片结果或失败原因');\nconsole.log('文件已保存');\n"
       },
       {
         "type": "heading",
@@ -2035,9 +2157,12 @@ const legacyPages = [
       {
         "type": "list",
         "items": [
-          "参考素材不生效：使用image_urls、video_urls或audio_urls，确认地址直接返回媒体文件，并在提示词中明确素材用途。",
-          "时长或清晰度不符合预期：核对完整模型名称、duration、resolution和aspect_ratio，不混用其他模型的参数。",
-          "下载返回401：内容接口和media[].url需要Bearer鉴权，直接在浏览器地址栏打开不会自动带上Key。",
+          "参考素材不生效：Wan使用images、videos、audios，确认媒体URL可读取，并在prompt中说明各素材的用途。",
+          "素材超过上限：两版均最多10张图片、5条视频、5条音频；不要误用其他视频模型的数量规则。",
+          "分辨率不匹配：带480p、720p或1080p的型号固定对应档位；无分辨率后缀的型号通过resolution选择三档。",
+          "时长参数报错：使用duration，填写2–30的整数，不混传seconds。",
+          "下载返回401：内容接口和media[].url需要Bearer鉴权，浏览器地址栏不会自动带上Key。",
+          "查询HTTP 200不代表生成成功，以completed或succeeded判断对应模式是否完成。",
           "排查时提供模型、任务id、请求时间、HTTP状态及去掉Key的参数，不发送完整Key。"
         ]
       },

@@ -1,5 +1,5 @@
-import { pages, navigation } from "./content.js?v=20261027-models";
-import { pageMarkdown, renderPage, renderNavigation, resolveRoute } from "./document.js?v=20261027-models";
+import { pages, navigation } from "./content.js?v=20261104-wan";
+import { pageMarkdown, renderPage, renderNavigation, resolveRoute } from "./document.js?v=20261104-wan";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");

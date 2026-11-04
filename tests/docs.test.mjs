@@ -13,8 +13,8 @@ test("图片与视频文档页面完整且编号唯一", () => {
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 25);
-  for (const name of ["gpt-image-2.5-flare-满血", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan-3.0-1080p"]) {
+  assert.equal(mediaModels.length, 31);
+  for (const name of ["gpt-image-2.5-flare-满血", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0-标准", "wan-3.0-1080p-快速"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
   assert.ok(!mediaModels.some(model => model.name === 'sd5p'));
@@ -62,7 +62,8 @@ test("视频示例保留真实时长和分辨率字段", () => {
   assert.ok(video.includes("/v1/videos"));
   assert.ok(video.includes("duration"));
   assert.ok(video.includes("resolution"));
-  assert.ok(video.includes("input_reference"));
+  assert.ok(video.includes("images"));
+  assert.ok(video.includes("first_frame_url"));
 });
 
 test("默认分组明确区分基础1K与Adobe兼容型号", () => {
@@ -205,7 +206,7 @@ test('五类模型文档各自包含异步闭环与可执行示例', () => {
 
 test('Wan参数、整数进度与两种异步状态不能混用', () => {
   const page=pages.find(p=>p.id==='video'),text=pageMarkdown(page);
-  for(const value of ['image_urls','video_urls','audio_urls','30秒','720p','wan-3.0-1080p','completed','succeeded','/v1/videos/','/v1/tasks/']) assert.ok(text.includes(value),value);
+  for(const value of ['images','videos','audios','30秒','720p','wan-3.0-1080p-标准','completed','succeeded','/v1/videos/','/v1/tasks/']) assert.ok(text.includes(value),value);
   for(const b of page.blocks.filter(b=>b.lang==='json')) {
     const obj=JSON.parse(b.value);
     if(obj.progress!==undefined) assert.ok(Number.isInteger(obj.progress)&&obj.progress>=0&&obj.progress<=100);
@@ -277,17 +278,23 @@ test('Wan页同时包含Videos与网关可恢复示例',()=>{
   assert.equal(examples.length,2);
   assert.ok(examples[0].value.includes("'/v1/videos/'"));
   assert.ok(examples[1].value.includes("Prefer: 'respond-async'"));
-  assert.ok(examples[1].value.includes("WENYUN_VIDEO_MODEL || 'wan-3.0'"));
+  assert.ok(examples[1].value.includes("WENYUN_VIDEO_MODEL || 'wan-3.0-标准'"));
   assert.equal(examples[1].value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/video-gateway.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n'));
   assert.ok(!pageMarkdown(page).includes('“任务与下载”章节'));
 });
 
-test('Wan两型号共享时长与素材规则，高清分辨率可选择而非固定',()=>{
+test('Wan八型号区分标准与快速、可选与固定分辨率，素材上限和计费一致',()=>{
   const page=pages.find(p=>p.id==='video');
   const table=page.blocks.find(b=>b.type==='table'&&b.headers[0]==='模型名称');
-  assert.equal(table.rows.length,2);
-  for(const row of table.rows){assert.equal(row[2],'1–30秒（整数）');assert.equal(row[3],'最多2张');}
-  assert.ok(table.rows[1][1].includes('720p')&&table.rows[1][1].includes('最高'));
+  const models=['标准','快速'].flatMap(version=>['','-480p','-720p','-1080p'].map(res=>'wan-3.0'+res+'-'+version));
+  assert.equal(table.rows.length,8);
+  assert.deepEqual(table.rows.map(row=>row[0]),models.map(model=>'`'+model+'`'));
+  assert.deepEqual(mediaModels.filter(model=>model.page==='video').map(model=>model.name),models);
+  for(const row of table.rows){
+    assert.deepEqual(row.slice(3),['最多10张','最多5条','最多5条']);
+    const fixed=row[0].match(/-(480p|720p|1080p)-/)?.[1];
+    assert.ok(fixed?row[2].includes('固定`'+fixed+'`'):['480p','720p','1080p'].every(res=>row[2].includes(res)));
+  }
   const requests=[];
   for(const b of page.blocks.filter(b=>b.type==='code')){
     if(b.lang==='json')requests.push(JSON.parse(b.value));
@@ -295,17 +302,30 @@ test('Wan两型号共享时长与素材规则，高清分辨率可选择而非�
   }
   const submissions=requests.filter(body=>body.prompt);
   for(const body of submissions){
-    assert.ok(['wan-3.0','wan-3.0-1080p'].includes(body.model));
-    assert.ok(Number.isInteger(body.duration)&&body.duration>=1&&body.duration<=30);
-    assert.ok((body.model==='wan-3.0'?['720p']:['720p','1080p']).includes(body.resolution));
-    assert.ok((body.image_urls||[]).length<=2);
-    for(const key of ['image_urls','video_urls','audio_urls'])for(const url of body[key]||[])assert.ok(url.startsWith('https://'));
-    assert.ok(!('seconds' in body)&&!('input_reference' in body));
+    assert.ok(models.includes(body.model));
+    assert.ok(Number.isInteger(body.duration)&&body.duration>=2&&body.duration<=30);
+    const fixed=body.model.match(/-(480p|720p|1080p)-/)?.[1];
+    if(body.resolution)assert.ok((fixed?[fixed]:['480p','720p','1080p']).includes(body.resolution));
+    else assert.ok(fixed,'可选分辨率型号的示例应明确传入resolution');
+    for(const [key,max] of [['images',10],['videos',5],['audios',5]]){
+      assert.ok((body[key]||[]).length<=max);
+      for(const url of body[key]||[])assert.ok(url.startsWith('https://'));
+    }
+    for(const key of ['seconds','input_reference','image_urls','video_urls','audio_urls'])assert.ok(!(key in body));
+    if(body.last_frame_url)assert.ok(body.first_frame_url);
   }
-  for(const resolution of ['720p','1080p'])assert.ok(submissions.some(b=>b.model==='wan-3.0-1080p'&&b.resolution===resolution));
-  assert.ok(submissions.some(b=>b.model==='wan-3.0-1080p'&&b.duration===30&&b.image_urls?.length===2));
+  assert.ok(submissions.some(b=>b.model==='wan-3.0-1080p-标准'&&b.duration===30&&b.images?.length===2));
+  assert.ok(submissions.some(b=>b.videos?.length&&b.audios?.length&&b.images?.length));
+  assert.ok(submissions.some(b=>b.first_frame_url&&b.last_frame_url));
+  assert.ok(submissions.some(b=>b.model==='wan-3.0-480p-快速'&&!b.resolution));
   const markdown=pageMarkdown(page);
-  assert.ok(!/808relay|SKYLEE|不自动继承720p|30秒示例适用于wan-3.0的720p/.test(markdown));
+  assert.ok(markdown.includes('参考视频不计费'));
+  assert.ok(markdown.includes('2–30秒'));
+  assert.ok(!/最多2张|1–30|最高1080p|wan-3\.0(?:-1080p)?["'`]/.test(markdown));
+  assert.ok(!/image_urls|video_urls|audio_urls|wan-3\.0-prime|wan3\.0-video/.test(markdown));
+  for(const [lang,file] of [['javascript','video.mjs'],['python','video.py']]){
+    assert.equal(page.blocks.find(b=>b.lang===lang).value.replaceAll('\r\n','\n'),readFileSync(new URL('../public/docs/examples/'+file,import.meta.url),'utf8').replaceAll('\r\n','\n'));
+  }
 });
 
 test('SD四款型号的分辨率与素材上限在全部请求中保持一致',()=>{

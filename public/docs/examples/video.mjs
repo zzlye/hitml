@@ -9,17 +9,28 @@ const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
 const taskFile = process.argv[2] || 'video-task.json';
-// 高清型号可以选择720p或1080p，模型名称不等于固定输出分辨率。
-const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';
-const resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';
-if (!['wan-3.0', 'wan-3.0-1080p'].includes(model)) throw new Error('未知Wan模型：' + model);
-const resolutions = model === 'wan-3.0' ? ['720p'] : ['720p', '1080p'];
+// 无分辨率后缀的型号可选三档；固定档位型号自动匹配后缀。
+const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0-标准';
+const models = [
+  "wan-3.0-标准",
+  "wan-3.0-480p-标准",
+  "wan-3.0-720p-标准",
+  "wan-3.0-1080p-标准",
+  "wan-3.0-快速",
+  "wan-3.0-480p-快速",
+  "wan-3.0-720p-快速",
+  "wan-3.0-1080p-快速"
+];
+if (!models.includes(model)) throw new Error('未知Wan模型：' + model);
+const fixedResolution = model.match(/-(480p|720p|1080p)-/)?.[1];
+const resolution = process.env.WENYUN_VIDEO_RESOLUTION || fixedResolution || '720p';
+const resolutions = fixedResolution ? [fixedResolution] : ['480p', '720p', '1080p'];
 if (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);
 const request = {
   model,
   prompt: '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
   duration: 10, resolution, aspect_ratio: '16:9'
-  // 图生视频时增加 image_urls: ['https://你的域名/参考图.jpg']。
+  // 图生视频时增加 images: ['https://你的域名/参考图.jpg']。
 };
 
 async function readJson(response) {
