@@ -136,7 +136,7 @@ test('香蕉错误型号在发送请求前停止',()=>{
   assert.equal(result.calls.length,0);
 });
 
-for (const [pageId, model] of [['image2','gpt-image-2.5-flare'],['seedream','seedream-5-pro']]) {
+for (const [pageId, model] of [['image2','gpt-image-2.6-flare'],['image-1k','gpt-image-2.6-flare'],['image-adobe','gpt-image-2.6-flare'],['image-az','AZ-gpt-image-2.6-flare'],['image-official','官-gpt-image-2.6-flare'],['seedream','seedream-5-pro']]) {
   test(pageId + '示例按页面模型完成生成与保存', () => {
     const result=execute(pageId,'success');
     assert.equal(result.status,0,result.output);

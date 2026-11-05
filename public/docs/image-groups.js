@@ -1,12 +1,16 @@
 import { IMAGE2_SIZE_ROWS, IMAGE2_RESPONSE_BLOCKS } from './image2-details.js?v=20261027-groups';
+import { officialImage26Blocks } from './image26-details.js?v=20261105-image26';
 
 const heading = value => ({ type: 'heading', value });
 const paragraph = value => ({ type: 'paragraph', value });
 const note = value => ({ type: 'note', value });
 const table = (headers, rows) => ({ type: 'table', headers, rows });
 const code = (lang, value) => ({ type: 'code', lang, value });
-const bases = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'];
-const adobeAliases = ['gpt-image-2-4k', ...bases.slice(1).flatMap(name => ['-4k', '-满血'].map(suffix => name + suffix))];
+const legacyBases = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'];
+const image26Models = ['gpt-image-2.6-flare', 'gpt-image-2.6-sunburst'];
+const bases = [...legacyBases, ...image26Models];
+// 2.6默认分组只上架4k后缀，不按2.5的旧别名规则生成不存在的满血型号。
+const adobeAliases = ['gpt-image-2-4k', ...legacyBases.slice(1).flatMap(name => ['-4k', '-满血'].map(suffix => name + suffix)), ...image26Models.map(name => name + '-4k')];
 
 // 分组和完整模型名共同决定能力，不能把同名的1K线路与Adobe线路合并。
 export const IMAGE_GROUPS = [
@@ -20,13 +24,13 @@ export const IMAGE_GROUPS = [
 export const imageCapability = (group, name) => {
   const adobe = group.kind === 'adobe' || group.kind === 'default' && adobeAliases.includes(name);
   const full = adobe || group.kind === 'official';
-  const image25 = name.includes('2.5');
+  const extendedQuality = /2\.[56]/.test(name);
   return {
     adobe, full,
     sizes: full ? '1K、2K、4K' : '仅1K',
-    quality: adobe ? 'auto / low / medium / high / xhigh / max' : image25 ? 'auto / low / medium / high / xhigh / max' : 'auto / low / medium / high',
-    // Adobe Image 2不支持背景透明度；2.5的能力单独判断，不按后缀猜测。
-    background: full && (!adobe || image25),
+    quality: adobe || extendedQuality ? 'auto / low / medium / high / xhigh / max' : 'auto / low / medium / high',
+    // Adobe的2.6沿用2.5透明能力，Image 2仍不支持，不能只按4k后缀判断。
+    background: full && (!adobe || extendedQuality),
     mask: full,
     responseFormat: group.kind !== 'official'
   };
@@ -45,7 +49,7 @@ function sizeBlocks(group) {
     paragraph(basic
       ? '本分组只使用1K列；不要因为模型名称与Adobe分组相同，就发送2K或4K尺寸。size填写具体的宽x高，使用英文小写x。'
       : group.kind === 'default'
-        ? 'size填写具体像素宽x高，不填写1K、4K或16:9。不带后缀的三个基础型号只使用1K列；本页Adobe后缀型号可使用1K、2K、4K。'
+        ? 'size填写具体像素宽x高，不填写1K、4K或16:9。不带后缀的基础型号（包括2.6）只使用1K列；本页Adobe后缀型号可使用1K、2K、4K。'
         : 'size填写具体像素宽x高，不填写1K、4K或16:9。本页型号可使用下表的1K、2K、4K尺寸。'),
     table(basic ? ['比例', '1K：size'] : ['比例', '1K：size', '2K：size', '4K：size'], IMAGE2_SIZE_ROWS.map(row => basic ? row.slice(0, 2) : row)),
     table(['约束', '要求'], [
@@ -67,13 +71,13 @@ function parameterBlocks(group) {
     heading('文生图参数'),
     table(['字段', '类型', '要求与说明'], [
       ['model', 'string，必填', '完整填写本页列出的模型名，保留AZ-、官-或规格后缀'],
-      ['prompt', 'string，必填', hasAdobe ? '描述主体、构图、风格及画中文字；Adobe型号非空且不超过32768字节（不是32768个汉字）' : '描述主体、构图、风格及画中文字，不能为空'],
+      ['prompt', 'string，必填', hasAdobe ? '描述主体、构图、风格及画中文字；Adobe型号非空且不超过32768字节（不是32768个汉字）' : group.kind === 'official' ? '描述主体、构图、风格及画中文字，不能为空，最多32000字符' : '描述主体、构图、风格及画中文字，不能为空'],
       ['size', 'string，建议显式填写', '具体像素宽x高，按本页型号能力和尺寸表选择'],
       ['quality', 'string，可选', '按型号表选择；quality改变细节偏好，不改变size的格式'],
-      ['n', 'integer，建议1', hasAdobe ? 'Adobe支持1–4，省略为1；基础和其他线路建议每次1张。输出数量与参考图张数不同' : '建议每次1张，多张独立结果分别创建并保存任务编号'],
+      ['n', 'integer，建议1', hasAdobe ? 'Adobe支持1–4，省略为1；基础1K建议每次1张。输出数量与参考图张数不同' : group.kind === 'official' ? '1–10，默认1；SVG输出必须为1，GIF还受帧数和像素预算限制' : '建议每次1张，多张独立结果分别创建并保存任务编号'],
       ['background', 'string，可选', hasFull ? '仅型号表标明支持时使用auto、opaque或transparent；Adobe的gpt-image-2及gpt-image-2-4k不发送此字段' : '本分组不提供背景参数，省略'],
       ['response_format', 'string，可选', group.kind === 'official' ? '不发送，包括url和b64_json；此分组按官方请求协议提交，读取实际返回的data[].b64_json或任务media' : 'url或b64_json，控制返回结果，与输入参考图URL无关'],
-      ['output_format', 'string，可选', hasAdobe ? 'Adobe兼容输入接受png、jpeg、webp；保存时以实际Content-Type为准，不能保证此参数使上游按指定格式编码' : 'png、jpeg、webp；透明背景选择png或webp'],
+      ['output_format', 'string，可选', hasAdobe ? 'Adobe兼容输入接受png、jpeg、webp；保存时以实际Content-Type为准，不能保证此参数使上游按指定格式编码' : group.kind === 'official' ? '常规图片png、jpeg、webp，默认png；2.6文生图的svg、gif及互斥条件见下方专节，编辑不使用svg或gif' : 'png、jpeg、webp；透明背景选择png或webp'],
       ['output_compression', 'integer，可选', hasAdobe ? 'Adobe线路不提供独立压缩控制，省略；其他线路JPEG/WebP可选0–100，PNG省略' : 'JPEG/WebP压缩设置0–100；PNG省略'],
       ['moderation', 'string，可选', hasAdobe ? 'Adobe未提供独立审核级别控制，Adobe型号省略；基础1K型号仍可使用auto或low' : 'auto为默认审核，low为较宽松级别，不代表关闭内容审核']
     ]),
@@ -81,9 +85,9 @@ function parameterBlocks(group) {
       heading('Adobe的画质与透明背景'),
       table(['模型', '画质映射', '透明背景'], [
         ['GPT Image 2（含默认分组gpt-image-2-4k）', 'low→1；medium/auto→3；high/max→5；xhigh兼容映射为max', '不支持background和transparent_background，请省略'],
-        ['GPT Image 2.5 Flare / Sunburst的Adobe型号', 'low→1；medium/auto→3；high→5；max/xhigh→7', '支持auto、opaque、transparent']
+        ['GPT Image 2.5 / 2.6 Flare与Sunburst的Adobe型号', 'low→1；medium/auto→3；high→5；max/xhigh→7', '支持auto、opaque、transparent']
       ]),
-      paragraph('画质映射是Adobe线路的细节等级。不要把官key或AZ的扩展品质行为套到Adobe；也不要把透明PNG遮罩与生成透明背景混为一谈。Image 2可以使用编辑遮罩，但不提供生成透明背景参数。')
+      paragraph('画质映射是Adobe线路的细节等级。2.6沿用2.5的尺寸、参考图格式、画质与遮罩规则，不发送complexity、markup、svg、frame_count、frame_duration_ms，不使用SVG或GIF输出。Image 2可以使用编辑遮罩，但不提供生成透明背景参数。')
     ] : []),
     ...(group.kind === 'official' ? [note('AZ和官key分组不发送response_format，也不在失败后把它改成另一个值重新生成。output_format控制文件格式，不能代替response_format。')] : [])
   ];
@@ -92,15 +96,16 @@ function parameterBlocks(group) {
 function editBlocks(group, model) {
   const capability = imageCapability(group, model);
   const adobeOnly = group.kind === 'adobe';
+  const official = group.kind === 'official';
   const request = { model, prompt: '保留第一张图的商品，参考第二张图的构图，背景改成浅色', size: capability.full ? '2560x1440' : '1280x720', n: 1 };
   const references = ['https://example.com/product.png', 'https://example.com/style.jpg'];
   return [
     heading('图生图与图片编辑'),
-    paragraph('POST /v1/images/edits可使用本地文件或公开图片URL。单图JSON用image字符串；多图字段按下表的线路格式填写。不要把本机路径或网页预览地址当成图片URL。'),
+    paragraph(official ? 'POST /v1/images/edits可使用本地文件或公开图片URL。官方JSON格式使用images对象数组，即使单图也写入数组；每项恰好包含image_url或file_id之一。本站URL示例使用image_url，不要求先上传到Files接口。' : 'POST /v1/images/edits可使用本地文件或公开图片URL。单图JSON用image字符串；多图字段按下表的线路格式填写。不要把本机路径或网页预览地址当成图片URL。'),
     table(['输入方式', 'Content-Type', '字段和限制'], [
       ['本地文件', 'multipart/form-data', '单图image；多图重复image[]，PNG、JPEG或WebP，最多16张参考图'],
-      ['单张URL', 'application/json', 'image为一张公开图片URL；与images二选一'],
-      ['多张URL', 'application/json', adobeOnly ? 'Adobe使用images:[{"image_url":"https://..."}]，最多16项' : group.kind === 'default' ? '基础1K使用images字符串数组；Adobe后缀型号使用images对象数组，每项含image_url' : 'images为图片URL字符串数组，最多16项'],
+      ['单张URL', 'application/json', official ? 'images:[{"image_url":"https://..."}]；每项只使用image_url或file_id之一' : 'image为一张公开图片URL；与images二选一'],
+      ['多张URL', 'application/json', adobeOnly || official ? 'images:[{"image_url":"https://..."}]，最多16项' : group.kind === 'default' ? '基础1K使用images字符串数组；Adobe后缀型号使用images对象数组，每项含image_url' : 'images为图片URL字符串数组，最多16项'],
       ['mask', 'multipart文件，可选', group.kind === 'default' ? '仅本页Adobe后缀型号支持；基础1K不开放' : capability.mask ? '支持局部编辑；透明区域为修改区域，与第一张参考图尺寸相同' : '本分组基础1K不开放遮罩，省略']
     ]),
     table(['编辑字段', '类型 / 要求', '填写方式'], [
@@ -108,7 +113,7 @@ function editBlocks(group, model) {
       ['prompt', 'string，必填', '写清保留、替换或修改的内容，多图按顺序说明各图用途'],
       ['size', 'string，建议填写', '使用具体像素，遵守本页型号档位和尺寸限制'],
       ['quality', 'string，可选', 'Adobe、AZ和官key按型号表选择；基础1K的整图编辑请求省略'],
-      ['n', 'integer，建议1', '输出数量，不是参考图张数；Adobe支持1–4'],
+      ['n', 'integer，建议1', official ? '输出数量1–10，默认1；不是参考图张数' : '输出数量，不是参考图张数；Adobe支持1–4'],
       ['background', 'string，可选', '仅型号表标明支持时传入；Adobe Image 2不发送'],
       ['moderation', 'string，可选', '基础1K、AZ和官key可选auto或low；Adobe不提供独立控制，省略'],
       ['response_format', 'string，可选', group.kind === 'official' ? '本分组省略，不发送url或b64_json' : 'url或b64_json；与参考图片的输入方式无关'],
@@ -116,12 +121,12 @@ function editBlocks(group, model) {
       ['mask', '文件，可选', '仅支持局部编辑的型号使用；透明区域表示修改范围']
     ]),
     heading('单张URL参考图'),
-    curlJson('/v1/images/edits', { ...request, image: references[0] }),
+    curlJson('/v1/images/edits', { ...request, ...(official ? { images: [{ image_url: references[0] }] } : { image: references[0] }) }),
     heading('多张URL参考图'),
-    curlJson('/v1/images/edits', { ...request, images: adobeOnly ? references.map(image_url => ({ image_url })) : references }),
+    curlJson('/v1/images/edits', { ...request, images: adobeOnly || official ? references.map(image_url => ({ image_url })) : references }),
     ...(group.kind === 'default' ? [
-      paragraph('默认分组的满血、4k后缀型号使用Adobe多图格式：'),
-      curlJson('/v1/images/edits', { ...request, model: 'gpt-image-2.5-flare-满血', size: '2560x1440', images: references.map(image_url => ({ image_url })) })
+      paragraph('默认分组的满血、4k后缀型号使用Adobe多图格式，2.6的-4k同样适用：'),
+      curlJson('/v1/images/edits', { ...request, model: 'gpt-image-2.6-flare-4k', size: '2560x1440', images: references.map(image_url => ({ image_url })) })
     ] : []),
     heading('本地图片上传'),
     code('bash', `curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/images/edits' \\
@@ -142,7 +147,7 @@ function editBlocks(group, model) {
       code('bash', `curl --fail-with-body --max-time 120 'https://api.zzlye.xyz/v1/images/edits' \\
   -H "Authorization: Bearer $WENYUN_API_KEY" \\
   -H 'Prefer: respond-async' \\
-  -F 'model=${group.kind === 'default' ? 'gpt-image-2.5-flare-满血' : model}' \\
+  -F 'model=${group.kind === 'default' ? 'gpt-image-2.6-flare-4k' : model}' \\
   -F 'prompt=只替换遮罩透明区域中的背景，保留人物与衣服' \\
   -F 'image=@original.png' \\
   -F 'mask=@mask.png' \\
@@ -155,7 +160,7 @@ function editBlocks(group, model) {
 }
 
 export function createImageGroupPage(group, legacyPage) {
-  const model = group.models.find(name => name.includes('flare') && !name.endsWith('-满血')) || group.models[0];
+  const model = group.models.find(name => name.includes('2.6-flare') && !name.endsWith('-4k')) || group.models[0];
   const capability = imageCapability(group, model);
   const asyncStart = legacyPage.blocks.findIndex(block => block.type === 'heading' && block.value === '异步：提交、查询与下载');
   const faqStart = legacyPage.blocks.findIndex(block => block.type === 'heading' && block.value === '常见问题');
@@ -172,7 +177,7 @@ export function createImageGroupPage(group, legacyPage) {
   });
   return {
     id: group.id, label: group.label, title: group.title,
-    lead: group.kind === 'default' ? '默认分组的基础1K与Adobe兼容型号，分别列出模型、画质、比例尺寸、参考图、局部编辑和任务处理。' : '本分组的模型名称、参数能力、比例尺寸、URL或本地参考图、图片编辑与任务处理。',
+    lead: group.kind === 'default' ? '默认分组的2.6、2.5与Image 2：无后缀基础1K及Adobe后缀型号的尺寸、画质、参考图、编辑和任务处理。' : '本分组的2.6、2.5与Image 2：完整型号、参数能力、比例尺寸、URL或本地参考图、图片编辑与任务处理。',
     blocks: [
       heading('接入方式与鉴权'),
       table(['项目', '填写方式'], [
@@ -187,16 +192,18 @@ export function createImageGroupPage(group, legacyPage) {
         const cap = imageCapability(group, name);
         return [name, cap.sizes, cap.quality, cap.background ? 'auto / opaque / transparent' : '不提供，省略', cap.mask ? '支持' : '不开放', cap.adobe ? 'Adobe' : group.kind === 'official' ? group.label : '基础1K'];
       })),
-      ...(group.kind === 'default' ? [note('不带后缀的gpt-image-2、gpt-image-2.5-flare、gpt-image-2.5-sunburst保持基础1K能力。-满血、-4k后缀按Adobe线路使用。')] : []),
+      ...(group.kind === 'default' ? [note('不带后缀的型号保持基础1K能力，2.6与2.5规则相同。gpt-image-2.6-flare-4k和gpt-image-2.6-sunburst-4k按Adobe线路使用，支持1K、2K、4K及遮罩、透明背景；不支持2.6新增扩展参数。2.6没有-满血别名。旧型号的-满血、-4k规则保留。')] : []),
+      ...(group.kind === 'basic' ? [note('2.6 Flare和Sunburst沿用本分组2.5规则：仅1K、不开放mask或background，不发送complexity、markup、svg、frame_count、frame_duration_ms，不使用SVG或GIF输出。')] : []),
       ...parameterBlocks(group), ...sizeBlocks(group),
       heading('文生图完整请求'),
       curlJson('/v1/images/generations', { model, prompt: '清晨花店门口，柔和日光，精致商业摄影', size: capability.full ? '2560x1440' : '1280x720', quality: 'high', n: 1 }),
       ...editBlocks(group, model),
       ...(group.kind !== 'basic' ? [
         heading('透明背景'),
-        paragraph(group.kind === 'official' ? '使用background:transparent并选择PNG或WebP。opaque表示不透明，auto由模型决定。' : 'Adobe仅GPT Image 2.5 Flare和Sunburst提供背景透明度参数；GPT Image 2及gpt-image-2-4k不支持，必须省略background和transparent_background。基础1K型号也不发送background。'),
-        curlJson('/v1/images/generations', { model: group.kind === 'default' ? 'gpt-image-2.5-flare-满血' : model, prompt: '一个独立的橘子图标，透明背景，无投影', size: '1024x1024', quality: 'high', background: 'transparent', output_format: 'png', n: 1 })
+        paragraph(group.kind === 'official' ? '使用background:transparent并选择PNG或WebP。opaque表示不透明，auto由模型决定。' : 'Adobe的GPT Image 2.5与2.6 Flare和Sunburst提供背景透明度参数；GPT Image 2及gpt-image-2-4k不支持，必须省略background和transparent_background。基础1K型号也不发送background。'),
+        curlJson('/v1/images/generations', { model: group.kind === 'default' ? 'gpt-image-2.6-flare-4k' : model, prompt: '一个独立的橘子图标，透明背景，无投影', size: '1024x1024', quality: 'high', background: 'transparent', output_format: 'png', n: 1 })
       ] : []),
+      ...(group.kind === 'official' ? officialImage26Blocks(model) : []),
       ...IMAGE2_RESPONSE_BLOCKS,
       ...asyncBlocks,
       heading('常见问题'),

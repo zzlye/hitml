@@ -13,7 +13,7 @@ test("图片与视频文档页面完整且编号唯一", () => {
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 31);
+  assert.equal(mediaModels.length, 39);
   for (const name of ["gpt-image-2.5-flare-满血", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0-标准", "wan-3.0-1080p-快速"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
@@ -71,19 +71,19 @@ test("默认分组明确区分基础1K与Adobe兼容型号", () => {
   const text = pageMarkdown(page);
   for (const value of ['gpt-image-2.5-flare-4k', 'gpt-image-2.5-sunburst-满血', '32768字节', '最多16张', 'moderation', '1024x1024', '3840px', '655360至8294400', 'background', 'mask']) assert.ok(text.includes(value), value);
   const rows = page.blocks.find(block => block.type === 'table' && block.headers[0] === '模型名称').rows;
-  assert.equal(rows.length, 8);
+  assert.equal(rows.length, 12);
   for (const row of rows) {
-    const basic = ['gpt-image-2', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst'].includes(row[0]);
+    const basic = !/-(4k|满血)$/.test(row[0]);
     assert.equal(row[1], basic ? '仅1K' : '1K、2K、4K');
     assert.equal(row[5], basic ? '基础1K' : 'Adobe');
-    assert.equal(row[3].includes('transparent'), !basic && row[0].includes('2.5'));
+    assert.equal(row[3].includes('transparent'), !basic && /2\.[56]/.test(row[0]));
     assert.equal(row[4], basic ? '不开放' : '支持');
   }
   assert.equal(rows.find(row => row[0] === 'gpt-image-2-4k')[3], '不提供，省略');
   const requests = page.blocks.filter(block => block.lang === 'bash' && block.value.includes('--data')).map(block => JSON.parse(block.value.match(/--data\s+'([\s\S]*?)'/)[1]));
-  assert.ok(requests.some(body => body.model.endsWith('-满血') && body.images?.every(image => typeof image.image_url === 'string')));
-  assert.ok(requests.some(body => body.model === 'gpt-image-2.5-flare' && body.images?.every(image => typeof image === 'string')));
-  assert.ok(requests.every(body => !body.background || body.model.includes('2.5') && body.model.endsWith('-满血')));
+  assert.ok(requests.some(body => body.model === 'gpt-image-2.6-flare-4k' && body.images?.every(image => typeof image.image_url === 'string')));
+  assert.ok(requests.some(body => body.model === 'gpt-image-2.6-flare' && body.images?.every(image => typeof image === 'string')));
+  assert.ok(requests.every(body => !body.background || /2\.[56].*-(4k|满血)$/.test(body.model)));
 });
 
 test('GPT Image的24个预设尺寸同时满足像素与比例限制', async()=>{

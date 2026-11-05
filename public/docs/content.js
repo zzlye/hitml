@@ -1,5 +1,5 @@
 // 每个模型页包含完整接入流程，正文和Markdown导出使用同一份参数说明。
-import { IMAGE_GROUPS, createImageGroupPage, INTERNAL_TASK_BLOCKS } from "./image-groups.js?v=20261027-models";
+import { IMAGE_GROUPS, createImageGroupPage, INTERNAL_TASK_BLOCKS } from "./image-groups.js?v=20261105-image26";
 import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261016-image-url-edit";
 import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261020-models-mj";
 
