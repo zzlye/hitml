@@ -12,8 +12,8 @@ export const mjCommonRows = [
   ['model', 'string', '是', 'mj-v8.2', '固定填写公开模型名称`mj-v8.2`。'],
   ['prompt', 'string', '是', '1–1023个字符', '描述主体、场景、构图、画风、光线；参考图用途也写在这里。长度限制针对prompt字段，不是1023个单词或tokens。'],
   ['size', 'string', '否', '默认9:16；见下表', '填写画面比例，例如`16:9`，不是`1024x1024`这样的像素尺寸。'],
-  ['image', 'string', '否', '公网图片URL或data:image/...', '单张参考图；有多张时使用`images`。'],
-  ['images', 'string[]', '否', '1–5张', '每项为图片URL或data:image/...；数组顺序保留。单张和多张写法选一种即可。'],
+  ['image', 'string', '否', '公网HTTP(S)图片URL', '单张参考图；有多张时使用`images`。不接受Base64、Data URL或本机路径。'],
+  ['images', 'string[]', '否', '1–5张', '每项必须是公网HTTP(S)图片URL；不接受Base64、Data URL或本机路径。数组顺序保留。'],
   ['raw', 'boolean', '否', '默认false', '`true`启用Raw原始风格；传JSON布尔值，不要传字符串"true"。'],
   ['negative_prompt', 'string', '否', '按需填写', '描述希望排除的主体、元素或画面特征；不替代正向prompt。'],
   ['seed', 'integer', '否', '按需填写', '随机种子；未约定统一的默认值和数值范围，不保证不同参数组合复现相同画面。'],
@@ -169,13 +169,12 @@ if (process.argv[2]) {
   if (request.image != null && request.images != null) throw new Error('image与images请选择一种');
   const validReference = value => {
     if (typeof value !== 'string' || !value.trim()) return false;
-    if (/^data:image\/[^;,]+;base64,.+/i.test(value)) return true;
     try { return ['https:', 'http:'].includes(new URL(value).protocol); }
     catch { return false; }
   };
-  if (request.image != null && !validReference(request.image)) throw new Error('image必须是图片URL或完整Data URL');
+  if (request.image != null && !validReference(request.image)) throw new Error('image必须是公网HTTP(S)图片URL，不支持Base64或Data URL');
   if (request.images != null && (!Array.isArray(request.images) || request.images.length < 1 || request.images.length > 5 || !request.images.every(validReference))) {
-    throw new Error('images必须包含1–5张图片URL或完整Data URL');
+    throw new Error('images必须包含1–5张公网HTTP(S)图片URL，不支持Base64或Data URL');
   }
   const ranges = { stylize: [0, 1000], chaos: [0, 100], weird: [0, 3000], iw: [0, 3], cw: [0, 100], sw: [0, 1000], dw: [0, 100] };
   for (const [field, [min, max]] of Object.entries(ranges)) {
@@ -296,7 +295,7 @@ node mj-v8.2.mjs task.json`),
       ['查询响应没有data.status', '同时兼容顶层`status`和`data.status`，不要只读取固定一层。'],
       ['完成但没有图片', '读取`image_urls`所在的`result.data`层级；同时检查`result_expired`，保留原始响应排查。'],
       ['比例不合法', '填写本页比例枚举；`size`不是GPT Image的像素尺寸字段。'],
-      ['参考图加载失败', '确认URL无需登录即可读取，或提供完整data:image/...内容；检查张数和顺序。'],
+      ['参考图加载失败', '确认URL无需登录即可读取且直接返回图片文件；不要传Base64、Data URL、网页地址或本机路径，检查张数和顺序。'],
       ['查询超时或网络断开', '保留task.json恢复查询，不要自动重新发起生成。']
     ]),
     note('价格以模型列表与实际账单为准；不要依据返回图片数组长度推算其他模型的价格。')
@@ -311,12 +310,12 @@ function commonBlocks() {
       ['创建任务', 'POST /v1/midjourney/generations'], ['查询任务', 'GET /v1/tasks/{task_id}'],
       ['鉴权', 'Authorization: Bearer YOUR_API_KEY'], ['请求格式', 'Content-Type: application/json'],
       ['普通生成输出', '一次任务4张单图'], ['提示词长度', 'prompt为1–1023个字符'],
-      ['参考图片', '单张image或1–5张images；URL或完整Data URL']
+      ['参考图片', '单张image或1–5张images；仅支持公网HTTP(S)图片URL']
     ]),
-    paragraph('`mj-v8.2`支持文生图和参考生图，可提供单张或多张参考图片。任务接口的外层字段兼容顶层和`data`包装，完成结果从`image_urls`读取。'),
+    paragraph('`mj-v8.2`支持文生图和参考生图，可提供单张或多张参考图片。参考图只能使用公网HTTP(S)图片URL，不能传Base64或Data URL。任务接口的外层字段兼容顶层和`data`包装，完成结果从`image_urls`读取。'),
     heading('请求参数'),
     table(['参数', '类型', '必填', '取值或默认值', '用途'], mjCommonRows),
-    note('prompt最长1023个字符。不要按tokens或单词数计算，也不要把参考图片的Base64拼进prompt；图片内容通过image或images单独提交。超长时先精简提示词，不依靠客户端静默截断。'),
+    note('prompt最长1023个字符。不要按tokens或单词数计算，也不要把参考图片Base64拼进prompt；参考图字段只接受公网HTTP(S)图片URL。超长时先精简提示词，不依靠客户端静默截断。'),
     heading('画面比例与Raw'),
     table(['size', '适用画幅'], sizeRows),
     note('`size`填写比例，不提供固定输出像素保证；`n`固定1，普通生成返回4张单图。默认比例为9:16，推荐在请求中明确指定所需比例。'),
@@ -329,11 +328,10 @@ function commonBlocks() {
     // 参考图用于生成新图片，统一使用参考生图的功能名称。
     heading('参考生图（单张与多张参考图）'),
     paragraph('提供参考图片并配合提示词生成新的图片。单张参考图使用`image`，多张参考图使用`images`；在提示词中说明希望参考的主体、配色、光线或构图。'),
-    paragraph('创建接口仍为POST /v1/midjourney/generations，使用application/json，不是multipart文件上传。图片URL必须直接返回公网可读的图片文件，不能是网页、本机路径或需要登录的地址。使用Base64时传完整的`data:image/png;base64,...`或对应图片类型的Data URL，不能只传裸Base64。多图按数组顺序说明各张图的用途，最多5张。'),
+    paragraph('创建接口仍为POST /v1/midjourney/generations，使用application/json，不是multipart文件上传。参考图片字段只能传直接返回图片文件的公网HTTP(S) URL，不能是网页、本机路径、需要登录的地址、Base64或Data URL。多图按数组顺序说明各张图的用途，最多5张。'),
     curl({ model: 'mj-v8.2', prompt: '参考图片中的主体外形，生成夜晚街道场景，电影感构图', size: '16:9', image: 'https://example.com/reference.jpg', iw: 1, raw: true, n: 1 }),
     curl({ model: 'mj-v8.2', prompt: '参考第一张图中的主体、第二张图的配色和光线，生成一张商业海报', size: '4:5', images: ['https://example.com/subject.jpg', 'https://example.com/style.jpg'], iw: 1.5, n: 1 }),
-    paragraph('Data URL同样放入image或images。下例中的Base64占位内容需替换为真实图片编码，MIME应与文件格式一致；不要把图片地址写进prompt来代替参考图字段。'),
-    json({ model: 'mj-v8.2', prompt: '参考主体的形状与配色，生成明亮的商业插画', image: 'data:image/png;base64,<图片文件的Base64编码>', size: '1:1', n: 1 }),
+    note('参考图不支持Base64或Data URL。请先把图片放到可被服务端直接访问的HTTP(S)地址，再填写到image或images；不要把图片地址只写进prompt来代替参考图字段。'),
     heading('角色、风格与深度参考'),
     table(['参考用途', '图片字段', '权重字段与范围'], [
       ['普通图片参考', 'image或images', 'iw：0–3'],
@@ -351,5 +349,5 @@ function commonBlocks() {
 }
 
 export const MIDJOURNEY_PAGES = [
-  { id: 'mj-v8.2', label: 'mj-v8.2', title: 'mj-v8.2', lead: '29项请求参数、提示词长度、12种比例、URL与Data URL参考生图、质量与风格控制，以及异步任务示例。', blocks: [...commonBlocks(), ...resultBlocks()] }
+  { id: 'mj-v8.2', label: 'mj-v8.2', title: 'mj-v8.2', lead: '29项请求参数、提示词长度、12种比例、仅URL参考生图、质量与风格控制，以及异步任务示例。', blocks: [...commonBlocks(), ...resultBlocks()] }
 ];

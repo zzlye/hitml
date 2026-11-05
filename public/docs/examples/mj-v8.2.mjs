@@ -88,13 +88,12 @@ if (process.argv[2]) {
   if (request.image != null && request.images != null) throw new Error('image与images请选择一种');
   const validReference = value => {
     if (typeof value !== 'string' || !value.trim()) return false;
-    if (/^data:image\/[^;,]+;base64,.+/i.test(value)) return true;
     try { return ['https:', 'http:'].includes(new URL(value).protocol); }
     catch { return false; }
   };
-  if (request.image != null && !validReference(request.image)) throw new Error('image必须是图片URL或完整Data URL');
+  if (request.image != null && !validReference(request.image)) throw new Error('image必须是公网HTTP(S)图片URL，不支持Base64或Data URL');
   if (request.images != null && (!Array.isArray(request.images) || request.images.length < 1 || request.images.length > 5 || !request.images.every(validReference))) {
-    throw new Error('images必须包含1–5张图片URL或完整Data URL');
+    throw new Error('images必须包含1–5张公网HTTP(S)图片URL，不支持Base64或Data URL');
   }
   const ranges = { stylize: [0, 1000], chaos: [0, 100], weird: [0, 3000], iw: [0, 3], cw: [0, 100], sw: [0, 1000], dw: [0, 100] };
   for (const [field, [min, max]] of Object.entries(ranges)) {

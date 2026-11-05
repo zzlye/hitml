@@ -50,7 +50,9 @@ test('新版MJ明确提示词、参考图与数值参数限制', () => {
     assert.ok(!body.image || !body.images);
     assert.ok((body.images || []).length <= 5);
   }
-  assert.ok(page.blocks.some(block => block.lang === 'json' && JSON.parse(block.value).image?.startsWith('data:image/png;base64,')));
+  assert.ok(!pageMarkdown(page).includes('data:image/png;base64'));
+  assert.ok(pageMarkdown(page).includes('只能使用公网HTTP(S)图片URL'));
+  assert.ok(!page.lead.includes('Data URL'));
 });
 
 test('任务解析兼容实际的顶层加data包装、响应头任务号和受控图片地址', () => {
@@ -230,7 +232,7 @@ for (const prompt of ['橘', '橘'.repeat(1023), '🍊'.repeat(1023)]) {
 for (const input of [
   { prompt: '' }, { prompt: '橘'.repeat(1024) }, { prompt: null },
   { images: [] }, { images: Array(6).fill('https://example.com/a.png') },
-  { image: '裸Base64' }, { images: ['C:/a.png'] }, { image: 'https://example.com/a.png', images: ['https://example.com/b.png'] },
+  { image: '裸Base64' }, { image: 'data:image/png;base64,YWJj' }, { images: ['data:image/png;base64,YWJj'] }, { images: ['C:/a.png'] }, { image: 'https://example.com/a.png', images: ['https://example.com/b.png'] },
   { quality: 'high' }, { quality: '1' }, { quality: 3 }, { stylize: 1001 },
   { chaos: -1 }, { weird: 3001 }, { iw: 3.1 }, { cw: 101 }, { sw: 1001 }, { dw: -1 },
   { raw: 'false' }, { hd: 'true' }, { tile: 1 }
@@ -242,8 +244,8 @@ for (const input of [
   });
 }
 
-test('MJ单图Data URL与5张URL参考图保留原字段提交', () => {
-  for (const input of [{ image: 'data:image/png;base64,YWJj' }, { images: Array(5).fill('https://example.com/a.png') }]) {
+test('MJ仅接受单图或5张公网URL参考图并保留原字段提交', () => {
+  for (const input of [{ image: 'https://example.com/a.png' }, { images: Array(5).fill('https://example.com/a.png') }]) {
     const request = { model: 'mj-v8.2', prompt: '橘子', n: 1, quality: 0.5, raw: true, hd: false, tile: false, iw: 3, stylize: 1000, chaos: 100, weird: 3000, ...input };
     const result = execute('success', { request });
     assert.equal(result.status, 0, result.output);
