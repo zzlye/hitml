@@ -20,6 +20,10 @@ const json=(v,s=200,h={})=>new Response(JSON.stringify(v),{status:s,headers:h});
 globalThis.fetch=async(input,opt={})=>{
  const u=new URL(input), method=opt.method||'GET';
  calls.push({url:u.href,method,headers:opt.headers,body:opt.body,redirect:opt.redirect});
+ if(u.origin==='https://cdn.example.com'&&scenario==='result-url'){
+  if(Object.keys(opt.headers||{}).length)throw new Error('结果直链不应携带鉴权头');
+  return new Response('mock-video',{headers:{'Content-Type':'video/mp4'}});
+ }
  if(u.origin!=='https://api.zzlye.xyz')throw new Error('禁止外部网络');
  if(opt.headers?.Authorization!=='Bearer test-key')throw new Error('缺少鉴权');
  if(method==='POST'){
@@ -38,6 +42,7 @@ globalThis.fetch=async(input,opt={})=>{
   if(scenario==='unknown')return json({status:'unexpected'});
   if(scenario==='unauthorized')return json({error:{message:'鉴权失败'}},401);
   if(scenario==='timeout')return json({status:'queued'});
+  if(scenario==='result-url'||scenario==='invalid-result-url')return json({id:'task_test',status:'completed',metadata:{url:scenario==='result-url'?'https://cdn.example.com/result.mp4':'file:///result.mp4'}});
   return json({id:'task_test',status:polls<3?['queued','in_progress'][polls-1]:'completed',progress:polls<3?45:100});
  }
  if(u.pathname==='/v1/videos/task_test/content'){
@@ -119,11 +124,11 @@ function execute(pageId,lang,scenario,{resume=false,existing=false,model='',reso
   return {...report,status:child.status,output:child.stdout+child.stderr,file:existsSync(join(dir,'result.mp4'))?readFileSync(join(dir,'result.mp4'),'utf8'):null,partial:existsSync(join(dir,'result.mp4.part')),saved:existsSync(join(dir,'video-task.json'))};
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
-for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd2.5-720p',6]]) for(const lang of ['javascript','python']){
+for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd2.5-720p',6],['minimax-h3','minimax-h3-768p',5]]) for(const lang of (pageId==='minimax-h3'?['javascript']:['javascript','python'])){
  for(const scenario of ['success','retry'])test(pageId+' '+lang+'视频示例完成创建、轮询及下载：'+scenario,()=>{
   const r=execute(pageId,lang,scenario);assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.equal(r.partial,false);assert.ok(r.saved);
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
-  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.duration,duration);assert.equal(body.resolution,'720p');
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.duration,duration);assert.equal(body.resolution,pageId==='minimax-h3'?undefined:'720p');
   assert.ok(!JSON.stringify(posts[0].headers).includes('respond-async'));
   assert.equal(r.delays[0],lang==='python'?7:7000);
   if(scenario==='retry')assert.ok(r.delays[1]>=(lang==='python'?8:8000));
@@ -136,6 +141,20 @@ for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd2.5-
  });
 }
 test('下载中断清理部分文件并保留任务编号',()=>{const r=execute('video','javascript','broken-download');assert.equal(r.status,1);assert.equal(r.file,null);assert.equal(r.partial,false);assert.ok(r.saved);});
+
+test('MiniMax结果直链不携带API Key，仍保存原任务以恢复',()=>{
+ const r=execute('minimax-h3','javascript','result-url');
+ assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.ok(r.saved);
+ const download=r.calls.find(call=>call.url==='https://cdn.example.com/result.mp4');
+ assert.deepEqual(download.headers,{});
+ assert.equal(r.calls.filter(call=>call.method==='POST').length,1);
+});
+
+test('MiniMax结果地址协议无效时停止下载并保留任务',()=>{
+ const r=execute('minimax-h3','javascript','invalid-result-url');
+ assert.equal(r.status,1,r.output);assert.equal(r.file,null);assert.ok(r.saved);
+ assert.ok(r.calls.every(call=>call.url.startsWith('https://api.zzlye.xyz/')));
+});
 
 // 两种语言都执行四款SD型号，确认分辨率自动匹配且保留本站下载接口。
 for(const lang of ['javascript','python']) {

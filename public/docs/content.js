@@ -2,6 +2,7 @@
 import { IMAGE_GROUPS, createImageGroupPage, INTERNAL_TASK_BLOCKS } from "./image-groups.js?v=20261105-image26";
 import { BANANA_MODEL_BLOCKS, BANANA_PARAMETER_BLOCKS, BANANA_REFERENCE_BLOCKS, SEEDREAM_MODEL_BLOCKS, SEEDREAM_PARAMETER_BLOCKS } from "./image-model-details.js?v=20261016-image-url-edit";
 import { MIDJOURNEY_PAGES } from "./midjourney-details.js?v=20261106-mj-url";
+import { MINIMAX_H3_PAGE } from "./minimax-h3-details.js?v=20261110-minimax-h3";
 
 export const API_ORIGIN = "https://api.zzlye.xyz";
 const legacyMediaModels = [
@@ -2859,17 +2860,19 @@ const modelPages = legacyPages.map((page) => {
 const imageTemplate = legacyPages.find(page => page.id === 'image2');
 export const pages = [
   ...modelPages,
+  MINIMAX_H3_PAGE,
   ...IMAGE_GROUPS.filter(group => group.id !== 'image2').map(group => createImageGroupPage(group, imageTemplate))
 ].map(page => ({ ...page, blocks: [...INTERNAL_TASK_BLOCKS, ...page.blocks] }));
 
 // 按生图和视频归类，保留各模型的独立文档路由。
 export const navigation = [
   { id: 'image-models', label: '生图', pages: ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2', 'seedream', 'mj-v8.2'] },
-  { id: 'video-models', label: '视频', pages: ['video', 'sd-video'] }
+  { id: 'video-models', label: '视频', pages: ['video', 'sd-video', 'minimax-h3'] }
 ];
 
 // 同名型号可属于多个文档，公开型号注册表使用完整名称去重。
 export const mediaModels = [
   ...legacyMediaModels.filter(model => model.page !== 'image2'),
+  { name: 'minimax-h3-768p', page: 'minimax-h3', kind: '视频', protocol: 'Videos' },
   ...IMAGE_GROUPS.flatMap(group => group.models.map(name => ({ name, page: group.id, kind: '图片', protocol: 'Images' })))
 ].filter((model, index, models) => models.findIndex(item => item.name === model.name) === index);

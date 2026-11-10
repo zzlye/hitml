@@ -7,13 +7,13 @@ const { pages, mediaModels, API_ORIGIN, navigation } = await import("../public/d
 const { pageMarkdown, renderPage, renderNavigation, resolveRoute } = await import("../public/docs/document.js");
 
 test("图片与视频文档页面完整且编号唯一", () => {
-  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-v8.2", "video", "sd-video", "image-1k", "image-az", "image-adobe", "image-official"]);
+  assert.deepEqual(pages.map((page) => page.id), ["image2", "banana", "seedream", "mj-v8.2", "video", "sd-video", "minimax-h3", "image-1k", "image-az", "image-adobe", "image-official"]);
   assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
   assert.equal(API_ORIGIN, "https://api.zzlye.xyz");
 });
 
 test("公开模型包含最新香蕉型号且移除下架名称", () => {
-  assert.equal(mediaModels.length, 33);
+  assert.equal(mediaModels.length, 34);
   for (const name of ["gpt-image-2.5-flare-满血", "sd2.0-720p", "nano-banana-pro", "nano-banana-2.1", "seedream-5-pro", "wan-3.0", "wan3.0-nsfw"]) {
     assert.ok(mediaModels.some((model) => model.name === name), name);
   }
@@ -255,7 +255,7 @@ test('目录按生图和视频分为两个文件夹且所有文档只归类一�
   assert.equal(folders.length, 2);
   assert.deepEqual(folders.map(item=>item.label), ['生图', '视频']);
   assert.deepEqual(folders[0].pages, ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2', 'seedream', 'mj-v8.2']);
-  assert.deepEqual(folders[1].pages, ['video', 'sd-video']);
+  assert.deepEqual(folders[1].pages, ['video', 'sd-video', 'minimax-h3']);
   assert.deepEqual(folders.flatMap(item=>item.pages).sort(), pages.map(page=>page.id).sort());
   const html = renderNavigation(navigation);
   assert.equal((html.match(/<details\b/g) || []).length, 2);

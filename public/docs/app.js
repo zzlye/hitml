@@ -1,5 +1,5 @@
-import { pages, navigation } from "./content.js?v=20261110-media-nav";
-import { pageMarkdown, renderPage, renderNavigation, resolveRoute } from "./document.js?v=20261110-media-nav";
+import { pages, navigation } from "./content.js?v=20261110-minimax-h3";
+import { pageMarkdown, renderPage, renderNavigation, resolveRoute } from "./document.js?v=20261110-minimax-h3";
 
 const content = document.querySelector("#docs-content");
 const nav = document.querySelector("#docs-nav");
