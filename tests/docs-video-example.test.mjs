@@ -119,7 +119,7 @@ function execute(pageId,lang,scenario,{resume=false,existing=false,model='',reso
   return {...report,status:child.status,output:child.stdout+child.stderr,file:existsSync(join(dir,'result.mp4'))?readFileSync(join(dir,'result.mp4'),'utf8'):null,partial:existsSync(join(dir,'result.mp4.part')),saved:existsSync(join(dir,'video-task.json'))};
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
-for(const [pageId,model,duration] of [['video','wan-3.0-标准',10],['sd-video','sd2.5-720p',6]]) for(const lang of ['javascript','python']){
+for(const [pageId,model,duration] of [['video','wan-3.0',10],['sd-video','sd2.5-720p',6]]) for(const lang of ['javascript','python']){
  for(const scenario of ['success','retry'])test(pageId+' '+lang+'视频示例完成创建、轮询及下载：'+scenario,()=>{
   const r=execute(pageId,lang,scenario);assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');assert.equal(r.partial,false);assert.ok(r.saved);
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
@@ -152,17 +152,20 @@ for(const lang of ['javascript','python']) {
  });
 }
 
-// 执行八个型号，验证可选档位、固定档位和任务恢复始终使用本站协议。
+// 两款型号均验证默认与显式720p，并拒绝已下架型号和其他分辨率。
 for(const lang of ['javascript','python']) {
- for(const version of ['标准','快速'])for(const suffix of ['','-480p','-720p','-1080p'])for(const resolution of (suffix?['']:['480p','720p','1080p']))test('Wan '+lang+' '+version+suffix+' '+resolution,()=>{
-  const model='wan-3.0'+suffix+'-'+version;
+ for(const model of ['wan-3.0','wan3.0-nsfw'])for(const resolution of ['','720p'])test('Wan '+lang+' '+model+' '+resolution,()=>{
   const r=execute('video',lang,'success',{model,resolution});
   assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-video');
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
-  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.resolution,resolution||suffix.slice(1));
+  const body=JSON.parse(posts[0].body);assert.equal(body.model,model);assert.equal(body.resolution,'720p');
   assert.ok(r.calls.some(c=>c.url.endsWith('/v1/videos/task_test/content')));
  });
- for(const [model,resolution] of [['wan-3.0','720p'],['wan-3.0-标准','4K'],['wan-3.0-1080p-快速','720p'],['wan-3.0-480p-标准','1080p'],['missing-model','720p']]) test('Wan '+lang+'无效型号或分辨率在提交前停止：'+model+'/'+resolution,()=>{
+ for(const [model,resolution] of [
+  ...['wan-3.0','wan3.0-nsfw'].flatMap(model=>['480p','1080p','4K'].map(resolution=>[model,resolution])),
+  ...['标准','快速'].flatMap(version=>['','-480p','-720p','-1080p'].map(suffix=>['wan-3.0'+suffix+'-'+version,'720p'])),
+  ['missing-model','720p']
+ ]) test('Wan '+lang+'无效型号或分辨率在提交前停止：'+model+'/'+resolution,()=>{
   const r=execute('video',lang,'success',{model,resolution});assert.equal(r.status,1,r.output);assert.equal(r.calls.length,0);
  });
 }

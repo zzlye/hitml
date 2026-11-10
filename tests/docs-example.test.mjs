@@ -154,7 +154,7 @@ test('Wan网关示例使用视频创建入口且仅提交一次',()=>{
   const posts=result.calls.filter(call=>call.method==='POST');
   assert.equal(posts.length,1);
   assert.ok(posts[0].url.endsWith('/v1/videos'));
-  assert.equal(JSON.parse(posts[0].body).model,'wan-3.0-标准');
+  assert.equal(JSON.parse(posts[0].body).model,'wan-3.0');
   assert.equal(JSON.parse(posts[0].body).duration,10);
   assert.equal(result.file,'mock-media');
   const resumed=execute('video','success',true,1);
@@ -163,15 +163,20 @@ test('Wan网关示例使用视频创建入口且仅提交一次',()=>{
 });
 
 // 网关示例同样覆盖所有公开型号，不能只改页面表格。
-for(const version of ['标准','快速'])for(const suffix of ['','-480p','-720p','-1080p'])for(const resolution of (suffix?['']:['480p','720p','1080p']))test('Wan网关 '+version+suffix+' '+resolution+'完成归档下载',()=>{
-  const model='wan-3.0'+suffix+'-'+version;
+for(const model of ['wan-3.0','wan3.0-nsfw'])for(const resolution of ['','720p'])test('Wan网关 '+model+' '+resolution+'完成归档下载',()=>{
   const r=execute('video','success',false,1,model,resolution);
   assert.equal(r.status,0,r.output);assert.equal(r.file,'mock-media');
   const posts=r.calls.filter(c=>c.method==='POST');assert.equal(posts.length,1);
-  assert.equal(JSON.parse(posts[0].body).model,model);assert.equal(JSON.parse(posts[0].body).resolution,resolution||suffix.slice(1));
+  assert.equal(JSON.parse(posts[0].body).model,model);assert.equal(JSON.parse(posts[0].body).resolution,'720p');
 });
-test('Wan网关示例拒绝固定档位与resolution矛盾的请求且不提交',()=>{
-  const r=execute('video','success',false,1,'wan-3.0-720p-快速','1080p');assert.equal(r.status,1);assert.equal(r.calls.length,0);
+test('Wan网关示例拒绝其他分辨率与全部下架型号且不提交',()=>{
+  const invalid=[
+    ...['wan-3.0','wan3.0-nsfw'].flatMap(model=>['480p','1080p'].map(resolution=>[model,resolution])),
+    ...['标准','快速'].flatMap(version=>['','-480p','-720p','-1080p'].map(suffix=>['wan-3.0'+suffix+'-'+version,'720p']))
+  ];
+  for(const [model,resolution] of invalid){
+    const r=execute('video','success',false,1,model,resolution);assert.equal(r.status,1,r.output);assert.equal(r.calls.length,0);
+  }
 });
 
 test('SD网关示例按本页模型创建并支持恢复与过期停止',()=>{

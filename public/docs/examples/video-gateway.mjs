@@ -8,23 +8,12 @@ const ORIGIN = 'https://api.zzlye.xyz';
 const key = process.env.WENYUN_API_KEY;
 if (!key) throw new Error('请设置 WENYUN_API_KEY');
 const headers = { Authorization: 'Bearer ' + key };
-// 无分辨率后缀的型号可选三档；固定档位型号自动匹配后缀。
-const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0-标准';
-const models = [
-  "wan-3.0-标准",
-  "wan-3.0-480p-标准",
-  "wan-3.0-720p-标准",
-  "wan-3.0-1080p-标准",
-  "wan-3.0-快速",
-  "wan-3.0-480p-快速",
-  "wan-3.0-720p-快速",
-  "wan-3.0-1080p-快速"
-];
+// 两款公开型号都固定输出720p，不根据型号名称推断分辨率。
+const model = process.env.WENYUN_VIDEO_MODEL || 'wan-3.0';
+const models = ['wan-3.0', 'wan3.0-nsfw'];
 if (!models.includes(model)) throw new Error('未知Wan模型：' + model);
-const fixedResolution = model.match(/-(480p|720p|1080p)-/)?.[1];
-const resolution = process.env.WENYUN_VIDEO_RESOLUTION || fixedResolution || '720p';
-const resolutions = fixedResolution ? [fixedResolution] : ['480p', '720p', '1080p'];
-if (!resolutions.includes(resolution)) throw new Error('当前型号不支持此分辨率：' + resolution);
+const resolution = process.env.WENYUN_VIDEO_RESOLUTION || '720p';
+if (resolution !== '720p') throw new Error('当前型号仅支持720p：' + resolution);
 
 // 只向本站地址发送 Key，不把鉴权头转发给第三方结果地址。
 function ownUrl(path) {

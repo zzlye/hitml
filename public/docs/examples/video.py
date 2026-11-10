@@ -14,16 +14,14 @@ KEY = os.environ.get('WENYUN_API_KEY')
 if not KEY:
     raise SystemExit('请设置 WENYUN_API_KEY')
 TASK_FILE = Path(sys.argv[1] if len(sys.argv) > 1 else 'video-task.json')
-# 无分辨率后缀的型号可选三档，固定档位按名称匹配。
-MODEL = os.environ.get('WENYUN_VIDEO_MODEL') or 'wan-3.0-标准'
-MODELS = ["wan-3.0-标准","wan-3.0-480p-标准","wan-3.0-720p-标准","wan-3.0-1080p-标准","wan-3.0-快速","wan-3.0-480p-快速","wan-3.0-720p-快速","wan-3.0-1080p-快速"]
+# 两款公开型号都固定输出720p，不根据型号名称推断分辨率。
+MODEL = os.environ.get('WENYUN_VIDEO_MODEL') or 'wan-3.0'
+MODELS = ['wan-3.0', 'wan3.0-nsfw']
 if MODEL not in MODELS:
     raise SystemExit('未知Wan模型：' + MODEL)
-FIXED_RESOLUTION = next((value for value in ('480p', '720p', '1080p') if '-' + value + '-' in MODEL), None)
-RESOLUTION = os.environ.get('WENYUN_VIDEO_RESOLUTION') or FIXED_RESOLUTION or '720p'
-RESOLUTIONS = (FIXED_RESOLUTION,) if FIXED_RESOLUTION else ('480p', '720p', '1080p')
-if RESOLUTION not in RESOLUTIONS:
-    raise SystemExit('当前型号不支持此分辨率：' + RESOLUTION)
+RESOLUTION = os.environ.get('WENYUN_VIDEO_RESOLUTION') or '720p'
+if RESOLUTION != '720p':
+    raise SystemExit('当前型号仅支持720p：' + RESOLUTION)
 BODY = {
     'model': MODEL,
     'prompt': '晨光中的海边公路，一辆蓝色轿车平稳行驶，低机位跟拍',
