@@ -2862,10 +2862,10 @@ export const pages = [
   ...IMAGE_GROUPS.filter(group => group.id !== 'image2').map(group => createImageGroupPage(group, imageTemplate))
 ].map(page => ({ ...page, blocks: [...INTERNAL_TASK_BLOCKS, ...page.blocks] }));
 
-// 一个文件夹放六个平级文档，其他模型保留原来的独立入口。
+// 按生图和视频归类，保留各模型的独立文档路由。
 export const navigation = [
-  { id: 'model-groups', label: '模型分组', pages: ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2'] },
-  ...['seedream', 'mj-v8.2', 'video', 'sd-video'].map(id => ({ page: id }))
+  { id: 'image-models', label: '生图', pages: ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2', 'seedream', 'mj-v8.2'] },
+  { id: 'video-models', label: '视频', pages: ['video', 'sd-video'] }
 ];
 
 // 同名型号可属于多个文档，公开型号注册表使用完整名称去重。

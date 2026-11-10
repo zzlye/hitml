@@ -249,12 +249,16 @@ test('网页代码和可独立运行的示例文件逐字一致', () => {
 });
 
 
-test('目录只有一个文件夹且包含六个平级分组文档',()=>{
+test('目录按生图和视频分为两个文件夹且所有文档只归类一次',()=>{
   const folders = navigation.filter(item => item.pages);
-  assert.equal(folders.length, 1);
-  assert.deepEqual(folders[0].pages.map(id => pages.find(page => page.id === id).label), ['1k-image', '香蕉', 'az-image', 'adobe-image', '官key-image', '默认分组']);
+  assert.equal(navigation.length, 2);
+  assert.equal(folders.length, 2);
+  assert.deepEqual(folders.map(item=>item.label), ['生图', '视频']);
+  assert.deepEqual(folders[0].pages, ['image-1k', 'banana', 'image-az', 'image-adobe', 'image-official', 'image2', 'seedream', 'mj-v8.2']);
+  assert.deepEqual(folders[1].pages, ['video', 'sd-video']);
+  assert.deepEqual(folders.flatMap(item=>item.pages).sort(), pages.map(page=>page.id).sort());
   const html = renderNavigation(navigation);
-  assert.equal((html.match(/<details\b/g) || []).length, 1);
+  assert.equal((html.match(/<details\b/g) || []).length, 2);
   assert.equal((html.match(/data-route=/g) || []).length, pages.length);
   for (const page of pages) assert.ok(html.includes('data-route="' + page.id + '"'));
   for(const old of ['start','models','tasks','errors']) assert.equal(resolveRoute('#/'+old),'image2');
